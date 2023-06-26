@@ -1,0 +1,26 @@
+[
+    {
+        "name": "General"
+    },
+    {
+        "name": "Efectivo"
+    },
+    {
+        "name": "Cuenta corriente"
+    },
+    {
+        "name": "Tarjeta de credito"
+    },
+    {
+        "name": "Ahorros"
+    },
+    {
+        "name": "Inversion"
+    },
+    {
+        "name": "Prestamo"
+    },
+    {
+        "name": "Hipoteca"
+    }
+]
