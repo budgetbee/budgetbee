@@ -1,13 +1,9 @@
-import { React, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { React, useState } from "react";
 
 import Api from "../../Api/Endpoints";
 import logo from "./logo.png";
 
 // Icons
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faPlus } from "@fortawesome/free-solid-svg-icons";
-
 export default function Login() {
     const [isLoading, setIsLoading] = useState(false);
     const [formValues, setFormValues] = useState(null);
@@ -33,18 +29,17 @@ export default function Login() {
                         href="#"
                         className="flex items-center mx-5 my-10 text-2xl font-semibold text-white"
                     >
-                        <img
-                            className="w-full"
-                            src={logo}
-                            alt="logo"
-                        ></img>
+                        <img className="w-full" src={logo} alt="logo"></img>
                     </a>
                     <div className="w-full bg-white rounded-lg shadow md:mt-0 sm:max-w-md xl:p-0">
                         <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
                             <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl">
                                 Sign in to your account
                             </h1>
-                            <form className="space-y-4 md:space-y-6" onSubmit={handleSendForm}>
+                            <form
+                                className="space-y-4 md:space-y-6"
+                                onSubmit={handleSendForm}
+                            >
                                 <div>
                                     <label
                                         for="email"
