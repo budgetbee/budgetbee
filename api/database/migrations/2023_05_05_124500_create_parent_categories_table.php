@@ -14,9 +14,11 @@ return new class extends Migration
         Schema::create('parent_categories', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
+            $table->unsignedBigInteger('user_id');
             $table->string('name');
             $table->string('color');
             $table->string('icon');
+            $table->foreign('user_id')->references('id')->on('users');
         });
     }
 

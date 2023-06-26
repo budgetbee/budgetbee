@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             $table->datetime('date');
+            $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('from_account_id');
             $table->unsignedBigInteger('to_account_id')->nullable();
             $table->string('type');
@@ -27,6 +28,7 @@ return new class extends Migration
             $table->foreign('from_account_id')->references('id')->on('accounts');
             $table->foreign('to_account_id')->references('id')->on('accounts');
             $table->foreign('category_id')->references('id')->on('categories');
+            $table->foreign('user_id')->references('id')->on('users');
         });
     }
 
