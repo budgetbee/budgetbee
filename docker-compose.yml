@@ -17,7 +17,6 @@ services:
     build: images/php
     volumes:
       - ./api:/var/www/html
-      - api_storage:/var/www/html/storage
     working_dir: /var/www/html
     command: php-fpm
     environment:
@@ -75,4 +74,3 @@ networks:
 
 volumes:
   db_data:
-  api_storage:
