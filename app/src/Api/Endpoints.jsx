@@ -1,17 +1,17 @@
 import axios from "axios";
 
 const API_BASE_URL = process.env.REACT_APP_API_HOST;
-const HEADERS = { headers: { Authorization: localStorage.getItem("token") } };
+const HEADERS = { headers: { Authorization: 'Bearer ' + sessionStorage.getItem("token") } };
 
 const handleErrors = (error) => {
     const status = error.response.status;
-    
+
     switch (status) {
         case 403:
             alert("403");
             break;
         case 401:
-            localStorage.removeItem("token");
+            sessionStorage.removeItem("token");
             window.location.href = "/login";
             break;
         default:
@@ -21,6 +21,21 @@ const handleErrors = (error) => {
 };
 
 const Endpoints = {
+    userLogin: async (data) => {
+        try {
+            const response = await axios.post(
+                `${API_BASE_URL}/login`,
+                data,
+                HEADERS
+            );
+            sessionStorage.setItem("token", response.data.access_token);
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            console.error(error);
+            return null;
+        }
+    },
 
     getAccounts: async () => {
         try {
@@ -80,7 +95,7 @@ const Endpoints = {
 
     createOrUpdateAccount: async (data, account_id) => {
         try {
-            const id = account_id ?? '';
+            const id = account_id ?? "";
             const response = await axios.post(
                 `${API_BASE_URL}/account/${id}`,
                 data,
@@ -111,7 +126,8 @@ const Endpoints = {
 
     getRecords: async (account_id) => {
         try {
-            let param = (account_id > 0) ? `account/${account_id}/record` : `record`;
+            let param =
+                account_id > 0 ? `account/${account_id}/record` : `record`;
 
             const response = await axios.get(
                 `${API_BASE_URL}/${param}`,
@@ -141,7 +157,10 @@ const Endpoints = {
 
     getLastRecords: async (number, account_id) => {
         try {
-            let param = (account_id > 0) ? `account/${account_id}/record/last${number}` : `record/last${number}`;
+            let param =
+                account_id > 0
+                    ? `account/${account_id}/record/last${number}`
+                    : `record/last${number}`;
 
             const response = await axios.get(
                 `${API_BASE_URL}/${param}`,
@@ -157,7 +176,7 @@ const Endpoints = {
 
     getRecordsByCategory: async (id, from_date) => {
         try {
-            const fromDate = from_date ? '?from=' + from_date : '';
+            const fromDate = from_date ? "?from=" + from_date : "";
             const response = await axios.get(
                 `${API_BASE_URL}/record/category/${id}${fromDate}`,
                 HEADERS
@@ -186,7 +205,7 @@ const Endpoints = {
 
     createOrUpdateCategory: async (data, category_id) => {
         try {
-            const id = category_id ?? '';
+            const id = category_id ?? "";
             const response = await axios.post(
                 `${API_BASE_URL}/category/${id}`,
                 data,
@@ -230,7 +249,7 @@ const Endpoints = {
 
     createRecord: async (data, record_id) => {
         try {
-            const id = record_id ?? '';
+            const id = record_id ?? "";
             const response = await axios.post(
                 `${API_BASE_URL}/record/${id}`,
                 data,
@@ -246,8 +265,8 @@ const Endpoints = {
 
     getBalance: async (account_id, from_date) => {
         try {
-            const id = account_id ?? '';
-            const fromDate = from_date ? '?from=' + from_date : '';
+            const id = account_id ?? "";
+            const fromDate = from_date ? "?from=" + from_date : "";
             const response = await axios.get(
                 `${API_BASE_URL}/balance/${id}${fromDate}`,
                 HEADERS
@@ -262,8 +281,8 @@ const Endpoints = {
 
     getExpensesBalance: async (account_id, from_date) => {
         try {
-            const id = account_id ?? '';
-            const fromDate = from_date ? '?from=' + from_date : '';
+            const id = account_id ?? "";
+            const fromDate = from_date ? "?from=" + from_date : "";
             const response = await axios.get(
                 `${API_BASE_URL}/balance/expenses/${id}${fromDate}`,
                 HEADERS
@@ -278,8 +297,8 @@ const Endpoints = {
 
     getTimelineBalance: async (account_id, from_date) => {
         try {
-            const id = account_id ?? '';
-            const fromDate = from_date ? '?from=' + from_date : '';
+            const id = account_id ?? "";
+            const fromDate = from_date ? "?from=" + from_date : "";
             const response = await axios.get(
                 `${API_BASE_URL}/balance/timeline/${id}${fromDate}`,
                 HEADERS
@@ -294,8 +313,8 @@ const Endpoints = {
 
     getCategoriesBalance: async (account_id, from_date) => {
         try {
-            const id = account_id ?? '';
-            const fromDate = from_date ? 'from=' + from_date : '';
+            const id = account_id ?? "";
+            const fromDate = from_date ? "from=" + from_date : "";
             const response = await axios.get(
                 `${API_BASE_URL}/balance/categories/${id}?${fromDate}`,
                 HEADERS
@@ -310,8 +329,8 @@ const Endpoints = {
 
     getSubcategoriesBalance: async (parent_category, account_id, from_date) => {
         try {
-            const accountId = account_id ? `account/${account_id}` : '';
-            const fromDate = from_date ? 'from=' + from_date : '';
+            const accountId = account_id ? `account/${account_id}` : "";
+            const fromDate = from_date ? "from=" + from_date : "";
             const response = await axios.get(
                 `${API_BASE_URL}/balance/subcategories/${parent_category}/${accountId}?${fromDate}`,
                 HEADERS
@@ -326,8 +345,8 @@ const Endpoints = {
 
     getBalanceByCategory: async (account_id, from_date) => {
         try {
-            const id = account_id ? 'account/' + account_id : '';
-            const fromDate = from_date ? '?from=' + from_date : '';
+            const id = account_id ? "account/" + account_id : "";
+            const fromDate = from_date ? "?from=" + from_date : "";
             const response = await axios.get(
                 `${API_BASE_URL}/balance/category/${id}${fromDate}`,
                 HEADERS
