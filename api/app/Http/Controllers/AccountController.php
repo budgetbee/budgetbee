@@ -41,6 +41,8 @@ class AccountController extends Controller
 
         $data = $request->only('name', 'type_id', 'color', 'initial_balance');
 
+        $data['user_id'] = $request->user()->id;
+
         $account = new Account();
         $account->fill($data);
         $account->save();
