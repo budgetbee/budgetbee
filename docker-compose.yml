@@ -23,9 +23,7 @@ services:
       APP_DEBUG: ${APP_DEBUG}
       APP_LOCALE: es
       APP_FALLBACK_LOCALE: es
-      DB_CONNECTION: mysql
       DB_HOST: db
-      DB_PORT: ${DB_PORT}
       DB_DATABASE: ${DB_DATABASE}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
