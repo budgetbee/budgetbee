@@ -8,14 +8,12 @@ const handleErrors = (error) => {
 
     switch (status) {
         case 403:
-            alert("403");
             break;
         case 401:
             sessionStorage.removeItem("token");
             window.location.href = "/login";
             break;
         default:
-            alert("Error generico");
             break;
     }
 };
@@ -69,20 +67,6 @@ const Endpoints = {
         try {
             const response = await axios.get(
                 `${API_BASE_URL}/account/type`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            console.error(error);
-            return null;
-        }
-    },
-
-    getAccountStocks: async (id) => {
-        try {
-            const response = await axios.get(
-                `${API_BASE_URL}/account/${id}/stocks`,
                 HEADERS
             );
             return response.data;
