@@ -99,21 +99,7 @@ export default function Login() {
                                         Forgot password?
                                     </a>
                                 </div>
-                                <button
-                                    type="submit"
-                                    className="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
-                                >
-                                    Sign in
-                                </button>
-                                <p className="text-sm font-light text-gray-500">
-                                    Don't have an account yet?{" "}
-                                    <a
-                                        href="#"
-                                        className="font-medium text-primary-600 hover:underline"
-                                    >
-                                        Sign up
-                                    </a>
-                                </p>
+                                <button type="submit" class="w-full text-gray-900 bg-gradient-to-r from-teal-200 to-lime-200 hover:bg-gradient-to-l hover:from-teal-200 hover:to-lime-200 focus:ring-4 focus:outline-none focus:ring-lime-200 dark:focus:ring-teal-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2">Sign in</button>
                             </form>
                         </div>
                     </div>
