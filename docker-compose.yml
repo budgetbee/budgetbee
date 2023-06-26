@@ -7,6 +7,8 @@ services:
       - "${API_PORT}:80"
     volumes:
       - ./api/public:/var/www/html/public
+      - ./images/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+
     restart: unless-stopped
     networks:
       - skynet
@@ -16,7 +18,7 @@ services:
     volumes:
       - ./api:/var/www/html
       - api_storage:/var/www/html/storage
-    working_dir: /var/www/html/public
+    working_dir: /var/www/html
     command: php-fpm
     environment:
       APP_ENV: ${APP_ENV}
