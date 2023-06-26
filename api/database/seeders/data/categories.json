@@ -1,0 +1,259 @@
+[
+    {
+        "name": "Transferencia",
+        "color": "#1b1b1b",
+        "icon": "fa-solid fa-money-bill-transfer",
+        "categories": [
+            {
+                "name": "Transferencia",
+                "icon": "fa-solid fa-money-bill-transfer"
+            }
+        ]
+    },
+    {
+        "name": "Casa",
+        "color": "#ffab0c",
+        "icon": "fa-solid fa-house",
+        "categories": [
+            {
+                "name": "Alquiler",
+                "icon": "fa-solid fa-key"
+            },
+            {
+                "name": "Suministros",
+                "icon": "fa-solid fa-lightbulb"
+            },
+            {
+                "name": "Reparaciones",
+                "icon": "fa-solid fa-screwdriver-wrench"
+            }
+        ]
+    },
+    {
+        "name": "Vehiculo",
+        "color": "#9f0cff",
+        "icon": "fa-solid fa-car",
+        "categories": [
+            {
+                "name": "Gasolina",
+                "icon": "fa-solid fa-gas-pump"
+            },
+            {
+                "name": "Mantenimiento",
+                "icon": "fa-solid fa-screwdriver-wrench"
+            },
+            {
+                "name": "Prestamo",
+                "icon": "fa-solid fa-key"
+            },
+            {
+                "name": "Seguro",
+                "icon": "fa-solid fa-sheet-plastic"
+            },
+            {
+                "name": "Impuestos",
+                "icon": "fa-solid fa-money-bill-1-wave"
+            },
+            {
+                "name": "Parking",
+                "icon": "fa-solid fa-square-parking"
+            }
+        ]
+    },
+    {
+        "name": "Compras",
+        "color": "#0cc5ff",
+        "icon": "fa-solid fa-shop",
+        "categories": [
+            {
+                "name": "Ropa",
+                "icon": "fa-solid fa-shirt"
+            },
+            {
+                "name": "Electronica y accesorios",
+                "icon": "fa-solid fa-laptop"
+            },
+            {
+                "name": "Juegos",
+                "icon": "fa-solid fa-gamepad"
+            },
+            {
+                "name": "Regalos",
+                "icon": "fa-solid fa-gift"
+            },
+            {
+                "name": "Belleza y salud",
+                "icon": "fa-solid fa-spray-can-sparkles"
+            },
+            {
+                "name": "Hogar",
+                "icon": "fa-solid fa-house"
+            },
+            {
+                "name": "Mascotas",
+                "icon": "fa-solid fa-dog"
+            },
+            {
+                "name": "Herramientas",
+                "icon": "fa-solid fa-toolbox"
+            }
+        ]
+    },
+    {
+        "name": "Comida y bebida",
+        "color": "#ff0c1c",
+        "icon": "fa-solid fa-beer-mug-empty",
+        "categories": [
+            {
+                "name": "Bar, cafe",
+                "icon": "fa-solid fa-beer-mug-empty"
+            },
+            {
+                "name": "Supermercado",
+                "icon": "fa-solid fa-basket-shopping"
+            },
+            {
+                "name": "Restaurante",
+                "icon": "fa-solid fa-utensils"
+            }
+        ]
+    },
+    {
+        "name": "Entretenimiento",
+        "color": "#0cff2c",
+        "icon": "fa-solid fa-person",
+        "categories": [
+            {
+                "name": "Deporte",
+                "icon": "fa-solid fa-dumbbell"
+            },
+            {
+                "name": "Fiesta",
+                "icon": "fa-solid fa-champagne-glasses"
+            },
+            {
+                "name": "Libros",
+                "icon": "fa-solid fa-book-open"
+            },
+            {
+                "name": "Cultura y eventos deportivos",
+                "icon": "fa-solid fa-calendar-days"
+            },
+            {
+                "name": "Vacaciones",
+                "icon": "fa-solid fa-plane-departure"
+            },
+            {
+                "name": "Eventos",
+                "icon": "fa-solid fa-cake-candles"
+            },
+            {
+                "name": "Subscripciones",
+                "icon": "fa-solid fa-tv"
+            }
+        ]
+    },
+    {
+        "name": "Comunicaciones",
+        "color": "#570cff",
+        "icon": "fa-solid fa-desktop",
+        "categories": [
+            {
+                "name": "Internet",
+                "icon": "fa-solid fa-wifi"
+            },
+            {
+                "name": "Telefono",
+                "icon": "fa-solid fa-phone"
+            },
+            {
+                "name": "Hosting",
+                "icon": "fa-solid fa-server"
+            }
+        ]
+    },
+    {
+        "name": "Gastos financieros",
+        "color": "#0cffa1",
+        "icon": "fa-solid fa-coins",
+        "categories": [
+            {
+                "name": "Impuestos",
+                "icon": "fa-solid fa-landmark"
+            },
+            {
+                "name": "Multas",
+                "icon": "fa-solid fa-handcuffs"
+            },
+            {
+                "name": "Seguros",
+                "icon": "fa-solid fa-sheet-plastic"
+            }
+        ]
+    },
+    {
+        "name": "Inversiones",
+        "color": "#ff0ce1",
+        "icon": "fa-solid fa-arrow-trend-up",
+        "categories": [
+            {
+                "name": "Stocks",
+                "icon": "fa-solid fa-chart-line"
+            },
+            {
+                "name": "Vehiculos",
+                "icon": "fa-solid fa-car"
+            },
+            {
+                "name": "Propiedades",
+                "icon": "fa-solid fa-house-chimney-window"
+            }
+        ]
+    },
+    {
+        "name": "Ingresos",
+        "color": "#fff30c",
+        "icon": "fa-solid fa-money-bill",
+        "categories": [
+            {
+                "name": "Salario",
+                "icon": "fa-solid fa-briefcase"
+            },
+            {
+                "name": "Devoluciones impuestos",
+                "icon": "fa-solid fa-building-columns"
+            },
+            {
+                "name": "Dividendos",
+                "icon": "fa-solid fa-arrow-trend-up"
+            },
+            {
+                "name": "Ventas",
+                "icon": "fa-solid fa-scale-balanced"
+            },
+            {
+                "name": "Regalos",
+                "icon": "fa-solid fa-gift"
+            },
+            {
+                "name": "Trabajos extra",
+                "icon": "fa-solid fa-money-bill"
+            }
+        ]
+    },
+    {
+        "name": "Otros",
+        "color": "#6b6b6b",
+        "icon": "fa-solid fa-bars",
+        "categories": [
+            {
+                "name": "Perdido",
+                "icon": "fa-solid fa-bars"
+            },
+            {
+                "name": "Desconocido",
+                "icon": "fa-solid fa-question"
+            }
+        ]
+    }
+]
