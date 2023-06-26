@@ -15,7 +15,7 @@ class Account extends Model
      * @var string[]
      */
     protected $fillable = [
-        'name', 'type_id', 'color', 'initial_balance', 'current_balance'
+        'user_id', 'name', 'type_id', 'color', 'initial_balance', 'current_balance'
     ];
 
     protected $appends = ['type_name', 'balance'];
