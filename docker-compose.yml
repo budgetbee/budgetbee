@@ -1,0 +1,78 @@
+version: '3'
+services:
+  nginx:
+    build: images/nginx
+    command: nginx -g "daemon off;"
+    ports:
+      - "${API_PORT}:80"
+    volumes:
+      - ./api/public:/var/www/html/public
+    restart: unless-stopped
+    networks:
+      - skynet
+
+  php:
+    build: images/php
+    volumes:
+      - ./api:/var/www/html
+      - api_storage:/var/www/html/storage
+    working_dir: /var/www/html/public
+    command: php-fpm
+    environment:
+      APP_ENV: ${APP_ENV}
+      APP_DEBUG: ${APP_DEBUG}
+      APP_LOCALE: es
+      APP_FALLBACK_LOCALE: es
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: ${DB_PORT}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      MEMCACHED_HOST: cache
+      CACHE_DRIVER: memcached
+    restart: unless-stopped
+    networks:
+      - skynet
+
+  app:
+    build: app
+    volumes:
+      - ./app:/var/www/html
+    ports:
+      - "${APP_PORT}:3000"
+    environment:
+      REACT_APP_API_HOST: ${API_HOST}
+      REACT_APP_API_PORT: ${API_PORT}
+    restart: unless-stopped
+    networks:
+      - skynet
+
+  db:
+    image: mysql:8
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - "${DB_PORT}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    restart: unless-stopped
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - skynet
+
+  cache:
+    image: memcached:1.6-alpine
+    restart: unless-stopped
+    networks:
+      - skynet
+
+networks:
+  skynet:
+
+volumes:
+  db_data:
+  api_storage:
