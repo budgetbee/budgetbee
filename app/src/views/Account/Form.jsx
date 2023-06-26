@@ -11,7 +11,6 @@ export default function Form() {
     const [isLoading, setIsLoading] = useState(true);
     const [account, setAccount] = useState(null);
     const [accountTypes, setAccountTypes] = useState(null);
-    const [stocks, setStocks] = useState([]);
 
     const { account_id } = useParams();
 
@@ -21,24 +20,12 @@ export default function Form() {
             setAccountTypes(types);
             if (account_id !== undefined) {
                 const account = await Api.getAccountById(account_id);
-                const stocks = await Api.getAccountStocks(account_id);
                 setAccount(account);
-                setStocks(stocks);
             }
             setIsLoading(false);
         }
         getData();
     }, []);
-
-    const handleClick = () => {
-        const newStock = {
-            id: Date.now() + '_new', // Genera un identificador único utilizando la marca de tiempo actual
-            stock_ticker_: "",
-            stock_total_: "",
-        };
-
-        setStocks([...stocks, newStock]);
-    };
 
     const handleSaveForm = async (e) => {
         e.preventDefault();
@@ -152,43 +139,6 @@ export default function Form() {
                             className="block w-full h-12"
                             defaultValue={account && account.color}
                         />
-                    </div>
-                    <div className="flex flex-col gap-y-4">
-                        <div className="text-white text-2xl">Acciones</div>
-                        <div id="stock_list" className="flex flex-col gap-y-4">
-                            {stocks.map((stock) => (
-                                <div
-                                    key={stock.id}
-                                    id={`stock_${stock.id}`}
-                                    className="flex flex-row justify-between gap-x-4"
-                                >
-                                    <input
-                                        type="text"
-                                        name={`stock_ticker_${stock.id}`}
-                                        id={`stock_ticker_${stock.id}`}
-                                        defaultValue={stock.ticker}
-                                        className="block w-full p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500"
-                                    />
-                                    <input
-                                        type="number"
-                                        step="any"
-                                        name={`stock_total_${stock.id}`}
-                                        id={`stock_total_${stock.id}`}
-                                        defaultValue={stock.total}
-                                        className="block w-full p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500"
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                        <div>
-                            <button
-                                type="button"
-                                className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-xl px-5 py-5 text-center mr-2 mb-2"
-                                onClick={handleClick}
-                            >
-                                Añadir
-                            </button>
-                        </div>
                     </div>
                 </div>
             </form>
