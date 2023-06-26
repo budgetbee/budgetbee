@@ -6,6 +6,7 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\BalanceController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\AuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,11 +19,14 @@ use App\Http\Controllers\CategoryController;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
 
-Route::prefix('account')->group(function () {
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+
+Route::prefix('account')->middleware('auth:sanctum')->group(function () {
     Route::get('', [AccountController::class, 'get']);
     Route::get('type', [AccountController::class, 'getTypes']);
     Route::get('{id}/stocks', [AccountController::class, 'getStocks']);
@@ -35,7 +39,7 @@ Route::prefix('account')->group(function () {
     Route::delete('{id}', [AccountController::class, 'delete']);
 });
 
-Route::prefix('record')->group(function () {
+Route::prefix('record')->middleware('auth:sanctum')->group(function () {
     Route::get('', [RecordController::class, 'get']);
     Route::get('last{number}', [RecordController::class, 'getLastRecords']);
     Route::get('category/{id}', [RecordController::class, 'getRecordsByCategory']);
@@ -45,7 +49,7 @@ Route::prefix('record')->group(function () {
     Route::delete('{id}', [RecordController::class, 'delete']);
 });
 
-Route::prefix('category')->group(function () {
+Route::prefix('category')->middleware('auth:sanctum')->group(function () {
     Route::get('', [CategoryController::class, 'get']);
     Route::get('parent', [CategoryController::class, 'getParent']);
     Route::get('{id}', [CategoryController::class, 'getById']);
@@ -55,7 +59,7 @@ Route::prefix('category')->group(function () {
     Route::post('{id}', [CategoryController::class, 'update']);
 });
 
-Route::prefix('balance')->group(function () {
+Route::prefix('balance')->middleware('auth:sanctum')->group(function () {
     Route::get('', [BalanceController::class, 'getBalance']);
     Route::get('expenses', [BalanceController::class, 'getExpensesBalance']);
     Route::get('expenses/{id}', [BalanceController::class, 'getExpensesBalanceByAccount']);
