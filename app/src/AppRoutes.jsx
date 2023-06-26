@@ -9,7 +9,6 @@ import RecordList from "./views/Record/List";
 import CategoryForm from "./views/Category/Form";
 import CategoryList from "./views/Category/List";
 import Login from "./views/Auth/Login";
-import Register from "./views/Auth/Register";
 
 function AppRoutes() {
 
@@ -18,7 +17,6 @@ function AppRoutes() {
             <Routes>
                 <Route exact path="/" element={<Dashboard />} />
                 <Route exact path="/login" element={<Login />} />
-                <Route exact path="/register" element={<Register />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/accounts/" element={<AccountList />} />
                 <Route path="/account" element={<AccountForm />} />
