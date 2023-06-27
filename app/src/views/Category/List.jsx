@@ -76,9 +76,11 @@ export default function List() {
                                     index={index}
                                 >
                                     <div
-                                        className="w-12 h-12 rounded-full"
+                                        className="w-12 h-12 rounded-full flex items-center justify-center"
                                         style={{ background: category.color }}
-                                    ></div>
+                                    >
+                                        <FontAwesomeIcon icon={category.icon} />
+                                    </div>
                                     <div>{category.name}</div>
                                 </div>
                             </Link>
@@ -119,9 +121,13 @@ export default function List() {
                                 }
                             >
                                 <div
-                                    className="w-12 h-12 rounded-full"
+                                    className="w-12 h-12 rounded-full flex items-center justify-center"
                                     style={{ background: parentCategory.color }}
-                                ></div>
+                                >
+                                    <FontAwesomeIcon
+                                        icon={parentCategory.icon}
+                                    />
+                                </div>
                                 <div>{parentCategory.name}</div>
                             </div>
                         );
@@ -131,5 +137,9 @@ export default function List() {
         );
     }
 
-    return <div className="absolute bg-gray-800 top-0 left-0 w-full min-h-screen">{body}</div>;
+    return (
+        <div className="absolute bg-gray-800 top-0 left-0 w-full min-h-screen">
+            {body}
+        </div>
+    );
 }
