@@ -21,7 +21,7 @@ export default function Dashboard() {
                 setOpen={setOpenSidebarMenu}
                 activePage="dashboard"
             />
-            <div className="fixed w-full top-0 basis-1/12 flex flex-row justify-left items-center bg-gray-700 h-14">
+            <div className="fixed w-full top-0 basis-1/12 flex flex-row justify-left items-center bg-gray-700 h-14 z-30">
                 <div
                     className="py-3 pl-5 pr-10 cursor-pointer"
                     onClick={() => setOpenSidebarMenu(true)}
