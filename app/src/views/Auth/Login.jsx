@@ -64,11 +64,11 @@ export default function Login() {
 
     return (
         <div>
-            <section className="bg-[#ddffc2] h-screen">
-                <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
+            <section className="bg-[#F2F2DA] h-screen">
+                <div className="flex flex-col items-center justify-center px-6 py-8  mx-auto md:h-screen lg:py-0">
                     <a
                         href="#"
-                        className="flex items-center mx-5 my-10 text-2xl font-semibold text-white"
+                        className="flex items-center mx-5 my-10 w-64"
                     >
                         <img className="w-full" src={logo} alt="logo"></img>
                     </a>
