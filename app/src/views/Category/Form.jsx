@@ -70,7 +70,7 @@ export default function Form() {
                             htmlFor="name"
                             className="block mb-2 text-sm font-medium text-gray-900 text-white"
                         >
-                            Nombre
+                            Name
                         </label>
                         <input
                             type="text"
@@ -86,13 +86,15 @@ export default function Form() {
                             htmlFor="type_id"
                             className="block mb-2 text-sm font-medium text-gray-900 text-white"
                         >
-                            Tipo de cuenta
+                            Parent category
                         </label>
                         <select
                             name="parent_category_id"
                             id="parent_category_id"
                             className="block w-full px-4 py-4 text-base text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-                            defaultValue={category && category.parent_category_id}
+                            defaultValue={
+                                category && category.parent_category_id
+                            }
                         >
                             {parentCategories.map((parentCategory, index) => {
                                 return (
@@ -113,15 +115,20 @@ export default function Form() {
                             htmlFor="icon"
                             className="block mb-2 text-sm font-medium text-gray-900 text-white"
                         >
-                            Icono
+                            Icon
                         </label>
-                        <input
-                            type="text"
-                            name="icon"
-                            id="icon"
-                            className="block w-full p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500"
-                            defaultValue={category && category.icon}
-                        ></input>
+                        <div className="flex flex-row gap-x-5 justify-between items-center">
+                            <div>
+                                <FontAwesomeIcon icon="fa-solid fa-key" className={"text-white text-2xl"} />
+                            </div>
+                            <input
+                                type="text"
+                                name="icon"
+                                id="icon"
+                                className="block w-full p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                                defaultValue={category && category.icon}
+                            ></input>
+                        </div>
                     </div>
                 </div>
             </form>
