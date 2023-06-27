@@ -7,7 +7,6 @@ use App\Models\Account;
 use App\Models\AccountTypes;
 use App\Models\Record;
 use App\Models\Category;
-use App\Models\Stock;
 
 class AccountController extends Controller
 {
@@ -67,45 +66,6 @@ class AccountController extends Controller
         
         $data = $request->toArray();
 
-        $stocks = array_filter($data, function ($key) {
-            return strpos($key, 'stock_') === 0;
-        }, ARRAY_FILTER_USE_KEY);
-
-        $alreadyStocks = [];
-        $newStocks = [];
-        foreach ($stocks as $key => $value) {
-            $params = explode('_', $key);
-            if (substr($key, -4) === '_new') {
-                $newStocks[$params[2]][$params[1]] = $value;
-            } else {
-                $alreadyStocks[$params[2]][$params[1]] = $value;
-            }
-        }
-        $newStocks = array_values($newStocks);
-
-        foreach ($alreadyStocks as $k => $value) {
-            $stock = Stock::find($k);
-            $stock->fill([
-                'account_id' => $account->id,
-                'ticker' => strtoupper($value['ticker']),
-                'total' => $value['total']
-            ]);
-            $stock->save();
-        }
-
-        foreach ($newStocks as $k => $value) {
-            if ($value['ticker'] == '' || $value['total'] == '') {
-                continue;
-            }
-            $stock = new Stock();
-            $stock->fill([
-                'account_id' => $account->id,
-                'ticker' => strtoupper($value['ticker']),
-                'total' => $value['total']
-            ]);
-            $stock->save();
-        }
-
         return response()->json($account);
     }
 
@@ -124,13 +84,6 @@ class AccountController extends Controller
         $types = AccountTypes::all();
 
         return response()->json($types);
-    }
-
-    public function getStocks($id)
-    {
-        $stocks = Stock::where('account_id', $id)->get();
-
-        return response()->json($stocks);
     }
 
     public function getRecords($id)
@@ -167,6 +120,7 @@ class AccountController extends Controller
         $newRecord = new Record();
         $newRecord->fill([
             'date' => date('Y-m-d'),
+            'user_id' => $request->user()->id,
             'from_account_id' => $account->id,
             'amount' => $amount,
             'type' => $type,
