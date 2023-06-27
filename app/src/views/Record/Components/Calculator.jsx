@@ -107,7 +107,7 @@ export default function Calculator({ value, setValue }) {
             className="flex flex-row h-full bg-black text-center text-4xl text-gray-400"
             onClick={handleClick}
         >
-            <div className="basis-3/4 grid grid-cols-3 bg-gray-900">
+            <div className="grow grid grid-cols-3 bg-gray-900">
                 <div
                     data-key-type="number"
                     data-key="7"
@@ -191,7 +191,7 @@ export default function Calculator({ value, setValue }) {
                     <div data-key-type="delete" data-key="del" className="m-auto">Del</div>
                 </div>
             </div>
-            <div className="basis-1/4 grid grid-cols-1 text-2xl">
+            {/* <div className="basis-1/4 grid grid-cols-1 text-2xl">
                 <div
                     data-key-type="operator"
                     data-key="/"
@@ -223,7 +223,7 @@ export default function Calculator({ value, setValue }) {
                 <div data-key-type="equal" data-key="=" className="self-center">
                     =
                 </div>
-            </div>
+            </div> */}
         </div>
     );
 }
