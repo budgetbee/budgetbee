@@ -61,11 +61,11 @@ export default function Form() {
 
     const handleInputName = (event) => {
         setName(event.target.value);
-    }
+    };
 
     const handleInputDate = (event) => {
         setDate(event.target.value);
-    }
+    };
 
     const handleGoToDashboard = () => {
         window.history.back();
@@ -95,7 +95,7 @@ export default function Form() {
             <form onSubmit={handleSaveForm}>
                 <div className="flex flex-col h-screen max-w-full">
                     <div
-                        className={`basis-1/2 flex flex-col text-white ${
+                        className={`basis-6/12 flex flex-col text-white ${
                             type === "income"
                                 ? "bg-[#4a883b]"
                                 : type === "expense"
@@ -269,23 +269,19 @@ export default function Form() {
                                     />
                                 </div>
                             </div>
-                            <div className="basis-1/2 flex flex-col">
-                                <div className="text-sm text-gray-300">
-                                    Descripcion
-                                </div>
-                                <div>
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        className="w-3/4 bg-transparent"
-                                        onChange={handleInputName}
-                                        value={name ?? ""}
-                                    />
-                                </div>
-                            </div>
                         </div>
                     </div>
-                    <div className="basis-1/2">
+                    <div className="basis-1/12">
+                        <textarea
+                            type="text"
+                            name="name"
+                            className="w-full h-full bg-gray-900 text-gray-200 p-4"
+                            placeholder="Description..."
+                            onChange={handleInputName}
+                            value={name ?? ""}
+                        />
+                    </div>
+                    <div className="basis-5/12">
                         <Calculator value={amount} setValue={setAmount} />
                     </div>
                 </div>
