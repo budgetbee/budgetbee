@@ -53,7 +53,7 @@ export default function Accounts({ activeAccount, setActiveAccount }) {
     );
 
     const adjustBalanceForm = (
-        <div className="fixed top-0 left-0 w-screen h-screen flex items-center justify-center">
+        <div className="fixed top-0 left-0 w-screen h-screen flex items-center justify-center z-40">
             <div
                 className="fixed top-0 left-0 w-full h-full bg-black opacity-50 z-10"
                 onClick={() => setAdjustBalanceOpen(false)}
