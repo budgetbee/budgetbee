@@ -21,6 +21,7 @@
     "react-router-dom": "^6.11.1",
     "react-scripts": "5.0.1",
     "swiper": "^9.4.1",
+    "universal-cookie": "^4.0.4",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
