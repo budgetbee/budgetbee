@@ -1,6 +1,7 @@
 import { BrowserRouter } from "react-router-dom";
 import "./App.css";
 
+import AppRoutes from "./AppRoutes";
 
 // Icons
 import { library } from "@fortawesome/fontawesome-svg-core";
@@ -11,8 +12,6 @@ const iconList = Object.keys(Icons)
     .map((icon) => Icons[icon]);
 
 library.add(...iconList);
-
-import AppRoutes from "./AppRoutes";
 
 function App() {
     return (
