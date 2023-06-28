@@ -1,7 +1,9 @@
 import axios from "axios";
+import Cookies from 'universal-cookie';
 
+const cookies = new Cookies();
 const API_BASE_URL = process.env.REACT_APP_API_HOST;
-const HEADERS = { headers: { Authorization: 'Bearer ' + sessionStorage.getItem("token") } };
+const HEADERS = { headers: { Authorization: 'Bearer ' + cookies.get("token") } };
 
 const handleErrors = (error) => {
     const status = error.response.status;
@@ -10,7 +12,7 @@ const handleErrors = (error) => {
         case 403:
             break;
         case 401:
-            sessionStorage.removeItem("token");
+            cookies.remove("token");
             window.location.href = "/login";
             break;
         default:
@@ -26,7 +28,9 @@ const Endpoints = {
                 data,
                 HEADERS
             );
-            sessionStorage.setItem("token", response.data.access_token);
+            var expirationDate = new Date();
+            expirationDate.setTime(expirationDate.getTime() + 3600000);
+            cookies.set('token', response.data.access_token, { path: '/', expires: expirationDate });
             return response.data;
         } catch (error) {
             handleErrors(error);
