@@ -24,18 +24,3 @@ RUN set -xe \
     && rm -rf /usr/share/php7 \
     && rm -rf /tmp/* \
     && apk del .memcached-deps .phpize-deps
-
-# Copiar el archivo crontab
-COPY crontab /etc/cron.d/custom-cron
-
-# Cambiar los permisos del archivo crontab
-RUN chmod 0644 /etc/cron.d/custom-cron
-
-# Copiar el archivo entrypoint.sh
-COPY entrypoint.sh /entrypoint.sh
-
-# Establecer permisos de ejecución en el entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-# Especificar el comando predeterminado utilizando CMD
-CMD ["/entrypoint.sh"]
