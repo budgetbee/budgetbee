@@ -14,8 +14,8 @@ jobs:
 
     - name: Build the Docker image
       run: |
-        docker build -t ghcr.io/pelukosa/budgetbee/api:${{ github.event.release.tag_name }} ./api
-        docker build -t ghcr.io/pelukosa/budgetbee/app:${{ github.event.release.tag_name }} ./app
+        docker build -t ghcr.io/budgetbee/budgetbee/api:${{ github.event.release.tag_name }} ./api
+        docker build -t ghcr.io/budgetbee/budgetbee/app:${{ github.event.release.tag_name }} ./app
 
     - name: Login to ghcr.io
       uses: docker/login-action@v1
@@ -26,5 +26,5 @@ jobs:
 
     - name: Push the Docker image to ghcr.io
       run: |
-        docker push ghcr.io/pelukosa/budgetbee/api:${{ github.event.release.tag_name }}
-        docker push ghcr.io/pelukosa/budgetbee/app:${{ github.event.release.tag_name }}
+        docker push ghcr.io/budgetbee/budgetbee/api:${{ github.event.release.tag_name }}
+        docker push ghcr.io/budgetbee/budgetbee/app:${{ github.event.release.tag_name }}
