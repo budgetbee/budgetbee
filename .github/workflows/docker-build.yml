@@ -25,11 +25,11 @@ jobs:
         with:
           context: ./api
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/budgetbee/api:tests2
+          tags: ghcr.io/pelukosa/budgetbee/api:tests2
 
       - name: Build and Push Docker Image for App
         uses: docker/build-push-action@v2
         with:
           context: ./app
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/budgetbee/app:tests2
+          tags: ghcr.io/pelukosa/budgetbee/app:tests2
