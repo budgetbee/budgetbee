@@ -6,6 +6,7 @@ WORKDIR /var/www/html
 
 # install app dependencies
 COPY package.json package-lock.json ./
+RUN npm install
 
 # add app
 COPY . .
