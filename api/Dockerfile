@@ -24,3 +24,10 @@ RUN set -xe \
     && rm -rf /usr/share/php7 \
     && rm -rf /tmp/* \
     && apk del .memcached-deps .phpize-deps
+
+
+# Copiar archivos de la aplicación
+COPY . /var/www/html
+
+# Ejecutar composer install
+RUN composer install --no-dev --optimize-autoloader
