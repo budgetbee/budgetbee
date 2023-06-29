@@ -1,7 +1,7 @@
 version: '3'
 services:
   nginx:
-    build: nginx:1.17-alpine
+    image: nginx:1.17-alpine
     command: nginx -g "daemon off;"
     ports:
       - "${API_PORT}:80"
@@ -14,7 +14,7 @@ services:
       - skynet
 
   php:
-    build: ghcr.io/budgetbee/budgetbee/api:test6
+    image: ghcr.io/budgetbee/budgetbee/api:test6
     volumes:
       - ./api:/var/www/html
     working_dir: /var/www/html
@@ -35,7 +35,7 @@ services:
       - skynet
 
   app:
-    build: ghcr.io/budgetbee/budgetbee/app:test6
+    image: ghcr.io/budgetbee/budgetbee/app:test6
     volumes:
       - ./app:/var/www/html
     ports:
