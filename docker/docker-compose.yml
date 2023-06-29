@@ -14,7 +14,7 @@ services:
       - skynet
 
   php:
-    image: ghcr.io/budgetbee/budgetbee/api:test6
+    image: ghcr.io/budgetbee/budgetbee/api:latest
     volumes:
       - ./api:/var/www/html
     working_dir: /var/www/html
@@ -35,7 +35,7 @@ services:
       - skynet
 
   app:
-    image: ghcr.io/budgetbee/budgetbee/app:test6
+    image: ghcr.io/budgetbee/budgetbee/app:latest
     volumes:
       - ./app:/var/www/html
     ports:
