@@ -35,7 +35,7 @@ services:
       - skynet
 
   app:
-    image: ghcr.io/budgetbee/budgetbee/app:latest
+    image: ghcr.io/budgetbee/budgetbee/web:latest
     volumes:
       - ./app:/var/www/html
     ports:
