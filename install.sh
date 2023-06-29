@@ -268,16 +268,16 @@ fi
 ${DOCKER_COMPOSE_CMD} pull
 
 echo "Starting DB first for initilzation"
-# ${DOCKER_COMPOSE_CMD} up --detach db
-# # hopefully enough time for even the slower systems
-# sleep 15
+${DOCKER_COMPOSE_CMD} up --detach db
+# hopefully enough time for even the slower systems
+sleep 15
 
-# ${DOCKER_COMPOSE_CMD} stop
+${DOCKER_COMPOSE_CMD} stop
 # ${DOCKER_COMPOSE_CMD} run --rm -e DJANGO_SUPERUSER_PASSWORD="$PASSWORD" webserver createsuperuser --noinput --username "$USERNAME" --email "$EMAIL"
 
 ${DOCKER_COMPOSE_CMD} up --detach
 
-sleep 2
+sleep 5
 ${DOCKER_COMPOSE_CMD} run --rm php php artisan migrate
 ${DOCKER_COMPOSE_CMD} run --rm php php artisan db:seed
 ${DOCKER_COMPOSE_CMD} run --rm php php scripts/create_user.php $USERNAME $EMAIL $PASSWORD
