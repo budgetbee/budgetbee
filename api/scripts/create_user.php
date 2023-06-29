@@ -1,27 +1,26 @@
 <?php
 
-require __DIR__.'../vendor/autoload.php';
+require __DIR__.'/../vendor/autoload.php';
+$app = require_once __DIR__.'/../bootstrap/app.php';
 
-use GuzzleHttp\Client;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
-// Obtén los parámetros de línea de comandos
-$email = $argv[1] ?? null;
-$password = $argv[2] ?? null;
+$app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
 
-// Crea una instancia del cliente Guzzle HTTP
-$client = new Client();
+// Get params
+$username = $argv[1] ?? null;
+$useremail = $argv[2] ?? null;
+$userpassword = $argv[3] ?? null;
 
-// Realiza la solicitud POST al endpoint '/register' en tu aplicación Laravel
-$response = $client->post('http://localhost/api/register', [
-    'form_params' => [
-        'email' => $email,
-        'password' => $password,
-    ],
-]);
+// Create a new user
+$user = new User();
+$user->name = $username;
+$user->email = $useremail;
+$user->password = Hash::make($userpassword);
 
-// Obtén el cuerpo de la respuesta
-$body = $response->getBody();
+$user->save();
 
-// Muestra la respuesta
-echo $body;
+echo "Usuario creado exitosamente.";
 
+$app->terminate();
