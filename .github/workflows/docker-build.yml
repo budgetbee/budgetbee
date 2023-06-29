@@ -12,12 +12,18 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
+    - name: Determine tag prefix
+      id: determine-tag-prefix
+      run: echo ::set-output name=tag_prefix::${{ startsWith(github.event.release.tag_name, 'v') }}
+
     - name: Build the Docker image
       run: |
         docker build -t ghcr.io/budgetbee/budgetbee/api:${{ github.event.release.tag_name }} ./api
         docker build -t ghcr.io/budgetbee/budgetbee/app:${{ github.event.release.tag_name }} ./app
-        docker tag ghcr.io/budgetbee/budgetbee/api:${{ github.event.release.tag_name }} ghcr.io/budgetbee/budgetbee/api:latest
-        docker tag ghcr.io/budgetbee/budgetbee/app:${{ github.event.release.tag_name }} ghcr.io/budgetbee/budgetbee/app:latest
+        if [[ "${{ steps.determine-tag-prefix.outputs.tag_prefix }}" == "true" ]]; then
+          docker tag ghcr.io/budgetbee/budgetbee/api:${{ github.event.release.tag_name }} ghcr.io/budgetbee/budgetbee/api:latest
+          docker tag ghcr.io/budgetbee/budgetbee/app:${{ github.event.release.tag_name }} ghcr.io/budgetbee/budgetbee/app:latest
+        fi
 
     - name: Login to ghcr.io
       uses: docker/login-action@v1
@@ -29,6 +35,10 @@ jobs:
     - name: Push the Docker image to ghcr.io
       run: |
         docker push ghcr.io/budgetbee/budgetbee/api:${{ github.event.release.tag_name }}
-        docker push ghcr.io/budgetbee/budgetbee/api:latest
+        if [[ "${{ steps.determine-tag-prefix.outputs.tag_prefix }}" == "true" ]]; then
+          docker push ghcr.io/budgetbee/budgetbee/api:latest
+        fi
         docker push ghcr.io/budgetbee/budgetbee/app:${{ github.event.release.tag_name }}
-        docker push ghcr.io/budgetbee/budgetbee/app:latest
+        if [[ "${{ steps.determine-tag-prefix.outputs.tag_prefix }}" == "true" ]]; then
+          docker push ghcr.io/budgetbee/budgetbee/app:latest
+        fi
