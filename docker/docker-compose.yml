@@ -5,18 +5,12 @@ services:
     command: nginx -g "daemon off;"
     ports:
       - "${API_PORT}:80"
-    volumes:
-      - ./api/public:/var/www/html/public
-      - ./images/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-
     restart: unless-stopped
     networks:
       - skynet
 
   php:
     image: ghcr.io/budgetbee/budgetbee/api:latest
-    volumes:
-      - ./api:/var/www/html
     working_dir: /var/www/html
     command: php-fpm
     environment:
@@ -36,8 +30,6 @@ services:
 
   app:
     image: ghcr.io/budgetbee/budgetbee/web:latest
-    volumes:
-      - ./app:/var/www/html
     ports:
       - "${APP_PORT}:3000"
     environment:
