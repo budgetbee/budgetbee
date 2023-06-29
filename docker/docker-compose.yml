@@ -1,7 +1,7 @@
 version: '3'
 services:
   nginx:
-    build: images/nginx
+    build: nginx:alpine3.17
     command: nginx -g "daemon off;"
     ports:
       - "${API_PORT}:80"
