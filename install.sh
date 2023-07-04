@@ -232,13 +232,6 @@ SECRET_KEY=$(tr --delete --complement 'a-zA-Z0-9' < /dev/urandom 2>/dev/null | h
 DB_PASSWORD=$(tr --delete --complement 'a-zA-Z0-9' < /dev/urandom 2>/dev/null | head --bytes 64)
 DB_ROOT_PASSWORD=$(tr --delete --complement 'a-zA-Z0-9' < /dev/urandom 2>/dev/null | head --bytes 64)
 
-DEFAULT_LANGUAGES=("eng spa")
-
-{
-	echo "budgetbee_TIME_ZONE=$TIME_ZONE"
-	echo "budgetbee_SECRET_KEY=$SECRET_KEY"
-} > docker-compose.env
-
 DB_PASSWORD="password"
 DB_ROOT_PASSWORD="root_password"
 
@@ -281,3 +274,7 @@ sleep 5
 ${DOCKER_COMPOSE_CMD} run --rm php php artisan migrate
 ${DOCKER_COMPOSE_CMD} run --rm php php artisan db:seed
 ${DOCKER_COMPOSE_CMD} run --rm php php scripts/create_user.php $USERNAME $EMAIL $PASSWORD
+
+${DOCKER_COMPOSE_CMD} run --rm app npm run build
+${DOCKER_COMPOSE_CMD} run --rm app npm prune --omit=dev
+${DOCKER_COMPOSE_CMD} run --rm app npm run serve
