@@ -70,7 +70,7 @@ export default function Form() {
                             htmlFor="name"
                             className="block mb-2 text-sm font-medium text-gray-900 text-white"
                         >
-                            Nombre
+                            Account name
                         </label>
                         <input
                             type="text"
@@ -86,7 +86,7 @@ export default function Form() {
                             htmlFor="type_id"
                             className="block mb-2 text-sm font-medium text-gray-900 text-white"
                         >
-                            Tipo de cuenta
+                            Account type
                         </label>
                         <select
                             name="type_id"
@@ -113,15 +113,16 @@ export default function Form() {
                             htmlFor="initial_balance"
                             className="block mb-2 text-sm font-medium text-gray-900 text-white"
                         >
-                            Balance inicial
+                            Initial balance
                         </label>
                         <input
                             type="number"
                             step="any"
                             name="initial_balance"
+                            required="required"
                             id="initial_balance"
                             className="block w-full p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500"
-                            defaultValue={account && account.initial_balance}
+                            defaultValue={account?.initial_balance ?? 0}
                         ></input>
                     </div>
 
