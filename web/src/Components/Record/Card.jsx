@@ -17,7 +17,7 @@ export default function Card({ record, showName }) {
         ? " - " + record.to_account_name
         : "";
     let mainName =
-        showName && record.name != "" ? record.name : record.category_name;
+        showName && record.name && record.name !== "" ? record.name : record.category_name;
     mainName = mainName.length > 25 ? mainName.slice(0, 25) + "..." : mainName;
     return (
         <Link to={`/record/${record.id}`}>

@@ -28,7 +28,7 @@ export default function List() {
         view = data.map((record, index) => {
             return (
                 <div key={index}>
-                    <RecordCard record={record} />
+                    <RecordCard record={record} showName={true} />
                 </div>
             );
         });
