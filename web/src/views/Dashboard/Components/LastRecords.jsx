@@ -36,7 +36,7 @@ export default function LastRecords({ activeAccount }) {
                 <div className="px-5 py-3">
                     <Link to={`/record/list/${account_id}`}>
                         <div className="w-fit m-0 text-indigo-300 font-bold">
-                            VER MAS
+                            SHOW MORE
                         </div>
                     </Link>
                 </div>

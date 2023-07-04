@@ -7,7 +7,7 @@ export default function DatesSelect({ setDates }) {
     const [fromDate, setFromDate] = useState(
         currentDate.getFullYear() + "-01-01"
     );
-    const [dateName, setDateName] = useState("Este ano");
+    const [dateName, setDateName] = useState("Current year");
 
     const today = new Date();
 
@@ -30,13 +30,13 @@ export default function DatesSelect({ setDates }) {
     oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
 
     const dates = {
-        Hoy: today.toISOString(),
-        "Ultimos 30 dias": last30Days.toISOString(),
-        "Este mes": firstDayOfMonth.toISOString(),
-        "Ultimos 3 meses": last3Months.toISOString(),
-        "Ultimos 6 meses": last6Months.toISOString(),
-        "Este ano": thisYear.toISOString(),
-        "1 ano": oneYearAgo.toISOString(),
+        "Today": today.toISOString(),
+        "Last 30 days": last30Days.toISOString(),
+        "Current month": firstDayOfMonth.toISOString(),
+        "Last 3 months": last3Months.toISOString(),
+        "Last 6 months": last6Months.toISOString(),
+        "Current year": thisYear.toISOString(),
+        "1 year ago": oneYearAgo.toISOString(),
     };
 
     const handleSetDates = (e) => {
@@ -59,7 +59,7 @@ export default function DatesSelect({ setDates }) {
         <div className="fixed inset-0 flex flex-col items-center justify-center bg-black/50 z-30">
             <div className="w-11/12 bg-gray-900 text-white rounded z-40">
                 <div className="flex flex-row items-center justify-between px-3 py-4">
-                    <div className="text-xl">Fechas</div>
+                    <div className="text-xl">Dates</div>
                     <div onClick={handleSaveDates}>
                         <FontAwesomeIcon icon="fa-solid fa-check" />
                     </div>

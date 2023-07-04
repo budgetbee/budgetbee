@@ -135,7 +135,7 @@ export default function Form() {
                                     type === "income" ? "bg-black/20" : ""
                                 }`}
                             >
-                                Ingreso
+                                Income
                             </div>
                             <div
                                 data-type="expense"
@@ -143,7 +143,7 @@ export default function Form() {
                                     type === "expense" ? "bg-black/20" : ""
                                 }`}
                             >
-                                Gasto
+                                Expense
                             </div>
                             <div
                                 data-type="transfer"
@@ -151,7 +151,7 @@ export default function Form() {
                                     type === "transfer" ? "bg-black/20" : ""
                                 }`}
                             >
-                                Transferencia
+                                Transfer
                             </div>
                             <input
                                 type="hidden"
@@ -178,7 +178,7 @@ export default function Form() {
                         <div className="basis-2/12 flex flex-row text-center items-center">
                             <div className="basis-1/2 flex flex-col">
                                 <div className="text-sm text-gray-300">
-                                    Cuenta
+                                    Account
                                 </div>
                                 <div>
                                     <select
@@ -205,7 +205,7 @@ export default function Form() {
                             {type === "transfer" ? (
                                 <div className="basis-1/2 flex flex-col">
                                     <div className="text-sm text-gray-300">
-                                        Cuenta
+                                        To account
                                     </div>
                                     <div>
                                         <select
@@ -235,7 +235,7 @@ export default function Form() {
                                     onClick={handleOpenCategory}
                                 >
                                     <div className="text-sm text-gray-300">
-                                        Categoria
+                                        Category
                                     </div>
                                     <div>{category.name}</div>
                                     <input
@@ -249,7 +249,7 @@ export default function Form() {
                         <div className="basis-2/12 flex flex-row text-center items-center">
                             <div className="basis-1/2 flex flex-col">
                                 <div className="text-sm text-gray-300">
-                                    Fecha
+                                    Date
                                 </div>
                                 <div>
                                     <input

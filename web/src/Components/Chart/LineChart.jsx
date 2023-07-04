@@ -5,10 +5,8 @@ import { Line } from "react-chartjs-2";
 ChartJS.register(...registerables);
 
 export default function LineChart({ data }) {
-    // Convertir el objeto de datos en un array de pares clave-valor
     const dataEntries = Object.entries(data);
 
-    // Obtener arrays separados de etiquetas y datos
     const chartData = {
         labels: dataEntries.map(([key]) => key),
         datasets: [
@@ -25,15 +23,9 @@ export default function LineChart({ data }) {
     const dataValues = dataEntries.map(([_, value]) => value);
     const yMin = Math.min(...dataValues);
     const yMax = Math.max(...dataValues);
-    const yRange = (yMax - yMin) * 0.15; // 15% del rango total
-    const yMinAdjusted = yMin - yRange;
-    const yMaxAdjusted = yMax + yRange;
 
-    // Calcular los límites del eje y con ajuste proporcional
-    const yMinAligned = yMin - (yMin / 10); // 15% más bajo
-    console.log(yMin);
-    const yMaxAligned = yMax + (yMax / 10) // 15% más alto
-    console.log(yMax);
+    const yMinAligned = yMin - (yMin / 10);
+    const yMaxAligned = yMax + (yMax / 10);
 
     const options = {
         responsive: true,
@@ -57,10 +49,10 @@ export default function LineChart({ data }) {
                 display: false,
             },
             tooltip: {
-                enabled: false, // Ocultar el tooltip en la parte superior
+                enabled: false,
             },
             zoom: {
-                zoom: false, // Desactivar el zoom
+                zoom: false,
             },
         },
     };

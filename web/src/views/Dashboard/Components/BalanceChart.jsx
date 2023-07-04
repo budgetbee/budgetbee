@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import numeral from "numeral";
-import "numeral/locales/es";
+// import "numeral/locales/es";
 
 import Api from "../../../Api/Endpoints";
 import DatesSelect from "../../../Components/Miscellaneous/DatesSelect";
@@ -12,7 +12,7 @@ export default function BalanceChart({ activeAccount }) {
     const [balance, setBalance] = useState(null);
     const [fromDate, setFromDate] = useState(null);
 
-    numeral.locale("es");
+    // numeral.locale("es");
 
     useEffect(() => {
         async function getTimelineBalance() {
@@ -34,7 +34,7 @@ export default function BalanceChart({ activeAccount }) {
             <div className="flex flex-col gap-y-2 p-4 bg-gray-700 rounded py-4">
                 <div className="flex flex-row justify-between items-center text-white text-2xl ">
                     <div className="font-bold">
-                        {numeral(balance).format("0,0.[00]")} €
+                        {numeral(balance).format("$0,0.00 a")}
                     </div>
                     <div>
                         <DatesSelect setDates={setFromDate} />
