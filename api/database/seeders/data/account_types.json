@@ -3,24 +3,24 @@
         "name": "General"
     },
     {
-        "name": "Efectivo"
+        "name": "Cash"
     },
     {
-        "name": "Cuenta corriente"
+        "name": "Checking account"
     },
     {
-        "name": "Tarjeta de credito"
+        "name": "Credit card"
     },
     {
-        "name": "Ahorros"
+        "name": "Savings"
     },
     {
-        "name": "Inversion"
+        "name": "Investment"
     },
     {
-        "name": "Prestamo"
+        "name": "Loan"
     },
     {
-        "name": "Hipoteca"
+        "name": "Mortgage"
     }
 ]
