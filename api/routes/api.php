@@ -7,6 +7,7 @@ use App\Http\Controllers\RecordController;
 use App\Http\Controllers\BalanceController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,12 +20,12 @@ use App\Http\Controllers\AuthController;
 |
 */
 
-// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
-
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+
+Route::prefix('user')->middleware('auth:sanctum')->group(function () {
+    Route::get('', [UserController::class, 'get']);
+});
 
 Route::prefix('account')->middleware('auth:sanctum')->group(function () {
     Route::get('', [AccountController::class, 'get']);
