@@ -1,7 +1,6 @@
 import { React, useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 
-// Import Swiper styles
 import "swiper/css";
 import "swiper/css/free-mode";
 import "swiper/css/pagination";
@@ -33,7 +32,6 @@ export default function Accounts({ activeAccount, setActiveAccount }) {
         e.preventDefault();
         const formData = new FormData(e.target);
         const formObject = Object.fromEntries(formData.entries());
-        console.log(formObject);
         await Api.accountAdjustBalance(formObject, activeAccount);
         setActiveAccount(null);
         setAdjustBalanceOpen(false);
@@ -48,7 +46,7 @@ export default function Accounts({ activeAccount, setActiveAccount }) {
             className="w-fit m-auto px-4 my-2 py-2 border border-indigo-300 rounded text-indigo-300"
             onClick={() => setAdjustBalanceOpen(true)}
         >
-            AJUSTAR
+            ADJUST
         </div>
     );
 
@@ -72,7 +70,7 @@ export default function Accounts({ activeAccount, setActiveAccount }) {
                         type="submit"
                         class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
                     >
-                        AJUSTAR
+                        SAVE
                     </button>
                 </div>
             </form>

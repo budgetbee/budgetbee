@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import numeral from "numeral";
-import "numeral/locales/es";
+// import "numeral/locales/es";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import Api from "../../../Api/Endpoints";
@@ -15,11 +15,14 @@ export default function CategoryRecords({ activeAccount }) {
     const [expandedItems, setExpandedItems] = useState([]);
     const [fromDate, setFromDate] = useState(null);
 
-    numeral.locale("es");
+    // numeral.locale("es");
 
     useEffect(() => {
         async function getBalanceByCategory() {
-            const data = await Api.getBalanceByCategory(activeAccount, fromDate);
+            const data = await Api.getBalanceByCategory(
+                activeAccount,
+                fromDate
+            );
             setData(Object.entries(data));
             setIsLoading(false);
         }
@@ -61,7 +64,7 @@ export default function CategoryRecords({ activeAccount }) {
                 onClick={handleHideRecords}
             >
                 <div className="w-11/12 bg-gray-900 text-white rounded">
-                    <div className="px-5 py-3 text-xl">Registros</div>
+                    <div className="px-5 py-3 text-xl">Records</div>
                     <div className="max-h-96 overflow-auto w-full bg-black block">
                         <div className="records">
                             {records.map((record, index) => {
@@ -81,17 +84,12 @@ export default function CategoryRecords({ activeAccount }) {
         );
     }
 
-    console.log(data);
-
     return (
         <div>
             {showRecords && recordsModal}
             <div className="flex flex-col gap-y-3 p-4 bg-gray-700 rounded py-4 text-white text-lg">
                 <div className="flex flex-row justify-between items-center text-white text-2xl pb-4">
-                    <div className="font-bold">
-                        {/* {numeral(balance).format("0,0.[00]")} € */}
-                        Gastos
-                    </div>
+                    <div className="font-bold">Expenses</div>
                     <div>
                         <DatesSelect setDates={setFromDate} />
                     </div>
@@ -99,7 +97,10 @@ export default function CategoryRecords({ activeAccount }) {
                 <div className="flex flex-col divide-y divide-gray-500">
                     {data.map(([key, type]) => {
                         return (
-                            <div key={key} className="flex flex-col gap-y-3 py-5">
+                            <div
+                                key={key}
+                                className="flex flex-col gap-y-3 py-5"
+                            >
                                 {Object.entries(type).map(
                                     ([keyParent, parent]) => {
                                         const isExpanded =
@@ -131,10 +132,7 @@ export default function CategoryRecords({ activeAccount }) {
                                                     <div>
                                                         {numeral(
                                                             parent.total
-                                                        ).format(
-                                                            "0,0.[00]"
-                                                        )}{" "}
-                                                        €
+                                                        ).format("$0,0.00 a")}
                                                     </div>
                                                 </div>
                                                 <div
@@ -178,9 +176,8 @@ export default function CategoryRecords({ activeAccount }) {
                                                                         {numeral(
                                                                             children.total
                                                                         ).format(
-                                                                            "0,0.[00]"
-                                                                        )}{" "}
-                                                                        €
+                                                                            "$0,0.00 a"
+                                                                        )}
                                                                     </div>
                                                                 </div>
                                                             );

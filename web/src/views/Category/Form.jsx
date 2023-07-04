@@ -119,7 +119,7 @@ export default function Form() {
                         </label>
                         <div className="flex flex-row gap-x-5 justify-between items-center">
                             <div>
-                                <FontAwesomeIcon icon="fa-solid fa-key" className={"text-white text-2xl"} />
+                                <FontAwesomeIcon icon={category && category.icon} className={"text-white text-2xl"} />
                             </div>
                             <input
                                 type="text"

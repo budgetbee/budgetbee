@@ -7,7 +7,7 @@ export default function CardMini({ account, isGray }) {
         backgroundColor: bgColor,
     };
 
-    numeral.locale("es");
+    // numeral.locale("es");
 
     return (
         <div
@@ -17,7 +17,7 @@ export default function CardMini({ account, isGray }) {
             <div className="text-sm text-white/70 h-7 overflow-hidden">
                 {account.name}
             </div>
-            <div>{numeral(account.balance).format("0,0.[00]")} €</div>
+            <div>{numeral(account.balance).format("$0,0.00")}</div>
         </div>
     );
 }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import numeral from "numeral";
-import "numeral/locales/es";
+// import "numeral/locales/es";
 
 import Api from "../../../Api/Endpoints";
 import DoughnutChart from "../../../Components/Chart/DoughnutChart";
@@ -14,7 +14,7 @@ export default function CategoryChart({ activeAccount }) {
     const [fromDate, setFromDate] = useState(null);
     const [parentCategory, setParentCategory] = useState(null);
 
-    numeral.locale("es");
+    // numeral.locale("es");
 
     useEffect(() => {
         async function getCategoriesBalance() {
@@ -74,7 +74,7 @@ export default function CategoryChart({ activeAccount }) {
             <div className="flex flex-col gap-x-2 p-4 bg-gray-700 rounded py-4">
                 <div className="flex flex-row justify-between items-center text-white text-2xl pb-4">
                     <div className="font-bold">
-                        {numeral(expensesBalance).format("0,0.[00]")} €
+                        {numeral(expensesBalance).format("$0,0.00 a")}
                     </div>
                     <div>
                         <DatesSelect setDates={setFromDate} />

@@ -73,7 +73,7 @@ export default function DoughnutChart({ data, setParentKey }) {
                     className="absolute top-0 right-0 bg-gray-900 text-gray-300 px-4 py-2 rounded"
                     onClick={handleZoomout}
                 >
-                    Volver
+                    Back
                 </div>
             )}
             <Doughnut
