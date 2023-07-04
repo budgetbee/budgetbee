@@ -24,7 +24,6 @@ export default function Calculator({ value, setValue }) {
 
     const handleNumberClick = (keyValue) => {
         setCurrentValue((prevValue) => {
-            console.log(prevValue.toString() + keyValue);
             let newValue = prevValue.toString() + keyValue;
             newValue = (keyValue != 0) ? parseFloat(newValue) : newValue;
             newValue = (keyValue == 0 && prevValue == 0) ? 0 : newValue;
