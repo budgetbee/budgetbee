@@ -33,7 +33,9 @@ services:
       - skynet
 
   app:
-    build: ./web
+    build:
+      context: ./web
+      dockerfile: Dockerfile.dev
     volumes:
       - ./web:/var/www/html
     ports:
