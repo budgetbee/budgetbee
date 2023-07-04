@@ -169,11 +169,11 @@ export default function Form() {
                                     ? "-"
                                     : ""}
                             </div>
+                            <div className="2/12 text-4xl">$</div>
                             <div className="basis-9/12 text-right">
                                 {amount}
                             </div>
                             <input type="hidden" name="amount" value={amount} />
-                            <div className="2/12 text-4xl">EUR</div>
                         </div>
                         <div className="basis-2/12 flex flex-row text-center items-center">
                             <div className="basis-1/2 flex flex-col">
@@ -184,6 +184,7 @@ export default function Form() {
                                     <select
                                         name="from_account_id"
                                         id="from_account_id"
+                                        required="required"
                                         className="text-center appearance-none bg-transparent"
                                     >
                                         {accounts.map((acc, index) => {
@@ -211,6 +212,7 @@ export default function Form() {
                                         <select
                                             name="to_account_id"
                                             id="to_account_id"
+                                            required="required"
                                             className="text-center appearance-none bg-transparent"
                                         >
                                             {accounts.map((acc, index) => {
