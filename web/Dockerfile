@@ -11,8 +11,14 @@ RUN npm install
 # add app
 COPY . .
 
+# build the React app
+RUN npm run build
+
+# remove development dependencies
+RUN npm prune --omit=dev
+
 # port
 EXPOSE 3000
 
-# start app
-CMD ["npm", "start"]
+# start the built app
+CMD ["npm", "run", "serve"]
