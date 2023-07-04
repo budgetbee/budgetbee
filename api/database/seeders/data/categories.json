@@ -1,257 +1,308 @@
 [
     {
-        "name": "Transferencia",
+        "id": 1,
+        "name": "Transfer",
         "color": "#1b1b1b",
         "icon": "fa-solid fa-money-bill-transfer",
         "categories": [
             {
-                "name": "Transferencia",
+                "id": 1,
+                "name": "Transfer",
                 "icon": "fa-solid fa-money-bill-transfer"
             }
         ]
     },
     {
-        "name": "Casa",
+        "id": 2,
+        "name": "Home",
         "color": "#ffab0c",
         "icon": "fa-solid fa-house",
         "categories": [
             {
-                "name": "Alquiler",
+                "id": 2,
+                "name": "Rent",
                 "icon": "fa-solid fa-key"
             },
             {
-                "name": "Suministros",
+                "id": 3,
+                "name": "Supplies",
                 "icon": "fa-solid fa-lightbulb"
             },
             {
-                "name": "Reparaciones",
+                "id": 4,
+                "name": "Repairs",
                 "icon": "fa-solid fa-screwdriver-wrench"
             }
         ]
     },
     {
-        "name": "Vehiculo",
-        "color": "#9f0cff",
+        "id": 3,
+        "name": "Vehicle",
+        "color": "#470cff",
         "icon": "fa-solid fa-car",
         "categories": [
             {
-                "name": "Gasolina",
+                "id": 5,
+                "name": "Fuel",
                 "icon": "fa-solid fa-gas-pump"
             },
             {
-                "name": "Mantenimiento",
+                "id": 6,
+                "name": "Maintenance",
                 "icon": "fa-solid fa-screwdriver-wrench"
             },
             {
-                "name": "Prestamo",
+                "id": 7,
+                "name": "Loan",
                 "icon": "fa-solid fa-key"
             },
             {
-                "name": "Seguro",
+                "id": 8,
+                "name": "Insurance",
                 "icon": "fa-solid fa-sheet-plastic"
             },
             {
-                "name": "Impuestos",
+                "id": 9,
+                "name": "Taxes",
                 "icon": "fa-solid fa-money-bill-1-wave"
             },
             {
+                "id": 10,
                 "name": "Parking",
                 "icon": "fa-solid fa-square-parking"
             }
         ]
     },
     {
-        "name": "Compras",
+        "id": 4,
+        "name": "Shopping",
         "color": "#0cc5ff",
         "icon": "fa-solid fa-shop",
         "categories": [
             {
-                "name": "Ropa",
+                "id": 11,
+                "name": "Clothing",
                 "icon": "fa-solid fa-shirt"
             },
             {
-                "name": "Electronica y accesorios",
+                "id": 12,
+                "name": "Electronics and accessories",
                 "icon": "fa-solid fa-laptop"
             },
             {
-                "name": "Juegos",
+                "id": 13,
+                "name": "Games",
                 "icon": "fa-solid fa-gamepad"
             },
             {
-                "name": "Regalos",
+                "id": 14,
+                "name": "Gifts",
                 "icon": "fa-solid fa-gift"
             },
             {
-                "name": "Belleza y salud",
+                "id": 15,
+                "name": "Beauty and health",
                 "icon": "fa-solid fa-spray-can-sparkles"
             },
             {
-                "name": "Hogar",
+                "id": 16,
+                "name": "Home",
                 "icon": "fa-solid fa-house"
             },
             {
-                "name": "Mascotas",
+                "id": 17,
+                "name": "Pets",
                 "icon": "fa-solid fa-dog"
             },
             {
-                "name": "Herramientas",
+                "id": 18,
+                "name": "Tools",
                 "icon": "fa-solid fa-toolbox"
             }
         ]
     },
     {
-        "name": "Comida y bebida",
+        "id": 5,
+        "name": "Food and Drink",
         "color": "#ff0c1c",
         "icon": "fa-solid fa-beer-mug-empty",
         "categories": [
             {
-                "name": "Bar, cafe",
+                "id": 19,
+                "name": "Bar, coffe",
                 "icon": "fa-solid fa-beer-mug-empty"
             },
             {
-                "name": "Supermercado",
+                "id": 20,
+                "name": "Supermarket",
                 "icon": "fa-solid fa-basket-shopping"
             },
             {
-                "name": "Restaurante",
+                "id": 21,
+                "name": "Restaurant",
                 "icon": "fa-solid fa-utensils"
             }
         ]
     },
     {
-        "name": "Entretenimiento",
+        "id": 6,
+        "name": "Entertainment",
         "color": "#0cff2c",
         "icon": "fa-solid fa-person",
         "categories": [
             {
-                "name": "Deporte",
+                "id": 22,
+                "name": "Sports",
                 "icon": "fa-solid fa-dumbbell"
             },
             {
-                "name": "Fiesta",
+                "id": 23,
+                "name": "Party",
                 "icon": "fa-solid fa-champagne-glasses"
             },
             {
-                "name": "Libros",
+                "id": 24,
+                "name": "Books",
                 "icon": "fa-solid fa-book-open"
             },
             {
-                "name": "Cultura y eventos deportivos",
+                "id": 25,
+                "name": "Culture and sports events",
                 "icon": "fa-solid fa-calendar-days"
             },
             {
-                "name": "Vacaciones",
+                "id": 26,
+                "name": "Holidays",
                 "icon": "fa-solid fa-plane-departure"
             },
             {
-                "name": "Eventos",
+                "id": 27,
+                "name": "Events",
                 "icon": "fa-solid fa-cake-candles"
             },
             {
-                "name": "Subscripciones",
+                "id": 28,
+                "name": "Subscriptions",
                 "icon": "fa-solid fa-tv"
             }
         ]
     },
     {
-        "name": "Comunicaciones",
+        "id": 7,
+        "name": "Communications",
         "color": "#570cff",
         "icon": "fa-solid fa-desktop",
         "categories": [
             {
+                "id": 29,
                 "name": "Internet",
                 "icon": "fa-solid fa-wifi"
             },
             {
-                "name": "Telefono",
+                "id": 30,
+                "name": "Phone",
                 "icon": "fa-solid fa-phone"
-            },
-            {
-                "name": "Hosting",
-                "icon": "fa-solid fa-server"
             }
         ]
     },
     {
-        "name": "Gastos financieros",
+        "id": 8,
+        "name": "Financial expenses",
         "color": "#0cffa1",
         "icon": "fa-solid fa-coins",
         "categories": [
             {
-                "name": "Impuestos",
+                "id": 31,
+                "name": "Taxes",
                 "icon": "fa-solid fa-landmark"
             },
             {
-                "name": "Multas",
+                "id": 32,
+                "name": "Fines",
                 "icon": "fa-solid fa-handcuffs"
             },
             {
-                "name": "Seguros",
+                "id": 33,
+                "name": "Insurance",
                 "icon": "fa-solid fa-sheet-plastic"
             }
         ]
     },
     {
-        "name": "Inversiones",
+        "id": 9,
+        "name": "Investments",
         "color": "#ff0ce1",
         "icon": "fa-solid fa-arrow-trend-up",
         "categories": [
             {
+                "id": 34,
                 "name": "Stocks",
                 "icon": "fa-solid fa-chart-line"
             },
             {
-                "name": "Vehiculos",
+                "id": 35,
+                "name": "Vehicles",
                 "icon": "fa-solid fa-car"
             },
             {
-                "name": "Propiedades",
+                "id": 36,
+                "name": "Real state",
                 "icon": "fa-solid fa-house-chimney-window"
             }
         ]
     },
     {
-        "name": "Ingresos",
-        "color": "#fff30c",
+        "id": 10,
+        "name": "Incomes",
+        "color": "#b0ba00",
         "icon": "fa-solid fa-money-bill",
         "categories": [
             {
-                "name": "Salario",
+                "id": 37,
+                "name": "Salary",
                 "icon": "fa-solid fa-briefcase"
             },
             {
-                "name": "Devoluciones impuestos",
+                "id": 38,
+                "name": "Tax refunds",
                 "icon": "fa-solid fa-building-columns"
             },
             {
-                "name": "Dividendos",
+                "id": 39,
+                "name": "Dividends",
                 "icon": "fa-solid fa-arrow-trend-up"
             },
             {
-                "name": "Ventas",
+                "id": 40,
+                "name": "Sales",
                 "icon": "fa-solid fa-scale-balanced"
             },
             {
-                "name": "Regalos",
+                "id": 41,
+                "name": "Gifts",
                 "icon": "fa-solid fa-gift"
             },
             {
-                "name": "Trabajos extra",
+                "id": 42,
+                "name": "Extra jobs",
                 "icon": "fa-solid fa-money-bill"
             }
         ]
     },
     {
-        "name": "Otros",
+        "id": 11,
+        "name": "Others",
         "color": "#6b6b6b",
         "icon": "fa-solid fa-bars",
         "categories": [
             {
-                "name": "Perdido",
+                "id": 43,
+                "name": "Lost",
                 "icon": "fa-solid fa-bars"
             },
             {
-                "name": "Desconocido",
+                "id": 44,
+                "name": "Unknown",
                 "icon": "fa-solid fa-question"
             }
         ]

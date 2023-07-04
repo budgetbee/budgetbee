@@ -12,7 +12,7 @@ class Category extends Model
      * @var string[]
      */
     protected $fillable = [
-        'name', 'icon', 'parent_category_id'
+        'id', 'name', 'icon', 'parent_category_id'
     ];
 
     protected $appends = ['color', 'parent_name'];
@@ -33,5 +33,4 @@ class Category extends Model
     {
         return $this->parent->name;
     }
-
 }

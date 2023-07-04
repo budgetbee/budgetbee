@@ -22,6 +22,7 @@ class CategoriesSeeder extends Seeder
         foreach ($data as $parentCategory) {
             $newParentCategory = new ParentCategory();
             $newParentCategory->fill([
+                'id' => $parentCategory['id'],
                 'name' => $parentCategory['name'],
                 'color' => $parentCategory['color'],
                 'icon' => $parentCategory['icon']
@@ -31,6 +32,7 @@ class CategoriesSeeder extends Seeder
             foreach ($parentCategory['categories'] as $category) {
                 $newCategory = new Category();
                 $newCategory->fill([
+                    'id' => $category['id'],
                     'parent_category_id' => $newParentCategory->id,
                     'name' => $category['name'],
                     'icon' => $category['icon']
