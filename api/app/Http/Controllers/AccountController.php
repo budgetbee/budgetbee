@@ -64,8 +64,6 @@ class AccountController extends Controller
         $account->fill($data);
         $account->save();
         
-        $data = $request->toArray();
-
         return response()->json($account);
     }
 
