@@ -274,7 +274,3 @@ sleep 5
 ${DOCKER_COMPOSE_CMD} run --rm php php artisan migrate
 ${DOCKER_COMPOSE_CMD} run --rm php php artisan db:seed
 ${DOCKER_COMPOSE_CMD} run --rm php php scripts/create_user.php $USERNAME $EMAIL $PASSWORD
-
-${DOCKER_COMPOSE_CMD} run --rm app npm run build
-${DOCKER_COMPOSE_CMD} run --rm app npm prune --omit=dev
-${DOCKER_COMPOSE_CMD} run --rm app npm run serve
