@@ -20,7 +20,7 @@ The easiest way to install BudgetBee is by using an installation script. Just ru
 bash -c "$(curl -L https://raw.githubusercontent.com/budgetbee/budgetbee/main/install.sh)"
 ```
 
-BudgetBee is installed via docker-compose, if you want to do an installation from e.g. Portainer, copy the [`/docker/compose` file](https://github.com/budgetbee/budgetbee/tree/main/docker/docker-compose) file, populate the variables and deploy it in your portainer application.
+BudgetBee is installed via docker-compose, if you want to do an installation from e.g. Portainer, copy the [`/docker/compose` file](https://github.com/budgetbee/budgetbee/tree/main/docker/docker-compose.yml) file, populate the variables and deploy it in your portainer application.
 
 ## Updates
 
