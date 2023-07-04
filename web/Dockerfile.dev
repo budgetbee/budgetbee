@@ -9,7 +9,7 @@ COPY package.json package-lock.json ./
 RUN npm install
 
 # add app
-COPY ../../../web .
+COPY . .
 
 # port
 EXPOSE 3000
