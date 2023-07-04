@@ -20,7 +20,7 @@ return new class extends Migration
             $table->unsignedBigInteger('to_account_id')->nullable();
             $table->string('type');
             $table->unsignedBigInteger('category_id');
-            $table->string('name');
+            $table->string('name')->nullable();
             $table->float('amount');
             $table->string('bank_code')->nullable();
             $table->text('description')->nullable();
