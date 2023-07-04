@@ -39,6 +39,20 @@ const Endpoints = {
         }
     },
 
+    getUser: async () => {
+        try {
+            const response = await axios.get(
+                `${API_BASE_URL}/user`,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            console.error(error);
+            return null;
+        }
+    },
+
     getAccounts: async () => {
         try {
             const response = await axios.get(
