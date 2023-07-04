@@ -76,6 +76,7 @@ export default function Form() {
                             type="text"
                             name="name"
                             id="name"
+                            required="required"
                             className="block w-full p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500"
                             defaultValue={account && account.name}
                         ></input>
@@ -91,6 +92,7 @@ export default function Form() {
                         <select
                             name="type_id"
                             id="type_id"
+                            required="required"
                             className="block w-full px-4 py-4 text-base text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
                             defaultValue={account && account.type_id}
                         >
@@ -137,6 +139,7 @@ export default function Form() {
                             type="color"
                             name="color"
                             id="color"
+                            required="required"
                             className="block w-full h-12"
                             defaultValue={account && account.color}
                         />
