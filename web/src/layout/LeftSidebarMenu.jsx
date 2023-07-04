@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link } from "react-router-dom";
 import {
@@ -8,8 +8,19 @@ import {
     faBars,
 } from "@fortawesome/free-solid-svg-icons";
 
+import Api from "../Api/Endpoints";
+
 export default function LeftSidebarMenu({ open, setOpen, activePage }) {
     const menuRef = useRef();
+    const [userName, setUserName] = useState('');
+
+    useEffect(() => {
+        async function getUser() {
+            const data = await Api.getUser();
+            setUserName(data.name);
+        }
+        getUser();
+    }, []);
 
     const links = {
         dashboard: {
@@ -19,19 +30,19 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
             color: "text-pink-400",
         },
         accounts: {
-            name: "Cuentas",
+            name: "Accounts",
             href: "/accounts",
             icon: faMoneyCheck,
             color: "text-red-400",
         },
-        rules: {
-            name: "Reglas",
-            href: "/rule",
-            icon: faRobot,
-            color: "text-green-400",
-        },
+        // rules: {
+        //     name: "Rules",
+        //     href: "/rule",
+        //     icon: faRobot,
+        //     color: "text-green-400",
+        // },
         categories: {
-            name: "Categorias",
+            name: "Categories",
             href: "/category/list",
             icon: faBars,
             color: "text-orange-400",
@@ -60,7 +71,7 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
             >
                 {/* Sidebar Header */}
                 <div className="flex items-center justify-between p-4 bg-gray-900">
-                    <h1 className="text-white text-xl font-semibold">Menu</h1>
+                    <h1 className="text-white text-xl font-semibold">{userName}</h1>
                     <button
                         className="text-white"
                         onClick={() => setOpen(false)}
