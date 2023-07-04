@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "5cac9f24-a1c4-4d0c-8a9a-818e94445af8",
+		"_postman_id": "b3b1be06-26c6-4c13-bd0e-018f114785ea",
 		"name": "BudgetBee",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "13784776"
+		"_exporter_id": "21817761"
 	},
 	"item": [
 		{
@@ -157,34 +157,18 @@
 					"response": []
 				},
 				{
-					"name": "Create Account Copy",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Binance\",\r\n    \"type_id\": 1,\r\n    \"color\": \"#eb9218\",\r\n    \"initial_balance\": 103.97\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{HOST}}/account",
-							"host": [
-								"{{HOST}}"
-							],
-							"path": [
-								"account"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Update Account",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -271,7 +255,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "/C:/Users/aleja/Downloads/export2023516.xls"
+									"src": ""
 								}
 							]
 						},
@@ -849,6 +833,42 @@
 			"name": "User",
 			"item": [
 				{
+					"name": "Get User",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{HOST}}/user",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Login",
 					"request": {
 						"method": "POST",
@@ -858,7 +878,7 @@
 							"formdata": [
 								{
 									"key": "email",
-									"value": "alejandrorecio.r@gmail.com",
+									"value": "example@example.com",
 									"type": "text"
 								},
 								{
