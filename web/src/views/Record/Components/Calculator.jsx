@@ -25,8 +25,8 @@ export default function Calculator({ value, setValue }) {
     const handleNumberClick = (keyValue) => {
         setCurrentValue((prevValue) => {
             let newValue = prevValue.toString() + keyValue;
-            newValue = keyValue != 0 ? parseFloat(newValue) : newValue;
-            newValue = keyValue == 0 && prevValue == 0 ? 0 : newValue;
+            newValue = (keyValue != 0) ? parseFloat(newValue) : newValue;
+            newValue = (keyValue == 0 && prevValue == 0) ? 0 : newValue;
             setValue(newValue);
             return newValue;
         });
@@ -110,7 +110,7 @@ export default function Calculator({ value, setValue }) {
                 <div
                     data-key-type="number"
                     data-key="7"
-                    className="flex h-full hover:bg-black/10"
+                    className="flex h-full"
                 >
                     <div data-key-type="number" data-key="7" className="m-auto">
                         7
@@ -119,105 +119,75 @@ export default function Calculator({ value, setValue }) {
                 <div
                     data-key-type="number"
                     data-key="8"
-                    className="flex h-full hover:bg-black/10"
+                    className="flex h-full"
                 >
-                    <div data-key-type="number" data-key="8" className="m-auto">
-                        8
-                    </div>
+                    <div data-key-type="number" data-key="8"  className="m-auto">8</div>
                 </div>
                 <div
                     data-key-type="number"
                     data-key="9"
-                    className="flex h-full hover:bg-black/10"
+                    className="flex h-full"
                 >
-                    <div data-key-type="number" data-key="9" className="m-auto">
-                        9
-                    </div>
+                    <div data-key-type="number" data-key="9" className="m-auto">9</div>
                 </div>
                 <div
                     data-key-type="number"
                     data-key="4"
-                    className="flex h-full hover:bg-black/10"
+                    className="flex h-full"
                 >
-                    <div data-key-type="number" data-key="4" className="m-auto">
-                        4
-                    </div>
+                    <div data-key-type="number" data-key="4" className="m-auto">4</div>
                 </div>
                 <div
                     data-key-type="number"
                     data-key="5"
-                    className="flex h-full hover:bg-black/10"
+                    className="flex h-full"
                 >
-                    <div data-key-type="number" data-key="5" className="m-auto">
-                        5
-                    </div>
+                    <div data-key-type="number" data-key="5" className="m-auto">5</div>
                 </div>
                 <div
                     data-key-type="number"
                     data-key="6"
-                    className="flex h-full hover:bg-black/10"
+                    className="flex h-full"
                 >
-                    <div data-key-type="number" data-key="6" className="m-auto">
-                        6
-                    </div>
+                    <div data-key-type="number" data-key="6" className="m-auto">6</div>
                 </div>
                 <div
                     data-key-type="number"
                     data-key="1"
-                    className="flex h-full hover:bg-black/10"
+                    className="flex h-full"
                 >
-                    <div data-key-type="number" data-key="1" className="m-auto">
-                        1
-                    </div>
+                    <div data-key-type="number" data-key="1" className="m-auto">1</div>
                 </div>
                 <div
                     data-key-type="number"
                     data-key="2"
-                    className="flex h-full hover:bg-black/10"
+                    className="flex h-full"
                 >
-                    <div data-key-type="number" data-key="2" className="m-auto">
-                        2
-                    </div>
+                    <div data-key-type="number" data-key="2" className="m-auto">2</div>
                 </div>
                 <div
                     data-key-type="number"
                     data-key="3"
-                    className="flex h-full hover:bg-black/10"
+                    className="flex h-full"
                 >
-                    <div data-key-type="number" data-key="3" className="m-auto">
-                        3
-                    </div>
+                    <div data-key-type="number" data-key="3" className="m-auto">3</div>
                 </div>
-                <div
-                    data-key-type="comma"
-                    data-key="."
-                    className="flex h-full hover:bg-black/10"
-                >
-                    <div data-key-type="comma" data-key="." className="m-auto">
-                        .
-                    </div>
+                <div data-key-type="comma" data-key="." className="flex h-full">
+                    <div data-key-type="comma" data-key="." className="m-auto">.</div>
                 </div>
                 <div
                     data-key-type="number"
                     data-key="0"
-                    className="flex h-full hover:bg-black/10"
+                    className="flex h-full"
                 >
-                    <div data-key-type="number" data-key="0" className="m-auto">
-                        0
-                    </div>
+                    <div data-key-type="number" data-key="0" className="m-auto">0</div>
                 </div>
                 <div
                     data-key-type="delete"
                     data-key="del"
-                    className="flex h-full hover:bg-black/10"
+                    className="flex h-full"
                 >
-                    <div
-                        data-key-type="delete"
-                        data-key="del"
-                        className="m-auto"
-                    >
-                        Del
-                    </div>
+                    <div data-key-type="delete" data-key="del" className="m-auto">Del</div>
                 </div>
             </div>
             {/* <div className="basis-1/4 grid grid-cols-1 text-2xl">
