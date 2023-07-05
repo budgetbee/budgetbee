@@ -185,12 +185,12 @@ export default function Form() {
                                         name="from_account_id"
                                         id="from_account_id"
                                         required="required"
-                                        className="text-center appearance-none bg-transparent"
+                                        className="text-center cursor-pointer appearance-none bg-transparent"
                                     >
                                         {accounts.map((acc, index) => {
                                             return (
                                                 <option
-                                                    className="text-black px-5"
+                                                    className="text-black p-5"
                                                     value={acc.id}
                                                     selected={
                                                         account === acc.id
@@ -213,7 +213,7 @@ export default function Form() {
                                             name="to_account_id"
                                             id="to_account_id"
                                             required="required"
-                                            className="text-center appearance-none bg-transparent"
+                                            className="text-center cursor-pointer appearance-none bg-transparent"
                                         >
                                             {accounts.map((acc, index) => {
                                                 return (
@@ -233,7 +233,7 @@ export default function Form() {
                                 </div>
                             ) : (
                                 <div
-                                    className="basis-1/2 flex flex-col"
+                                    className="basis-1/2 flex flex-col cursor-pointer"
                                     onClick={handleOpenCategory}
                                 >
                                     <div className="text-sm text-gray-300">
@@ -257,7 +257,7 @@ export default function Form() {
                                     <input
                                         type="date"
                                         name="date"
-                                        className="w-3/4 text-center appearance-none bg-transparent"
+                                        className="w-3/4 text-center cursor-pointer appearance-none bg-transparent"
                                         onChange={handleInputDate}
                                         value={
                                             date

@@ -38,7 +38,7 @@ export default function Form({ setOpen, setCategory }) {
     };
 
     const handleCategoryClick = (id, name) => {
-        setCategory({id: id, name: name});
+        setCategory({ id: id, name: name });
         setOpen(false);
     };
 
@@ -72,7 +72,7 @@ export default function Form({ setOpen, setCategory }) {
                     {categories.map((category, index) => {
                         return (
                             <div
-                                className="flex flex-row gap-x-5 items-center text-white"
+                                className="flex flex-row gap-x-5 items-center text-white cursor-pointer"
                                 index={index}
                                 onClick={() =>
                                     handleCategoryClick(
@@ -82,9 +82,11 @@ export default function Form({ setOpen, setCategory }) {
                                 }
                             >
                                 <div
-                                    className="w-12 h-12 rounded-full"
+                                    className="w-12 h-12 rounded-full flex items-center justify-center"
                                     style={{ background: category.color }}
-                                ></div>
+                                >
+                                    <FontAwesomeIcon icon={category.icon} />
+                                </div>
                                 <div>{category.name}</div>
                             </div>
                         );
@@ -108,16 +110,20 @@ export default function Form({ setOpen, setCategory }) {
                     {parentCategories.map((parentCategory, index) => {
                         return (
                             <div
-                                className="flex flex-row gap-x-5 items-center text-white"
+                                className="flex flex-row gap-x-5 items-center text-white cursor-pointer"
                                 index={index}
                                 onClick={() =>
                                     handleParentCategoryClick(parentCategory.id)
                                 }
                             >
                                 <div
-                                    className="w-12 h-12 rounded-full"
+                                    className="w-12 h-12 rounded-full flex items-center justify-center"
                                     style={{ background: parentCategory.color }}
-                                ></div>
+                                >
+                                    <FontAwesomeIcon
+                                        icon={parentCategory.icon}
+                                    />
+                                </div>
                                 <div>{parentCategory.name}</div>
                             </div>
                         );
@@ -127,5 +133,9 @@ export default function Form({ setOpen, setCategory }) {
         );
     }
 
-    return <div className="absolute bg-gray-800 top-0 left-0 w-full min-h-screen">{body}</div>;
+    return (
+        <div className="absolute bg-gray-800 top-0 left-0 w-full min-h-screen">
+            {body}
+        </div>
+    );
 }
