@@ -106,7 +106,7 @@ export default function Calculator({ value, setValue }) {
             className="flex flex-row h-full bg-black text-center text-4xl text-gray-400"
             onClick={handleClick}
         >
-            <div className="grow grid grid-cols-3 bg-gray-900 cursor-pointer">
+            <div className="grow grid grid-cols-3 bg-gray-900">
                 <div
                     data-key-type="number"
                     data-key="7"
