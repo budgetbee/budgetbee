@@ -110,22 +110,12 @@ echo ""
 
 
 
-ask "Port" "8895"
+ask "Web App Port" "8895"
 APP_PORT=$ask_result
 
-echo ""
-echo "Second, API PORT"
-echo ""
 
-ask "Port" "8085"
+ask "Api Port" "8085"
 API_PORT=$ask_result
-
-echo ""
-echo "And third, DB PORT"
-echo ""
-
-ask "Port" "3307"
-DB_PORT=$ask_result
 
 echo ""
 echo "BudgetBee requires the current time zone."
@@ -208,7 +198,6 @@ echo ""
 echo "Target folder: $TARGET_FOLDER"
 echo "Web port: $APP_PORT"
 echo "Api port: $API_PORT"
-echo "DB port: $DB_PORT"
 echo "Timezone: $TIME_ZONE"
 echo "budgetbee username: $USERNAME"
 echo "budgetbee email: $EMAIL"
@@ -225,7 +214,7 @@ mkdir -p "$TARGET_FOLDER"
 cd "$TARGET_FOLDER"
 
 wget "https://raw.githubusercontent.com/budgetbee/budgetbee/main/docker/docker-compose.yml" -O docker-compose.yml
-wget "https://raw.githubusercontent.com/budgetbee/budgetbee/main/.env.example" -O .env
+wget "https://raw.githubusercontent.com/budgetbee/budgetbee/main/docker/.env.example" -O .env
 wget "https://raw.githubusercontent.com/budgetbee/budgetbee/main/docker/nginx/nginx.conf" -O default.conf
 
 SECRET_KEY=$(tr --delete --complement 'a-zA-Z0-9' < /dev/urandom 2>/dev/null | head --bytes 64)
@@ -240,7 +229,6 @@ sed -i "s/DB_PASSWORD=password/DB_PASSWORD=$DB_PASSWORD/g" .env
 sed -i "s/DB_ROOT_PASSWORD=root_password/DB_ROOT_PASSWORD=$DB_ROOT_PASSWORD/g" .env
 sed -i "s/APP_PORT=8895/APP_PORT=$APP_PORT/g" .env
 sed -i "s/API_PORT=8085/API_PORT=$API_PORT/g" .env
-sed -i "s/DB_PORT=3307/DB_PORT=$DB_PORT/g" .env
 
 # If the database folder was provided (not blank), replace the pgdata/db_data volume with a bind mount# of the provided folder
 if [[ -n $DATABASE_FOLDER ]] ; then
