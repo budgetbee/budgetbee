@@ -101,18 +101,8 @@ IP=$(hostname -I | awk '{print $1}')
 ask "ip" "$IP"
 IP=$IP
 
-echo ""
-echo "Ports."
-echo "First, config the web app PORT"
-echo ""
-
-
-
-
-
 ask "Web App Port" "8895"
 APP_PORT=$ask_result
-
 
 ask "Api Port" "8085"
 API_PORT=$ask_result
