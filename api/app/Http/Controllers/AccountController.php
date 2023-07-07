@@ -86,17 +86,20 @@ class AccountController extends Controller
 
     public function getRecords(Request $request, $id)
     {
-        $perPage = 20; // Número de registros por página
-        $page = $request->query('page', 1); // Página actual, por defecto es 1
-
         $records = Record::where('from_account_id', $id)
-            ->where('user_id', $request->user()->id)
-            ->skip(($page - 1) * $perPage) // Saltar registros anteriores
-            ->take($perPage) // Tomar solo la cantidad especificada de registros
-            ->orderByDesc('date')
-            ->get();
+            ->where('user_id', $request->user()->id);
+        
+        $page = $request->query('page');
+        if ($page > 0) {
+            $perPage = 20;
+            $records->skip(($page - 1) * $perPage)
+                ->take($perPage);
+        }
+        
+        $data = $records->orderByDesc('date')
+        ->get();
 
-        return response()->json($records);
+        return response()->json($data);
     }
 
 
