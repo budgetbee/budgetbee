@@ -5,6 +5,7 @@ import numeral from "numeral";
 import Api from "../../../Api/Endpoints";
 import DatesSelect from "../../../Components/Miscellaneous/DatesSelect";
 import LineChart from "../../../Components/Chart/LineChart";
+import Loader from "../../../Components/Miscellaneous/Loader";
 
 export default function BalanceChart({ activeAccount }) {
     const [isLoading, setIsLoading] = useState(true);
@@ -25,8 +26,9 @@ export default function BalanceChart({ activeAccount }) {
         getTimelineBalance();
     }, [activeAccount, fromDate]);
 
-    if (isLoading) {
-        return <></>;
+    let chart = <Loader classes="w-20 mt-10" />;
+    if (!isLoading) {
+        chart = <LineChart data={data} />
     }
 
     return (
@@ -41,7 +43,7 @@ export default function BalanceChart({ activeAccount }) {
                     </div>
                 </div>
                 <div className="h-48">
-                    <LineChart data={data} />
+                    {chart}
                 </div>
             </div>
         </div>
