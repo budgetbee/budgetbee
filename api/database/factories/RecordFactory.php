@@ -38,15 +38,31 @@ class RecordFactory extends Factory
         $randomDate = $faker->dateTimeBetween($startDate, $endDate)->format('Y-m-d');
 
         $recordTypes = ['income', 'expense', 'transfer'];
+        $recordType = $recordTypes[array_rand($recordTypes)];
+
+        $toAccountId = null;
+        
+        switch ($recordType) {
+            case 'income':
+                $amount = $faker->randomFloat(2, 0, 500);
+                break;
+            case 'expense':
+                $amount = $faker->randomFloat(2, -300, 10);
+                break;
+            case 'transfer':
+                $amount = $faker->randomFloat(2, -300, 100);
+                $toAccountId = Account::inRandomOrder()->first()->id;
+        }
 
         return [
             'user_id' => $randomUser->id,
             'date' => $randomDate,
             'from_account_id' => $randomAccount->id,
-            'type' => $recordTypes[array_rand($recordTypes)],
+            'to_account_id' => $toAccountId,
+            'type' => $recordType,
             'category_id' => $randomCategory->id,
             'name' => $faker->text(),
-            'amount' => $faker->randomFloat(2, -3000, 5000)
+            'amount' => $amount
         ];
     }
 }

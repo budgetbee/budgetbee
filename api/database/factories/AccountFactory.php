@@ -36,7 +36,7 @@ class AccountFactory extends Factory
             'name' => $faker->creditCardType(),
             'type_id' => $randomType->id,
             'color' => $faker->hexcolor(),
-            'initial_balance' => $faker->randomFloat(2, -1000, 500000)
+            'initial_balance' => $faker->randomFloat(2, -100, 100)
         ];
     }
 }
