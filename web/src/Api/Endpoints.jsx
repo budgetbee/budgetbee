@@ -143,6 +143,23 @@ const Endpoints = {
         }
     },
 
+    getPaginateRecords: async (account_id, page) => {
+        try {
+            let param =
+                account_id > 0 ? `account/${account_id}/record` : `record`;
+
+            const response = await axios.get(
+                `${API_BASE_URL}/${param}?page=${page}`,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            console.error(error);
+            return null;
+        }
+    },
+
     getRecordById: async (id) => {
         try {
             const response = await axios.get(

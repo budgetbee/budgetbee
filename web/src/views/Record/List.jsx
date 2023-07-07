@@ -7,37 +7,53 @@ import TopNav from "../../layout/TopNav";
 import Loader from "../../Components/Miscellaneous/Loader";
 
 export default function List() {
-    const [isLoading, setIsLoading] = useState(true);
-    const [data, setData] = useState(null);
+    const [moreData, setMoreData] = useState(true);
+    const [data, setData] = useState([]);
+    const [page, setPage] = useState(1);
 
     const { account_id } = useParams();
 
     useEffect(() => {
         async function getRecords() {
-            const data = await Api.getRecords(account_id);
-            setData(data);
-            setIsLoading(false);
+            const newData = await Api.getPaginateRecords(account_id, page);
+            setData((prevData) => [...prevData, ...newData]);
+            if (newData.length === 0) {
+                setMoreData(false);
+            }
         }
         getRecords();
+    }, [page]);
+
+    function loadMore() {
+        if (
+            window.scrollY + window.innerHeight >=
+            document.documentElement.scrollHeight
+        ) {
+            setPage((prevPage) => prevPage + 1);
+        }
+    }
+
+    useEffect(() => {
+        window.addEventListener("scroll", loadMore);
+        return () => {
+            window.removeEventListener("scroll", loadMore);
+        };
     }, []);
 
-    let view = <Loader classes="w-20 mt-10" />
-
-    if (!isLoading) {
-        view = data.map((record, index) => {
-            return (
-                <div key={index}>
-                    <RecordCard record={record} showName={true} />
-                </div>
-            );
-        });
-    }
+    const view = data.map((record, index) => {
+        return (
+            <div key={index}>
+                <RecordCard record={record} showName={true} />
+            </div>
+        );
+    });
 
     return (
         <div className="absolute bg-gray-800 top-0 left-0 w-full min-h-screen">
             <TopNav />
             <div className="mt-14 flex flex-col divide-y divide-gray-600/50 rounded p-px">
                 {view}
+                {moreData && <Loader classes="w-10 my-5" />}
             </div>
         </div>
     );
