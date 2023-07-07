@@ -14,11 +14,21 @@ class RecordController extends Controller
      *
      * @return void
      */
-    public function get()
+    public function get(Request $request)
     {
-        $records = Record::orderByDesc('date')->get();
+        $records = Record::where('user_id', $request->user()->id);
+        
+        $page = $request->query('page');
+        if ($page > 0) {
+            $perPage = 20;
+            $records->skip(($page - 1) * $perPage)
+                ->take($perPage);
+        }
+        
+        $data = $records->orderByDesc('date')
+            ->get();
 
-        return response()->json($records);
+        return response()->json($data);
     }
 
     public function getById($id)
