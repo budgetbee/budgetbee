@@ -63,7 +63,7 @@ class AccountController extends Controller
         $account = Account::find($id);
         $account->fill($data);
         $account->save();
-        
+
         return response()->json($account);
     }
 
@@ -84,16 +84,26 @@ class AccountController extends Controller
         return response()->json($types);
     }
 
-    public function getRecords($id)
+    public function getRecords(Request $request, $id)
     {
-        $records = Record::where('from_account_id', $id)->get();
+        $perPage = 20; // Número de registros por página
+        $page = $request->query('page', 1); // Página actual, por defecto es 1
+
+        $records = Record::where('from_account_id', $id)
+            ->where('user_id', $request->user()->id)
+            ->skip(($page - 1) * $perPage) // Saltar registros anteriores
+            ->take($perPage) // Tomar solo la cantidad especificada de registros
+            ->orderByDesc('date')
+            ->get();
 
         return response()->json($records);
     }
 
-    public function getLastRecords($id, $number)
+
+    public function getLastRecords(Request $request, $id, $number)
     {
         $record = Record::where('from_account_id', $id)
+            ->where('user_id', $request->user()->id)
             ->orderByDesc('date')
             ->limit($number)
             ->get();
