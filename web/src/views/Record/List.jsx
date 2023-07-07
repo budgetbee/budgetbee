@@ -21,7 +21,9 @@ export default function List() {
                 setMoreData(false);
             }
         }
-        getRecords();
+        if (moreData === true) {
+            getRecords();
+        }
     }, [page]);
 
     function loadMore() {
