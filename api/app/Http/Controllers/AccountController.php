@@ -121,7 +121,6 @@ class AccountController extends Controller
             'from_account_id' => $account->id,
             'amount' => $amount,
             'type' => $type,
-            'name' => 'Ajuste',
             'category_id' => 44
         ]);
         $newRecord->save();
