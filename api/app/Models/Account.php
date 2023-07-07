@@ -4,11 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Database\Factories\AccountFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Account extends Model
 {
     use SoftDeletes;
+    use HasFactory;
     /**
      * The attributes that are mass assignable.
      *
@@ -21,6 +24,12 @@ class Account extends Model
     protected $appends = ['type_name', 'balance'];
 
     protected $hidden = ['type'];
+
+    protected static function newFactory(): Factory
+    {
+        return AccountFactory::new();
+    }
+
 
     public function type()
     {

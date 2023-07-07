@@ -3,9 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Database\Factories\RecordFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class Record extends Model
 {
+    use SoftDeletes;
+    use HasFactory;
     /**
      * The attributes that are mass assignable.
      *
@@ -18,6 +24,11 @@ class Record extends Model
     protected $appends = ['parent_category_icon', 'parent_category_name', 'parent_category_id', 'category_name', 'category_color', 'account_name', 'to_account_name', 'account_type_name', 'icon'];
 
     protected $hidden = ['category', 'account', 'toAccount'];
+
+    public static function newFactory(): Factory
+    {
+        return RecordFactory::new();
+    }
 
     public function category()
     {
