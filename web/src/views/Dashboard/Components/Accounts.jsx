@@ -82,7 +82,7 @@ export default function Accounts({ activeAccount, setActiveAccount }) {
             {adjustBalanceOpen && adjustBalanceForm}
             <Swiper
                 spaceBetween={10}
-                slidesPerView={3.5}
+                slidesPerView={2.5}
                 freeMode={true}
                 modules={[FreeMode, Pagination]}
             >
