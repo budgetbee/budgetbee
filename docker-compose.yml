@@ -1,5 +1,6 @@
 version: '3'
 services:
+
   nginx:
     image: nginx:1.25.1-alpine3.17-slim
     command: nginx -g "daemon off;"
@@ -26,13 +27,12 @@ services:
       DB_DATABASE: ${DB_DATABASE}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
-      MEMCACHED_HOST: cache
-      CACHE_DRIVER: memcached
     restart: unless-stopped
     networks:
       - skynet
+      - skynet_back
 
-  app:
+  web:
     build:
       context: ./web
       dockerfile: Dockerfile.dev
@@ -61,16 +61,11 @@ services:
     volumes:
       - db_data:/var/lib/mysql
     networks:
-      - skynet
-
-  cache:
-    image: memcached:1.6-alpine
-    restart: unless-stopped
-    networks:
-      - skynet
+      - skynet_back
 
 networks:
   skynet:
+  skynet_back:
 
 volumes:
   db_data:
