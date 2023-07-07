@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 
 import Api from "../../Api/Endpoints";
 import RecordCard from "../../Components/Record/Card";
+import Loader from "../../Components/Miscellaneous/Loader";
 
 // Icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -23,7 +24,8 @@ export default function List() {
         getRecords();
     }, []);
 
-    let view = "";
+    let view = <Loader classes="w-20 mt-10" />
+
     if (!isLoading) {
         view = data.map((record, index) => {
             return (
