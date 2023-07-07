@@ -113,7 +113,6 @@ class AccountController extends Controller
 
         $amount = $data['balance'] - $account->balance;
         $type = ($amount > 0) ? 'income' : 'expense';
-        $unknownCategory = Category::where('name', '=', 'Desconocido')->first()->id;
 
         $newRecord = new Record();
         $newRecord->fill([
@@ -123,7 +122,7 @@ class AccountController extends Controller
             'amount' => $amount,
             'type' => $type,
             'name' => 'Ajuste',
-            'category_id' => $unknownCategory
+            'category_id' => 44
         ]);
         $newRecord->save();
 
