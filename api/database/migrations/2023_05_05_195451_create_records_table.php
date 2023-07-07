@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('records', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
+            $table->softDeletes();
             $table->datetime('date');
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('from_account_id');
