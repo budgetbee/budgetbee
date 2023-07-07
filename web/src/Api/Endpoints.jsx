@@ -148,8 +148,10 @@ const Endpoints = {
             let param =
                 account_id > 0 ? `account/${account_id}/record` : `record`;
 
+            param += page > 0 ? `?page=${page}` : ''
+
             const response = await axios.get(
-                `${API_BASE_URL}/${param}?page=${page}`,
+                `${API_BASE_URL}/${param}`,
                 HEADERS
             );
             return response.data;
