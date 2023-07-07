@@ -5,6 +5,7 @@ import numeral from "numeral";
 import Api from "../../../Api/Endpoints";
 import DoughnutChart from "../../../Components/Chart/DoughnutChart";
 import DatesSelect from "../../../Components/Miscellaneous/DatesSelect";
+import Loader from "../../../Components/Miscellaneous/Loader";
 
 export default function CategoryChart({ activeAccount }) {
     const [isLoading, setIsLoading] = useState(true);
@@ -65,8 +66,9 @@ export default function CategoryChart({ activeAccount }) {
         }
     }, [parentCategory]);
 
-    if (isLoading) {
-        return <></>;
+    let chart = <Loader classes="w-20 mt-10" />;
+    if (!isLoading) {
+        chart = <DoughnutChart data={data} setParentKey={setParentCategory} />
     }
 
     return (
@@ -81,7 +83,7 @@ export default function CategoryChart({ activeAccount }) {
                     </div>
                 </div>
                 <div className="h-64">
-                    <DoughnutChart data={data} setParentKey={setParentCategory} />
+                    {chart}
                 </div>
             </div>
         </div>
