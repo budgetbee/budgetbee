@@ -4,7 +4,7 @@ import Api from "../../../Api/Endpoints";
 
 // Icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import TopNav from "../../../layout/TopNav";
 
 export default function Form({ setOpen, setCategory }) {
     const [isLoading, setIsLoading] = useState(true);
@@ -50,92 +50,48 @@ export default function Form({ setOpen, setCategory }) {
         setOpen(false);
     };
 
-    if (isLoading) {
-        return <></>;
+    let categoryList =
+        parentCategory !== null && categories !== null
+            ? categories
+            : parentCategories;
+
+    if (categoryList === null) {
+        categoryList = [];
     }
 
-    let body;
-
-    if (parentCategory !== null && categories !== null) {
-        body = (
-            <div className="">
-                <div className="flex flex-row h-12 bg-gray-700 items-center px-5">
-                    <div onClick={handleRemoveParentCategory}>
-                        <FontAwesomeIcon
-                            icon={faArrowLeft}
-                            className={"text-white text-2xl"}
-                        />
-                    </div>
-                    <div></div>
-                </div>
-                <div className="flex flex-col gap-y-5 text-xl p-5">
-                    {categories.map((category, index) => {
-                        return (
-                            <div
-                                className="flex flex-row gap-x-5 items-center text-white cursor-pointer"
-                                index={index}
-                                onClick={() =>
-                                    handleCategoryClick(
-                                        category.id,
-                                        category.name
-                                    )
-                                }
-                            >
-                                <div
-                                    className="w-12 h-12 rounded-full flex items-center justify-center"
-                                    style={{ background: category.color }}
-                                >
-                                    <FontAwesomeIcon icon={category.icon} />
-                                </div>
-                                <div>{category.name}</div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-        );
-    } else {
-        body = (
-            <div className="">
-                <div className="flex flex-row h-12 bg-gray-700 items-center px-5">
-                    <div onClick={handleOpen}>
-                        <FontAwesomeIcon
-                            icon={faArrowLeft}
-                            className={"text-white text-2xl"}
-                        />
-                    </div>
-                    <div></div>
-                </div>
-                <div className="flex flex-col gap-y-5 text-xl p-5">
-                    {parentCategories.map((parentCategory, index) => {
-                        return (
-                            <div
-                                className="flex flex-row gap-x-5 items-center text-white cursor-pointer"
-                                index={index}
-                                onClick={() =>
-                                    handleParentCategoryClick(parentCategory.id)
-                                }
-                            >
-                                <div
-                                    className="w-12 h-12 rounded-full flex items-center justify-center"
-                                    style={{ background: parentCategory.color }}
-                                >
-                                    <FontAwesomeIcon
-                                        icon={parentCategory.icon}
-                                    />
-                                </div>
-                                <div>{parentCategory.name}</div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-        );
-    }
+    const backFunction = parentCategory
+        ? handleRemoveParentCategory
+        : handleOpen;
 
     return (
-        <div className="absolute bg-gray-800 top-0 left-0 w-full min-h-screen">
-            {body}
+        <div className="absolute flex flex-col w-full h-screen">
+            <TopNav leftFunction={backFunction} />
+            <div className="h-full mt-14 bg-gray-900 flex flex-col gap-y-5 text-xl p-5">
+                {categoryList.map((category, index) => {
+                    return (
+                        <div
+                            className="flex flex-row gap-x-5 items-center text-white cursor-pointer"
+                            index={index}
+                            onClick={() =>
+                                parentCategory
+                                    ? handleCategoryClick(
+                                          category.id,
+                                          category.name
+                                      )
+                                    : handleParentCategoryClick(category.id)
+                            }
+                        >
+                            <div
+                                className="w-12 h-12 rounded-full flex items-center justify-center"
+                                style={{ background: category.color }}
+                            >
+                                <FontAwesomeIcon icon={category.icon} />
+                            </div>
+                            <div>{category.name}</div>
+                        </div>
+                    );
+                })}
+            </div>
         </div>
     );
 }
