@@ -40,28 +40,29 @@ class RecordController extends Controller
 
     public function create(Request $request)
     {
-
         $this->validate($request, [
-            'date' => 'required',
-            'from_account_id' => 'required',
-            'type' => 'required',
-            'amount' => 'required',
+            'date' => 'required|date',
+            'from_account_id' => 'required|integer|exists:App\Models\Account,id',
+            'to_account_id' => 'integer|exists:App\Models\Account,id',
+            'category_id' => 'integer|exists:App\Models\Category,id',
+            'name' => 'string',
+            'type' => 'required|string',
+            'amount' => 'required|numeric',
         ]);
 
         $data = $request->only('date', 'from_account_id', 'to_account_id', 'type', 'category_id', 'name', 'amount', 'description');
-
+        
         $data['amount'] = abs($data['amount']);
         if ($data['type'] == "expense" || $data['type'] == "transfer") {
             $data['amount'] = "-" . $data['amount'];
         }
-
+        
         $data['category_id'] = $data['category_id'] ?? 1;
         $data['user_id'] = $request->user()->id;
-
+        
         $record = new Record();
         $record->fill($data);
         $record->save();
-        $record->updateAccounts();
 
         return response()->json(['id' => $record->id]);
     }
@@ -85,7 +86,6 @@ class RecordController extends Controller
         $record = Record::find($id);
         $record->fill($data);
         $record->save();
-        $record->updateAccounts();
 
         return response()->json($record);
     }

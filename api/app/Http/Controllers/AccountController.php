@@ -32,16 +32,16 @@ class AccountController extends Controller
     public function create(Request $request)
     {
         $this->validate($request, [
-            'name' => 'required',
-            'type_id' => 'required|integer',
-            'color' => 'required',
-            'initial_balance' => 'required'
+            'name' => 'required|string',
+            'type_id' => 'required|integer|exists:App\Models\AccountTypes,id',
+            'color' => 'required|string',
+            'initial_balance' => 'required|numeric'
         ]);
-
+        
         $data = $request->only('name', 'type_id', 'color', 'initial_balance');
-
+        
         $data['user_id'] = $request->user()->id;
-
+        
         $account = new Account();
         $account->fill($data);
         $account->save();
