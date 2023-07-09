@@ -8,6 +8,7 @@ use App\Http\Controllers\BalanceController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\RuleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -73,4 +74,11 @@ Route::prefix('balance')->middleware('auth:sanctum')->group(function () {
     Route::get('subcategories/{id}/account/{accountId}', [BalanceController::class, 'getBySubcategoriesAndAccount']);
     Route::get('{id}', [BalanceController::class, 'getBalanceByAccount']);
     Route::get('timeline/{id}', [BalanceController::class, 'getTimelineByAccount']);
+});
+
+Route::prefix('rule')->middleware('auth:sanctum')->group(function () {
+    Route::get('', [RuleController::class, 'getRules']);
+    Route::get('{id}', [RuleController::class, 'get']);
+    Route::post('', [RuleController::class, 'create']);
+    Route::delete('', [RuleController::class, 'delete']);
 });
