@@ -12,16 +12,16 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Build the Docker image
-      run: docker build ./api --file ./api/Dockerfile --build-arg APP_ENV=local --tag server
+      run: docker build ./api --file ./api/Dockerfile --tag server
 
     - name: Run Docker container
-      run: docker run -d --name mysql-container -e MYSQL_ROOT_PASSWORD=passwordTest mysql:8
+      run: docker run -d --name mysql-container -e MYSQL_ROOT_PASSWORD=passwordRootTest -e MYSQL_USER=userTest -e MYSQL_PASSWORD=passwordTest mysql:8
 
     - name: Wait for MySQL container to start
       run: sleep 10
 
     - name: Run Docker container with server and link to MySQL
-      run: docker run -d --name server-container --link mysql-container:mysql server
+      run: docker run -d --name server-container -e APP_ENV=local -e DB_USERNAME=userTest -e DB_PASSWORD=passwordTest --link mysql-container:mysql server
 
     - name: Wait for server container to start
       run: sleep 10
