@@ -1,0 +1,39 @@
+name: Server Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build MySQL image
+      run: docker build ./api --file ./api/Dockerfile --tag server
+
+    - name: Run MySQL container
+      run: docker run -d --name mysql-container -e MYSQL_DATABASE="127.0.0.1" -e MYSQL_ROOT_PASSWORD=passwordRootTest -e MYSQL_USER=userTest -e MYSQL_PASSWORD=passwordTest mysql:8
+
+    - name: Wait for MySQL container to start
+      run: sleep 10
+
+    - name: Run Server container with server and link to MySQL
+      run: docker run -d --name server-container -e APP_ENV=local -e DB_HOST="mysql-container" -e DB_DATABASE="127.0.0.1" -e DB_USERNAME=userTest -e DB_PASSWORD=passwordTest --link mysql-container:mysql server
+
+    - name: Wait for server container to start
+      run: sleep 10
+    
+    - name: Composer install
+      run: docker exec server-container composer install
+
+    - name: Execute migrations
+      run: docker exec server-container php artisan migrate
+
+    - name: Execute seeders
+      run: docker exec server-container php artisan db:seed
+
+    - name: Run tests
+      run: docker exec server-container vendor/bin/phpunit
