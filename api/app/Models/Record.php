@@ -89,4 +89,24 @@ class Record extends Model
     {
         return $this->category->icon;
     }
+
+    public function createUpdateTransferRecord()
+    {
+        $linkRecord = ($this->link_record_id) ? Record::find($this->link_record_id) : new Record();
+        $linkRecord->fill([
+            'user_id' => $this->user_id,
+            'link_record_id' => $this->id,
+            'amount' => -$this->amount,
+            'date' => $this->date,
+            'from_account_id' => $this->to_account_id,
+            'to_account_id' => $this->from_account_id,
+            'type' => $this->type,
+            'name' => $this->name,
+            'category_id' => $this->category_id
+        ]);
+        $linkRecord->save();
+
+        $this->fill(['link_record_id' => $linkRecord->id]);
+        $this->save();
+    }
 }

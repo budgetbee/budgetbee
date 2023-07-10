@@ -63,6 +63,9 @@ class RecordController extends Controller
         $record = new Record();
         $record->fill($data);
         $record->save();
+        if ($record->type == "transfer") {
+            $record->createUpdateTransferRecord();
+        }
 
         return response()->json(['id' => $record->id]);
     }
@@ -86,6 +89,10 @@ class RecordController extends Controller
         $record = Record::find($id);
         $record->fill($data);
         $record->save();
+        if ($record->type == "transfer") {
+            $record->createUpdateTransferRecord();
+        }
+
 
         return response()->json($record);
     }
