@@ -7,8 +7,6 @@ export default function Calculator({ value, setValue }) {
         let keyValue = event.target.getAttribute("data-key");
         let keyType = event.target.getAttribute("data-key-type");
 
-        console.log(keyType);
-
         if (keyType === "number") {
             handleNumberClick(keyValue);
         } else if (keyType === "dot") {
@@ -21,8 +19,8 @@ export default function Calculator({ value, setValue }) {
     const handleNumberClick = (keyValue) => {
         setCurrentValue((prevValue) => {
             let newValue = prevValue.toString() + keyValue;
-            newValue = keyValue != 0 ? parseFloat(newValue) : newValue;
-            newValue = keyValue == 0 && prevValue == 0 ? 0 : newValue;
+            newValue = keyValue !== "0" ? parseFloat(newValue) : newValue;
+            newValue = keyValue === "0" && prevValue === 0 ? 0 : newValue;
             setValue(newValue);
             return newValue;
         });
