@@ -92,6 +92,7 @@ class RecordController extends Controller
         if ($record->type == "transfer") {
             $record->createUpdateTransferRecord();
         }
+        
 
         return response()->json($record);
     }
