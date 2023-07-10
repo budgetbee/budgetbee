@@ -93,7 +93,6 @@ class RecordController extends Controller
             $record->createUpdateTransferRecord();
         }
 
-
         return response()->json($record);
     }
 
