@@ -1,34 +1,32 @@
-name: Deploy and Test server
+name: Server Tests
 
 on:
   push:
   pull_request:
 
 jobs:
-  deploy_and_test:
+
+  build:
+
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Set up Docker
-      uses: docker/setup-docker@v1
-
-    - name: Build Docker image
-      run: docker build -t server ./api
-
+    - uses: actions/checkout@v3
+    
+    - name: Build the Docker image
+      run: docker build ./api --file Dockerfile --tag server:$(date +%s)
+      
     - name: Run Docker container
-      run: docker run -d --name server-container server
+      run: docker run -d --name server-container:$(date +%s) server:$(date +%s)
 
     - name: Wait for container to start
       run: sleep 10
 
     - name: Execute migrations
-      run: docker exec server-container php artisan migrate
+      run: docker exec server-container:$(date +%s) php artisan migrate
 
     - name: Execute seeders
-      run: docker exec server-container php artisan db:seed
+      run: docker exec server-container:$(date +%s) php artisan db:seed
 
     - name: Run tests
-      run: docker exec server-container php artisan test
+      run: docker exec server-container:$(date +%s) php artisan test
