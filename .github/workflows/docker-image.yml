@@ -2,11 +2,7 @@ name: Deploy and Test server
 
 on:
   push:
-    branches-ignore:
-      - '*'
   pull_request:
-    branches-ignore:
-      - '*'
 
 jobs:
   deploy_and_test:
