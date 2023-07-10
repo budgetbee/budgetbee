@@ -14,19 +14,19 @@ jobs:
     - uses: actions/checkout@v3
     
     - name: Build the Docker image
-      run: docker build ./api --file ./api/Dockerfile --tag server:$(date +%s)
+      run: docker build ./api --file ./api/Dockerfile --tag server
 
     - name: Run Docker container
-      run: docker run -d --name server-container:$(date +%s) server:$(date +%s)
+      run: docker run -d --name server-container server
 
     - name: Wait for container to start
       run: sleep 10
 
     - name: Execute migrations
-      run: docker exec server-container:$(date +%s) php artisan migrate
+      run: docker exec server-container php artisan migrate
 
     - name: Execute seeders
-      run: docker exec server-container:$(date +%s) php artisan db:seed
+      run: docker exec server-container php artisan db:seed
 
     - name: Run tests
-      run: docker exec server-container:$(date +%s) php artisan test
+      run: docker exec server-container php artisan test
