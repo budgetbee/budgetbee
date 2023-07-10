@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 export default function Calculator({ value, setValue }) {
     const [currentValue, setCurrentValue] = useState(0);
-    const [total, setTotal] = useState(0);
-    const [currentOperator, setCurrentOperator] = useState(null);
 
     const handleClick = (event) => {
         let keyValue = event.target.getAttribute("data-key");
@@ -11,12 +9,8 @@ export default function Calculator({ value, setValue }) {
 
         if (keyType === "number") {
             handleNumberClick(keyValue);
-        } else if (keyType === "operator") {
-            handleOperatorClick(keyValue);
-        } else if (keyType === "equal") {
-            handleEqualClick();
-        } else if (keyType === "comma") {
-            handleCommaClick();
+        } else if (keyType === "dot") {
+            handleDotClick();
         } else if (keyType === "delete") {
             handleDeleteClick();
         }
@@ -25,68 +19,14 @@ export default function Calculator({ value, setValue }) {
     const handleNumberClick = (keyValue) => {
         setCurrentValue((prevValue) => {
             let newValue = prevValue.toString() + keyValue;
-            newValue = (keyValue != 0) ? parseFloat(newValue) : newValue;
-            newValue = (keyValue == 0 && prevValue == 0) ? 0 : newValue;
+            newValue = keyValue !== "0" ? parseFloat(newValue) : newValue;
+            newValue = keyValue === "0" && prevValue === 0 ? 0 : newValue;
             setValue(newValue);
             return newValue;
         });
     };
 
-    const handleOperatorClick = (keyValue) => {
-        setCurrentOperator(keyValue);
-
-        let newTotal = currentValue;
-
-        if (total > 0) {
-            switch (currentOperator) {
-                case "+":
-                    newTotal += currentValue;
-                    break;
-                case "-":
-                    newTotal -= currentValue;
-                    break;
-                case "*":
-                    newTotal *= currentValue;
-                    break;
-                case "/":
-                    newTotal /= currentValue;
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        setTotal(newTotal);
-        setCurrentValue(0);
-    };
-
-    const handleEqualClick = () => {
-        let newTotal = total;
-
-        switch (currentOperator) {
-            case "+":
-                newTotal += currentValue;
-                break;
-            case "-":
-                newTotal -= currentValue;
-                break;
-            case "*":
-                newTotal *= currentValue;
-                break;
-            case "/":
-                newTotal /= currentValue;
-                break;
-            default:
-                break;
-        }
-
-        setTotal(newTotal);
-        setValue(newTotal);
-        setCurrentValue(newTotal);
-        setCurrentOperator(null);
-    };
-
-    const handleCommaClick = () => {
+    const handleDotClick = () => {
         if (!String(currentValue).includes(".")) {
             const newValue = currentValue + ".";
             setValue(newValue);
@@ -98,8 +38,22 @@ export default function Calculator({ value, setValue }) {
         const newValue = String(currentValue).slice(0, -1);
         setValue(newValue);
         setCurrentValue(Number(newValue));
-        setCurrentOperator(null);
     };
+
+    const keys = [
+        { key: 7, type: "number", text: "7" },
+        { key: 8, type: "number", text: "8" },
+        { key: 9, type: "number", text: "9" },
+        { key: 4, type: "number", text: "4" },
+        { key: 5, type: "number", text: "5" },
+        { key: 6, type: "number", text: "6" },
+        { key: 1, type: "number", text: "1" },
+        { key: 2, type: "number", text: "2" },
+        { key: 3, type: "number", text: "3" },
+        { key: "dot", type: "dot", text: "." },
+        { key: 0, type: "number", text: "0" },
+        { key: "delete", type: "delete", text: "Del" },
+    ];
 
     return (
         <div
@@ -107,122 +61,23 @@ export default function Calculator({ value, setValue }) {
             onClick={handleClick}
         >
             <div className="grow grid grid-cols-3 bg-gray-900">
-                <div
-                    data-key-type="number"
-                    data-key="7"
-                    className="flex h-full"
-                >
-                    <div data-key-type="number" data-key="7" className="m-auto">
-                        7
+                {keys.map((number) => (
+                    <div
+                        key={number.key}
+                        data-key-type={number.type}
+                        data-key={number.key}
+                        className="flex h-full"
+                    >
+                        <div
+                            data-key-type={number.type}
+                            data-key={number.key}
+                            className="m-auto"
+                        >
+                            {number.text}
+                        </div>
                     </div>
-                </div>
-                <div
-                    data-key-type="number"
-                    data-key="8"
-                    className="flex h-full"
-                >
-                    <div data-key-type="number" data-key="8"  className="m-auto">8</div>
-                </div>
-                <div
-                    data-key-type="number"
-                    data-key="9"
-                    className="flex h-full"
-                >
-                    <div data-key-type="number" data-key="9" className="m-auto">9</div>
-                </div>
-                <div
-                    data-key-type="number"
-                    data-key="4"
-                    className="flex h-full"
-                >
-                    <div data-key-type="number" data-key="4" className="m-auto">4</div>
-                </div>
-                <div
-                    data-key-type="number"
-                    data-key="5"
-                    className="flex h-full"
-                >
-                    <div data-key-type="number" data-key="5" className="m-auto">5</div>
-                </div>
-                <div
-                    data-key-type="number"
-                    data-key="6"
-                    className="flex h-full"
-                >
-                    <div data-key-type="number" data-key="6" className="m-auto">6</div>
-                </div>
-                <div
-                    data-key-type="number"
-                    data-key="1"
-                    className="flex h-full"
-                >
-                    <div data-key-type="number" data-key="1" className="m-auto">1</div>
-                </div>
-                <div
-                    data-key-type="number"
-                    data-key="2"
-                    className="flex h-full"
-                >
-                    <div data-key-type="number" data-key="2" className="m-auto">2</div>
-                </div>
-                <div
-                    data-key-type="number"
-                    data-key="3"
-                    className="flex h-full"
-                >
-                    <div data-key-type="number" data-key="3" className="m-auto">3</div>
-                </div>
-                <div data-key-type="comma" data-key="." className="flex h-full">
-                    <div data-key-type="comma" data-key="." className="m-auto">.</div>
-                </div>
-                <div
-                    data-key-type="number"
-                    data-key="0"
-                    className="flex h-full"
-                >
-                    <div data-key-type="number" data-key="0" className="m-auto">0</div>
-                </div>
-                <div
-                    data-key-type="delete"
-                    data-key="del"
-                    className="flex h-full"
-                >
-                    <div data-key-type="delete" data-key="del" className="m-auto">Del</div>
-                </div>
+                ))}
             </div>
-            {/* <div className="basis-1/4 grid grid-cols-1 text-2xl">
-                <div
-                    data-key-type="operator"
-                    data-key="/"
-                    className="self-center"
-                >
-                    /
-                </div>
-                <div
-                    data-key-type="operator"
-                    data-key="*"
-                    className="self-center"
-                >
-                    *
-                </div>
-                <div
-                    data-key-type="operator"
-                    data-key="-"
-                    className="self-center"
-                >
-                    -
-                </div>
-                <div
-                    data-key-type="operator"
-                    data-key="+"
-                    className="self-center"
-                >
-                    +
-                </div>
-                <div data-key-type="equal" data-key="=" className="self-center">
-                    =
-                </div>
-            </div> */}
         </div>
     );
 }
