@@ -58,7 +58,7 @@ class RecordController extends Controller
         }
         
         $data['category_id'] = $data['category_id'] ?? 1;
-        $data['user_id'] = $request->user()->id;
+        // $data['user_id'] = $request->user()->id;
         
         $record = new Record();
         $record->fill($data);
