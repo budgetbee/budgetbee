@@ -16,10 +16,17 @@ class RuleController extends Controller
             ->where('user_id', $request->user()->id)
             ->first();
 
-        dd($rule);
-
         return response()->json($rule);
     }
+
+    public function getRules(Request $request)
+    {
+        $rules = Rule::where('user_id', $request->user()->id)
+            ->get();
+
+        return response()->json($rules);
+    }
+
     public function create(Request $request)
     {
         $this->validate($request, [
@@ -36,7 +43,7 @@ class RuleController extends Controller
         $rule->fill($data);
         $rule->save();
 
-        
+
         foreach ($data['conditions'] as $k => $v) {
             $condition = new RuleCondition(
                 [
@@ -44,9 +51,9 @@ class RuleController extends Controller
                     'rule_id' => $rule->id,
                     'rule_condition_type_id' => $k,
                     'condition' => $v
-                    ]
-                );
-                
+                ]
+            );
+
             $condition->save();
         }
 

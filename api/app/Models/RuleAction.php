@@ -17,4 +17,18 @@ class RuleAction extends Model
     protected $fillable = [
         'user_id', 'rule_id', 'rule_action_type_id', 'action'
     ];
+
+    protected $hidden = ['type'];
+
+    protected $appends = ['type_name'];
+
+    public function type()
+    {
+        return $this->belongsTo(RuleActionTypes::class, 'rule_action_type_id');
+    }
+
+    public function getTypeNameAttribute()
+    {
+        return $this->type->name;
+    }
 }

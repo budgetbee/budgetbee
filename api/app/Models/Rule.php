@@ -18,4 +18,16 @@ class Rule extends Model
     protected $fillable = [
         'user_id', 'name', 'enabled'
     ];
+
+    protected $appends = ['conditions', 'actions'];
+
+    public function getConditionsAttribute()
+    {
+        return $this->conditions = RuleCondition::where('rule_id', $this->id)->get();
+    }
+
+    public function getActionsAttribute()
+    {
+        return $this->actions = RuleAction::where('rule_id', $this->id)->get();
+    }
 }

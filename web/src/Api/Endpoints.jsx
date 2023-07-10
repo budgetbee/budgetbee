@@ -1,9 +1,16 @@
 import axios from "axios";
-import Cookies from 'universal-cookie';
+import Cookies from "universal-cookie";
 
 const cookies = new Cookies();
-const API_BASE_URL = "http://" + process.env.REACT_APP_API_HOST + ":" + process.env.REACT_APP_API_PORT + "/api";
-const HEADERS = { headers: { Authorization: 'Bearer ' + cookies.get("token") } };
+const API_BASE_URL =
+    "http://" +
+    process.env.REACT_APP_API_HOST +
+    ":" +
+    process.env.REACT_APP_API_PORT +
+    "/api";
+const HEADERS = {
+    headers: { Authorization: "Bearer " + cookies.get("token") },
+};
 
 const handleErrors = (error) => {
     const status = error.response.status;
@@ -30,7 +37,10 @@ const Endpoints = {
             );
             var expirationDate = new Date();
             expirationDate.setTime(expirationDate.getTime() + 3600000);
-            cookies.set('token', response.data.access_token, { path: '/', expires: expirationDate });
+            cookies.set("token", response.data.access_token, {
+                path: "/",
+                expires: expirationDate,
+            });
             return response.data;
         } catch (error) {
             handleErrors(error);
@@ -41,10 +51,7 @@ const Endpoints = {
 
     getUser: async () => {
         try {
-            const response = await axios.get(
-                `${API_BASE_URL}/user`,
-                HEADERS
-            );
+            const response = await axios.get(`${API_BASE_URL}/user`, HEADERS);
             return response.data;
         } catch (error) {
             handleErrors(error);
@@ -148,7 +155,7 @@ const Endpoints = {
             let param =
                 account_id > 0 ? `account/${account_id}/record` : `record`;
 
-            param += page > 0 ? `?page=${page}` : ''
+            param += page > 0 ? `?page=${page}` : "";
 
             const response = await axios.get(
                 `${API_BASE_URL}/${param}`,
@@ -376,6 +383,26 @@ const Endpoints = {
         } catch (error) {
             handleErrors(error);
             console.error(error);
+            return null;
+        }
+    },
+
+    getRules: async () => {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/rule`, HEADERS);
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            return null;
+        }
+    },
+
+    getRule: async (id) => {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/rule/${id}`, HEADERS);
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
             return null;
         }
     },

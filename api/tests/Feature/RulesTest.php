@@ -75,6 +75,16 @@ class RulesTest extends TestCase
     }
 
     /**
+     * Create a rule Fail
+     */
+    public function testGetUserRules(): void
+    {
+        $response = $this->get('/api/rule');
+
+        $response->assertStatus(200);
+    }
+
+    /**
      * Create a rule Success
      */
     // public function testGetRuleSuccess(): void
