@@ -1,5 +1,10 @@
+[![Server Tests](https://github.com/budgetbee/budgetbee/actions/workflows/server-tests.yml/badge.svg)](https://github.com/budgetbee/budgetbee/actions/workflows/server-tests.yml)
+[![Build and Push Docker Image](https://github.com/budgetbee/budgetbee/actions/workflows/docker-build.yml/badge.svg)](https://github.com/budgetbee/budgetbee/actions/workflows/docker-build.yml)
+
+
 <p align="center">
-<img src="https://github.com/budgetbee/budgetbee/raw/main/web/assets/images/logo.png" width="50%" />
+<img src="https://github.com/budgetbee/budgetbee/raw/main/web/assets/images/logo.svg#gh-light-mode-only" width="50%" />
+<img src="https://github.com/budgetbee/budgetbee/raw/main/web/assets/images/logo_white.svg#gh-dark-mode-only" width="50%" />
 </p>
 
 # BudgetBee
