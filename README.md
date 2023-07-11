@@ -4,7 +4,7 @@
 
 <p align="center">
 <img src="https://github.com/budgetbee/budgetbee/raw/main/web/assets/images/logo.svg#gh-light-mode-only" width="50%" />
-<img src="https://github.com/budgetbee/budgetbee/raw/main/web/assets/images/logo_white.svg#gh-dark-mode-only" width="50%" />
+<img src="https://github.com/budgetbee/budgetbee/raw/main/web/assets/images/logo_color_2.svg#gh-dark-mode-only" width="50%" />
 </p>
 
 # BudgetBee
