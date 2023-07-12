@@ -8,6 +8,8 @@ import RecordForm from "./views/Record/Form";
 import RecordList from "./views/Record/List";
 import CategoryForm from "./views/Category/Form";
 import CategoryList from "./views/Category/List";
+import RuleList from "./views/Rule/List";
+import RuleForm from "./views/Rule/Form";
 import Login from "./views/Auth/Login";
 
 function AppRoutes() {
@@ -21,6 +23,8 @@ function AppRoutes() {
                 <Route path="/accounts/" element={<AccountList />} />
                 <Route path="/account" element={<AccountForm />} />
                 <Route path="/account/:account_id" element={<AccountForm />} />
+                <Route path="/rule/list" element={<RuleList />} />
+                <Route path="/rule/:rule_id?" element={<RuleForm />} />
                 <Route path="/record" element={<RecordForm />} />
                 <Route path="/record/list/:account_id?" element={<RecordList />} />
                 <Route path="/record/:record_id" element={<RecordForm />} />

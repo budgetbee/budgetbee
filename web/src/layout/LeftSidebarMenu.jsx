@@ -35,12 +35,12 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
             icon: faMoneyCheck,
             color: "text-red-400",
         },
-        // rules: {
-        //     name: "Rules",
-        //     href: "/rule",
-        //     icon: faRobot,
-        //     color: "text-green-400",
-        // },
+        rules: {
+            name: "Rules",
+            href: "/rule/list",
+            icon: faRobot,
+            color: "text-green-400",
+        },
         categories: {
             name: "Categories",
             href: "/category/list",

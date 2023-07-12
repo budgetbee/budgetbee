@@ -21,5 +21,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call(AccountTypesSeeder::class);
         $this->call(CategoriesSeeder::class);
+        $this->call(RuleConditionTypesSeeder::class);
+        $this->call(RuleActionTypesSeeder::class);
     }
 }

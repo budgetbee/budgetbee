@@ -1,0 +1,14 @@
+[
+    {
+        "name": "Set record description",
+        "code": "SET_TEXT"
+    },
+    {
+        "name": "Add category",
+        "code": "ADD_CATEGORY"
+    },
+    {
+        "name": "Set record type",
+        "code": "RECORD_TYPE"
+    }
+]

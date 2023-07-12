@@ -1,0 +1,14 @@
+[
+    {
+        "name": "When the text contains...",
+        "code": "WHEN_TEXT_CONTAINS"
+    },
+    {
+        "name": "When the text starts with...",
+        "code": "WHEN_TEXT_STARTS_WITH"
+    },
+    {
+        "name": "When the text ends for...",
+        "code": "WHEN_TEXT_ENDS_FOR"
+    }
+]
