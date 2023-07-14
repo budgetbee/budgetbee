@@ -25,9 +25,11 @@ RUN set -xe \
     && rm -rf /tmp/* \
     && apk del .memcached-deps .phpize-deps
 
+# Set working directory
+WORKDIR /var/www/html
 
-# Copy files
-COPY . /var/www/html
+COPY . .
 
-# Exec composer install
+RUN chmod +x ./entrypoint.sh
+
 RUN composer install --no-dev --optimize-autoloader
