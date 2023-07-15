@@ -16,6 +16,10 @@ jobs:
       id: determine-tag-prefix
       run: echo ::set-output name=tag_prefix::${{ startsWith(github.event.release.tag_name, 'v') }}
 
+    - name: Copy .env.example to .env in API folder
+      run: |
+        cp ./api/.env.example ./api/.env
+
     - name: Build the Docker image
       run: |
         docker build -t ghcr.io/budgetbee/budgetbee/proxy:${{ github.event.release.tag_name }} ./docker/nginx
