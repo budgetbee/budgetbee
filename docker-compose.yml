@@ -5,14 +5,14 @@ services:
     image: nginx:1.25.1-alpine3.17-slim
     command: nginx -g "daemon off;"
     ports:
-      - "${API_PORT}:80"
+      - "${APP_PORT}:80"
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
     restart: unless-stopped
     networks:
       - skynet
 
-  php:
+  webserver:
     build: ./api
     volumes:
       - ./api:/var/www/html
@@ -36,8 +36,6 @@ services:
       dockerfile: Dockerfile.dev
     volumes:
       - ./web:/var/www/html
-    ports:
-      - "${APP_PORT}:3000"
     environment:
       REACT_APP_API_HOST: ${HOST}
       REACT_APP_API_PORT: ${API_PORT}
