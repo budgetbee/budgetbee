@@ -6,12 +6,12 @@ services:
     volumes:
       - ./default.conf:/etc/nginx/conf.d/default.conf
     ports:
-      - "${API_PORT}:80"
+      - "${APP_PORT}:80"
     restart: unless-stopped
     networks:
       - skynet
 
-  php:
+  webserver:
     image: ghcr.io/budgetbee/budgetbee/api:latest
     working_dir: /var/www/html
     command: sh entrypoint.sh
@@ -24,13 +24,8 @@ services:
     networks:
       - skynet
 
-  app:
+  web:
     image: ghcr.io/budgetbee/budgetbee/web:latest
-    ports:
-      - "${APP_PORT}:3000"
-    environment:
-      REACT_APP_API_HOST: ${HOST}
-      REACT_APP_API_PORT: ${API_PORT}
     restart: unless-stopped
     networks:
       - skynet
