@@ -2,7 +2,7 @@ import axios from "axios";
 import Cookies from 'universal-cookie';
 
 const cookies = new Cookies();
-const API_BASE_URL = "http://" + process.env.REACT_APP_API_HOST + ":" + process.env.REACT_APP_API_PORT + "/api";
+const API_BASE_URL = "/api";
 const HEADERS = { headers: { Authorization: 'Bearer ' + cookies.get("token") } };
 
 const handleErrors = (error) => {
