@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Sleep for wait to db container
-sleep 10;
+sleep 20;
 
 # Run key:generate
-php artisan key:generate
+# php artisan key:generate
 
 # Run migrate --seed
 php artisan migrate --force --seed
