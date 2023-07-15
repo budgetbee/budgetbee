@@ -1,8 +1,9 @@
 name: Server Tests
 
 on:
-  push:
   pull_request:
+    branches:
+      - main
 
 jobs:
   build:
