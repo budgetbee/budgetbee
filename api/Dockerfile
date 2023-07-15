@@ -28,8 +28,13 @@ RUN set -xe \
 # Set working directory
 WORKDIR /var/www/html
 
+# Copy the application files
 COPY . .
 
-RUN chmod +x ./entrypoint.sh
+# Set permissions
+RUN chmod -R 775 storage bootstrap/cache \
+    && chmod 600 .env \
+    && chmod +x ./entrypoint.sh
 
+# Install dependencies
 RUN composer install --no-dev --optimize-autoloader
