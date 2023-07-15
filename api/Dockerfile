@@ -33,7 +33,6 @@ COPY . .
 
 # Set permissions
 RUN chmod -R 775 storage bootstrap/cache \
-    && chmod 600 .env \
     && chmod +x ./entrypoint.sh
 
 # Install dependencies
