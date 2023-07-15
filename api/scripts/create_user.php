@@ -21,6 +21,10 @@ $user->password = Hash::make($userpassword);
 
 $user->save();
 
-echo "Usuario creado exitosamente.";
+echo PHP_EOL;
+echo PHP_EOL;
+echo "User created successfully!";
+echo PHP_EOL;
+echo PHP_EOL;
 
 $app->terminate();
