@@ -32,7 +32,7 @@ WORKDIR /var/www/html
 COPY . .
 
 # Set permissions
-RUN chmod -R 775 storage bootstrap/cache \
+RUN chmod -R 777 storage bootstrap/cache \
     && chmod +x ./entrypoint.sh
 
 # Install dependencies
