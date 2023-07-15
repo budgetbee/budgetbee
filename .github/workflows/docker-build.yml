@@ -18,9 +18,11 @@ jobs:
 
     - name: Build the Docker image
       run: |
+        docker build -t ghcr.io/budgetbee/budgetbee/proxy:${{ github.event.release.tag_name }} ./docker/nginx
         docker build -t ghcr.io/budgetbee/budgetbee/api:${{ github.event.release.tag_name }} ./api
         docker build -t ghcr.io/budgetbee/budgetbee/web:${{ github.event.release.tag_name }} ./web
         if [[ "${{ steps.determine-tag-prefix.outputs.tag_prefix }}" == "true" ]]; then
+          docker tag ghcr.io/budgetbee/budgetbee/proxy:${{ github.event.release.tag_name }} ghcr.io/budgetbee/budgetbee/proxy:latest
           docker tag ghcr.io/budgetbee/budgetbee/api:${{ github.event.release.tag_name }} ghcr.io/budgetbee/budgetbee/api:latest
           docker tag ghcr.io/budgetbee/budgetbee/web:${{ github.event.release.tag_name }} ghcr.io/budgetbee/budgetbee/web:latest
         fi
@@ -34,6 +36,10 @@ jobs:
 
     - name: Push the Docker image to ghcr.io
       run: |
+        docker push ghcr.io/budgetbee/budgetbee/proxy:${{ github.event.release.tag_name }}
+        if [[ "${{ steps.determine-tag-prefix.outputs.tag_prefix }}" == "true" ]]; then
+          docker push ghcr.io/budgetbee/budgetbee/proxy:latest
+        fi
         docker push ghcr.io/budgetbee/budgetbee/api:${{ github.event.release.tag_name }}
         if [[ "${{ steps.determine-tag-prefix.outputs.tag_prefix }}" == "true" ]]; then
           docker push ghcr.io/budgetbee/budgetbee/api:latest
