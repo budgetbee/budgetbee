@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Sleep for wait to db container
+sleep 10;
+
 # Run key:generate
 php artisan key:generate
 
