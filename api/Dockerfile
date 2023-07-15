@@ -31,12 +31,12 @@ WORKDIR /var/www/html
 # Copy the application files
 COPY . .
 
+# Set permissions
+RUN chmod -R 777 storage bootstrap/cache \
+    && chmod +x ./entrypoint.sh
+
 # Change the user to www-data
 USER www-data
-
-# Set permissions
-RUN chmod -R 775 storage bootstrap/cache \
-    && chmod +x ./entrypoint.sh
 
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader
