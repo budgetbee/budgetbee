@@ -31,8 +31,11 @@ WORKDIR /var/www/html
 # Copy the application files
 COPY . .
 
+# Change the user to www-data
+USER www-data
+
 # Set permissions
-RUN chmod -R 777 storage bootstrap/cache \
+RUN chmod -R 775 storage bootstrap/cache \
     && chmod +x ./entrypoint.sh
 
 # Install dependencies
