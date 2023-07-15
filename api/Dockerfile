@@ -32,7 +32,10 @@ WORKDIR /var/www/html
 COPY . .
 
 # Set permissions
-RUN chmod -R 777 storage bootstrap/cache \
+RUN chmod -R 775 storage bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache
+
+RUN chown www-data:www-data ./entrypoint.sh \
     && chmod +x ./entrypoint.sh
 
 # Change the user to www-data
