@@ -6,11 +6,10 @@ const API_BASE_URL = "/api";
 const HEADERS = { headers: { Authorization: 'Bearer ' + cookies.get("token") } };
 
 const handleErrors = (error) => {
+
     const status = error.response.status;
 
     switch (status) {
-        case 403:
-            break;
         case 401:
             cookies.remove("token");
             window.location.href = "/login";
@@ -33,8 +32,6 @@ const Endpoints = {
             cookies.set('token', response.data.access_token, { path: '/', expires: expirationDate });
             return response.data;
         } catch (error) {
-            handleErrors(error);
-            console.error(error);
             return null;
         }
     },
@@ -48,7 +45,6 @@ const Endpoints = {
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
             return null;
         }
     },
@@ -62,7 +58,6 @@ const Endpoints = {
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
             return null;
         }
     },
@@ -76,7 +71,6 @@ const Endpoints = {
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
             return null;
         }
     },
@@ -90,7 +84,6 @@ const Endpoints = {
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
             return null;
         }
     },
@@ -106,7 +99,6 @@ const Endpoints = {
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
             return null;
         }
     },
@@ -121,7 +113,6 @@ const Endpoints = {
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
             return null;
         }
     },
@@ -138,7 +129,6 @@ const Endpoints = {
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
             return null;
         }
     },
@@ -157,7 +147,6 @@ const Endpoints = {
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
             return null;
         }
     },
@@ -171,7 +160,6 @@ const Endpoints = {
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
             return null;
         }
     },
@@ -190,7 +178,6 @@ const Endpoints = {
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
             return null;
         }
     },
@@ -205,7 +192,6 @@ const Endpoints = {
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
             return null;
         }
     },
@@ -219,7 +205,6 @@ const Endpoints = {
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
             return null;
         }
     },
@@ -235,7 +220,6 @@ const Endpoints = {
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
             return null;
         }
     },
@@ -249,7 +233,6 @@ const Endpoints = {
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
             return null;
         }
     },
@@ -263,7 +246,6 @@ const Endpoints = {
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
             return null;
         }
     },
@@ -279,7 +261,6 @@ const Endpoints = {
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
             return null;
         }
     },
@@ -295,7 +276,6 @@ const Endpoints = {
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
             return null;
         }
     },
@@ -311,7 +291,6 @@ const Endpoints = {
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
             return null;
         }
     },
@@ -327,7 +306,6 @@ const Endpoints = {
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
             return null;
         }
     },
@@ -343,7 +321,6 @@ const Endpoints = {
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
             return null;
         }
     },
@@ -359,7 +336,6 @@ const Endpoints = {
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
             return null;
         }
     },
@@ -375,7 +351,6 @@ const Endpoints = {
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
             return null;
         }
     },
