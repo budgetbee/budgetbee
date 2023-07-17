@@ -78,6 +78,8 @@ networks:
 volumes:
   db_data:
 ```
+### Important
+**Wait around 30 seconds after all containers are up to execute the create user command**
 
 To create a user, run this command from your local machine, substituting the values with the ones you want
 ```bash
