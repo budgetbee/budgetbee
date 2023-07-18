@@ -18,7 +18,7 @@ BudgetBee is a personal budget system
 - ⚠️ **Important, do not use this application as the only app to record your finances until you have a stable version v1.0.0.**
 
 <p align="center">
-<img src="https://github.com/budgetbee/budgetbee/raw/main/web/assets/images/budgetbee_screenshot.webp" width="50%" />
+<img src="https://github.com/budgetbee/budgetbee/raw/main/web/assets/images/budgetbee_screenshot.webp" width="100%" />
 </p>
 
 If you want contribute in this project, you can!
