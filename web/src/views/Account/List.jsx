@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 import Api from "../../Api/Endpoints";
 import AccountCard from "../../Components/Account/Card";
-import LeftSidebarMenu from "../../layout/LeftSidebarMenu";
+import TopNav from "../../layout/TopNav";
 
 // Icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -34,32 +34,13 @@ export default function List() {
         });
     }
 
+    const handleAddNewClick = () => {
+        window.location.href = '/account';
+    };
+
     return (
         <div className="absolute bg-gray-800 top-0 left-0 w-full min-h-screen">
-            <LeftSidebarMenu
-                open={openSidebarMenu}
-                setOpen={setOpenSidebarMenu}
-                activePage="accounts"
-            />
-            <div className="fixed w-full top-0 basis-1/12 flex flex-row justify-between items-center bg-gray-700 h-14">
-                <div
-                    className="py-3 pl-5 cursor-pointer"
-                    onClick={() => setOpenSidebarMenu(true)}
-                >
-                    <FontAwesomeIcon
-                        icon={faBars}
-                        className="text-white text-2xl"
-                    />
-                </div>
-                <div className="py-3 pr-5 cursor-pointer">
-                    <Link to="/account">
-                        <FontAwesomeIcon
-                            icon={faPlus}
-                            className="text-white text-2xl"
-                        />
-                    </Link>
-                </div>
-            </div>
+            <TopNav menu={true} rightFunction={handleAddNewClick} rightIcon={faPlus} />
             <div className="flex flex-col divide-y divide-gray-600/50 rounded p-px mt-14">
                 {view}
             </div>
