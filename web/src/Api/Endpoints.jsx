@@ -1,9 +1,11 @@
 import axios from "axios";
-import Cookies from 'universal-cookie';
+import Cookies from "universal-cookie";
 
 const cookies = new Cookies();
 const API_BASE_URL = "/api";
-const HEADERS = { headers: { Authorization: 'Bearer ' + cookies.get("token") } };
+const HEADERS = {
+    headers: { Authorization: "Bearer " + cookies.get("token") },
+};
 
 const handleErrors = (error) => {
     const status = error.response.status;
@@ -21,6 +23,20 @@ const handleErrors = (error) => {
 };
 
 const Endpoints = {
+    getVersion: async () => {
+        try {
+            const response = await axios.get(
+                `${API_BASE_URL}/version`,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            console.error(error);
+            return null;
+        }
+    },
+
     userLogin: async (data) => {
         try {
             const response = await axios.post(
@@ -30,7 +46,10 @@ const Endpoints = {
             );
             var expirationDate = new Date();
             expirationDate.setTime(expirationDate.getTime() + 3600000);
-            cookies.set('token', response.data.access_token, { path: '/', expires: expirationDate });
+            cookies.set("token", response.data.access_token, {
+                path: "/",
+                expires: expirationDate,
+            });
             return response.data;
         } catch (error) {
             handleErrors(error);
@@ -39,10 +58,79 @@ const Endpoints = {
         }
     },
 
-    getUser: async () => {
+    userRegister: async (data) => {
+        try {
+            const response = await axios.post(
+                `${API_BASE_URL}/user/register`,
+                data,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            return null;
+        }
+    },
+
+    userLogout: async () => {
+        try {
+            await axios.post(`${API_BASE_URL}/user/logout`, [], HEADERS);
+            cookies.remove("token");
+            window.location.href = "/login";
+        } catch (error) {
+            handleErrors(error);
+            console.error(error);
+            return null;
+        }
+    },
+
+    userUpdate: async (data, id) => {
+        try {
+            const response = await axios.post(
+                `${API_BASE_URL}/user/${id}`,
+                data,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            return null;
+        }
+    },
+
+    getUser: async (id = false) => {
+        try {
+            const param = id ? `/${id}` : "";
+            const response = await axios.get(
+                `${API_BASE_URL}/user${param}`,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            console.error(error);
+            return null;
+        }
+    },
+
+    getUsers: async () => {
         try {
             const response = await axios.get(
-                `${API_BASE_URL}/user`,
+                `${API_BASE_URL}/user/all`,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            console.error(error);
+            return null;
+        }
+    },
+
+    checkIfAdmin: async () => {
+        try {
+            const response = await axios.get(
+                `${API_BASE_URL}/user/isAdmin`,
                 HEADERS
             );
             return response.data;
@@ -148,7 +236,7 @@ const Endpoints = {
             let param =
                 account_id > 0 ? `account/${account_id}/record` : `record`;
 
-            param += page > 0 ? `?page=${page}` : ''
+            param += page > 0 ? `?page=${page}` : "";
 
             const response = await axios.get(
                 `${API_BASE_URL}/${param}`,

@@ -9,50 +9,55 @@ use Illuminate\Http\Request;
 class CategoryController extends Controller
 {
 
-    public function get()
+    public function get(Request $request)
     {
-        $categories = Category::all();
+        $categories = Category::where('user_id', $request->user()->id)->get();
 
         return response()->json($categories);
     }
 
-    public function getByParentId($id)
+    public function getByParentId(Request $request, $id)
     {
-        $categories = Category::where('parent_category_id', $id)->get();
+        $categories = Category::where('parent_category_id', $id)->where('user_id', $request->user()->id)->get();
 
         return response()->json($categories);
     }
 
     public function getById($id)
     {
-        $categories = Category::find($id);
+        $category = Category::find($id);
+
+        $this->authorize('view', $category);
+
+        return response()->json($category);
+    }
+
+    public function getParent(Request $request)
+    {
+        $categories = ParentCategory::where('user_id', $request->user()->id)->get();
 
         return response()->json($categories);
     }
 
-    public function getParent()
+    public function getParentById(Request $request, $id)
     {
-        $categories = ParentCategory::all();
+        $parentCategory = ParentCategory::where('user_id', $request->user()->id)->find($id);
 
-        return response()->json($categories);
-    }
-
-    public function getParentById($id)
-    {
-        $categories = ParentCategory::find($id);
-
-        return response()->json($categories);
+        return response()->json($parentCategory);
     }
 
     public function create(Request $request)
     {
 
         $this->validate($request, [
-            'parent_category_id' => 'required',
-            'name' => 'required',
+            'parent_category_id' => 'required|integer|exists:App\Models\ParentCategory,id',
+            'name' => 'required|string',
+            'icon' => 'required|string',
         ]);
 
-        $data = $request->only('color', 'icon', 'name', 'parent_category_id');
+        $data = $request->only('icon', 'name', 'parent_category_id');
+
+        $data['user_id'] = $request->user()->id;
 
         $category = new Category();
         $category->fill($data);
@@ -64,11 +69,14 @@ class CategoryController extends Controller
     public function update(Request $request, $id)
     {
         $this->validate($request, [
-            'parent_category_id' => 'required',
-            'name' => 'required',
+            'parent_category_id' => 'required|integer|exists:App\Models\ParentCategory,id',
+            'name' => 'required|string',
+            'icon' => 'required|string',
         ]);
 
-        $data = $request->only('color', 'icon', 'name', 'parent_category_id');
+        $data = $request->only('icon', 'name', 'parent_category_id');
+
+        $data['user_id'] = $request->user()->id;
 
         $category = Category::find($id);
         $category->fill($data);

@@ -11,17 +11,18 @@ use DateInterval;
 class BalanceController extends Controller
 {
 
-    public function getBalance()
+    public function getBalance(Request $request)
     {
-        $accounts = Account::all();
+        $accounts = Account::where('user_id', $request->user()->id)->get();
         $balance = round($accounts->sum('balance'), 2);
 
         return response()->json($balance);
     }
 
-    public function getBalanceByAccount($id)
+    public function getBalanceByAccount(Request $request, $id)
     {
         $balance = Account::where('id', $id)
+            ->where('user_id', $request->user()->id)
             ->first()
             ->balance;
 
@@ -31,7 +32,8 @@ class BalanceController extends Controller
     public function getExpensesBalance(Request $request)
     {
         $records = Record::orderBy('date')
-            ->where('type', 'expense');
+            ->where('type', 'expense')
+            ->where('user_id', $request->user()->id);
         $records = $request->query->get('from') ? $records->where('date', '>=', (new DateTime($request->query->get('from')))->format('Y-m-d')) : $records;
         $records = $records->get();
 
@@ -47,7 +49,8 @@ class BalanceController extends Controller
     {
         $records = Record::orderBy('date')
             ->where('type', 'expense')
-            ->where('from_account_id', $id);
+            ->where('from_account_id', $id)
+            ->where('user_id', $request->user()->id);
         $records = $request->query->get('from') ? $records->where('date', '>=', (new DateTime($request->query->get('from')))->format('Y-m-d')) : $records;
         $records = $records->get();
 
@@ -65,9 +68,11 @@ class BalanceController extends Controller
         $startDate = new DateTime($startDate);
         $endDate = new DateTime(date('Y-m-d'));
 
-        $records = Record::orderBy('date')->get();
+        $records = Record::where('user_id', $request->user()->id)
+            ->orderBy('date')
+            ->get();
 
-        $accounts = Account::all();
+        $accounts = Account::where('user_id', $request->user()->id)->get();
         $initialBalance = $accounts->sum('initial_balance');
         $balance = $initialBalance;
 
@@ -111,9 +116,12 @@ class BalanceController extends Controller
         $startDate = new DateTime($startDate);
         $endDate = new DateTime(date('Y-m-d'));
 
-        $records = Record::where('from_account_id', $id)->orderBy('date')->get();
+        $records = Record::where('from_account_id', $id)
+            ->where('user_id', $request->user()->id)
+            ->orderBy('date')
+            ->get();
 
-        $initialBalance = Account::where('id', $id)->first()->initial_balance;
+        $initialBalance = Account::where('id', $id)->where('user_id', $request->user()->id)->first()->initial_balance;
         $balance = $initialBalance;
 
         $balanceByDate = [];
@@ -151,7 +159,8 @@ class BalanceController extends Controller
 
     public function getByCategories(Request $request)
     {
-        $records = Record::orderBy('date');
+        $records = Record::orderBy('date')
+            ->where('user_id', $request->user()->id);
         $records = $request->query->get('from') ? $records->where('date', '>=', (new DateTime($request->query->get('from')))->format('Y-m-d')) : $records;
         $records = $records->get();
 
@@ -192,7 +201,8 @@ class BalanceController extends Controller
 
     public function getByCategoriesAndAccount(Request $request, $id)
     {
-        $records = Record::where('from_account_id', $id);
+        $records = Record::where('from_account_id', $id)
+            ->where('user_id', $request->user()->id);
         $records = $request->query->get('from') ? $records->where('date', '>=', (new DateTime($request->query->get('from')))->format('Y-m-d')) : $records;
         $records = $records->orderBy('date')->get();
 
@@ -232,7 +242,8 @@ class BalanceController extends Controller
 
     public function getBySubcategories(Request $request, $id)
     {
-        $records = Record::orderBy('date');
+        $records = Record::orderBy('date')
+            ->where('user_id', $request->user()->id);
         $records = $request->query->get('from') ? $records->where('date', '>=', (new DateTime($request->query->get('from')))->format('Y-m-d')) : $records;
         $records = $records->get();
 
@@ -269,7 +280,9 @@ class BalanceController extends Controller
 
     public function getBySubcategoriesAndAccount(Request $request, $id, $accountId)
     {
-        $records = Record::where('from_account_id', $accountId)->orderBy('date');
+        $records = Record::where('from_account_id', $accountId)
+            ->where('user_id', $request->user()->id)
+            ->orderBy('date');
         $records = $request->query->get('from') ? $records->where('date', '>=', (new DateTime($request->query->get('from')))->format('Y-m-d')) : $records;
         $records = $records->get();
 
@@ -306,7 +319,8 @@ class BalanceController extends Controller
 
     public function getBalanceByCategory(Request $request)
     {
-        $records = Record::whereNot('type', 'transfer');
+        $records = Record::whereNot('type', 'transfer')
+            ->where('user_id', $request->user()->id);
         $records = $request->query->get('from') ? $records->where('date', '>=', (new DateTime($request->query->get('from')))->format('Y-m-d')) : $records;
         $records = $records->get();
 
@@ -351,7 +365,8 @@ class BalanceController extends Controller
     public function getBalanceByCategoryAndAccount(Request $request, $id)
     {
         $records = Record::where('from_account_id', $id)
-            ->whereNot('type', 'transfer');
+            ->whereNot('type', 'transfer')
+            ->where('user_id', $request->user()->id);
         $records = $request->query->get('from') ? $records->where('date', '>=', (new DateTime($request->query->get('from')))->format('Y-m-d')) : $records;
         $records = $records->get();
 

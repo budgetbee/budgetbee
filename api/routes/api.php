@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AppVersionController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\BalanceController;
 use App\Http\Controllers\CategoryController;
@@ -20,11 +21,17 @@ use App\Http\Controllers\UserController;
 |
 */
 
-Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+Route::get('version', [AppVersionController::class, 'get'])->middleware('auth:sanctum');
+
 Route::prefix('user')->middleware('auth:sanctum')->group(function () {
-    Route::get('', [UserController::class, 'get']);
+    Route::get('all', [UserController::class, 'getAll']);
+    Route::get('isAdmin', [UserController::class, 'checkIfAdmin']);
+    Route::get('/{id?}', [UserController::class, 'get']);
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('logout', [AuthController::class, 'logout']);
+    Route::post('{id}', [UserController::class, 'update']);
 });
 
 Route::prefix('account')->middleware('auth:sanctum')->group(function () {

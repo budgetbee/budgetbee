@@ -8,6 +8,8 @@ import RecordForm from "./views/Record/Form";
 import RecordList from "./views/Record/List";
 import CategoryForm from "./views/Category/Form";
 import CategoryList from "./views/Category/List";
+import Settings from "./views/Settings/Settings";
+import SettingsUserForm from "./views/User/UserForm";
 import Login from "./views/Auth/Login";
 
 function AppRoutes() {
@@ -27,6 +29,8 @@ function AppRoutes() {
                 <Route path="/category" element={<CategoryForm />} />
                 <Route path="/category/list/:parent_id?" element={<CategoryList />} />
                 <Route path="/category/:category_id" element={<CategoryForm />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/settings/user/:user_id?" element={<SettingsUserForm />} />
             </Routes>
         </>
     );

@@ -9,15 +9,11 @@ use DateTime;
 
 class RecordController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
+
     public function get(Request $request)
     {
         $records = Record::where('user_id', $request->user()->id);
-        
+
         $page = $request->query('page');
         if ($page > 0) {
             $perPage = 20;
@@ -33,7 +29,9 @@ class RecordController extends Controller
 
     public function getById($id)
     {
-        $record = Record::find($id);
+        $record = Record::where('id', $id)->first();
+
+        $this->authorize('view', $record);
 
         return response()->json($record);
     }
@@ -72,21 +70,24 @@ class RecordController extends Controller
 
     public function update(Request $request, $id)
     {
+        $record = Record::find($id);
+
+        $this->authorize('update', $record);
+
         $this->validate($request, [
             'date' => 'required',
             'from_account_id' => 'required',
             'type' => 'required',
             'amount' => 'required',
         ]);
-
+        
         $data = $request->only('date', 'from_account_id', 'to_account_id', 'type', 'category_id', 'name', 'amount', 'description');
-
+        
         $data['amount'] = abs($data['amount']);
         if ($data['type'] == "expense" || $data['type'] == "transfer") {
             $data['amount'] = "-" . $data['amount'];
         }
-
-        $record = Record::find($id);
+        
         $record->fill($data);
         $record->save();
         if ($record->type == "transfer") {
@@ -99,14 +100,18 @@ class RecordController extends Controller
     public function delete($id)
     {
         $record = Record::find($id);
+
+        $this->authorize('update', $record);
+
         $record->delete();
 
         return response()->json([]);
     }
 
-    public function getLastRecords($number)
+    public function getLastRecords(Request $request, $number)
     {
-        $record = Record::orderByDesc('date')
+        $record = Record::where('user_id', $request->user()->id)
+            ->orderByDesc('date')
             ->orderByDesc('id')
             ->limit($number)
             ->get();
@@ -117,6 +122,7 @@ class RecordController extends Controller
     public function getRecordsByCategory(Request $request, $id)
     {
         $records = Record::where('category_id', $id)
+            ->where('user_id', $request->user()->id)
             ->orderByDesc('date')
             ->orderByDesc('id');
         $records = $request->query->get('from') ? $records->where('date', '>=', (new DateTime($request->query->get('from')))->format('Y-m-d')) : $records;
