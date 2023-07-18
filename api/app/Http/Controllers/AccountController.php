@@ -15,16 +15,18 @@ class AccountController extends Controller
      *
      * @return void
      */
-    public function get()
+    public function get(Request $request)
     {
-        $accounts = Account::all();
+        $accounts = Account::where('user_id', $request->user()->id)->get();
 
         return response()->json($accounts);
     }
 
-    public function getById($id)
+    public function getById(Request $request, $id)
     {
         $account = Account::find($id);
+
+        $this->authorize('view', $account);
 
         return response()->json($account);
     }
@@ -61,6 +63,9 @@ class AccountController extends Controller
         $data = $request->only('name', 'type_id', 'color', 'initial_balance');
 
         $account = Account::find($id);
+
+        $this->authorize('update', $account);
+
         $account->fill($data);
         $account->save();
 
@@ -70,6 +75,9 @@ class AccountController extends Controller
     public function delete($id)
     {
         $account = Account::find($id);
+
+        $this->authorize('update', $account);
+        
         if (is_object($account)) {
             $account->delete();
         }
@@ -122,7 +130,8 @@ class AccountController extends Controller
 
         $data = $request->only('balance');
 
-        $account = Account::find($id);
+        $account = Account::where('user_id', $request->user()->id)
+            ->where('id', $id)->get();
 
         $amount = $data['balance'] - $account->balance;
         $type = ($amount > 0) ? 'income' : 'expense';
