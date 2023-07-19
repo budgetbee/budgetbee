@@ -43,7 +43,7 @@ class RecordController extends Controller
             'from_account_id' => 'required|integer|exists:App\Models\Account,id',
             'to_account_id' => 'integer|exists:App\Models\Account,id',
             'category_id' => 'integer|exists:App\Models\Category,id',
-            'name' => 'string',
+            'name' => 'nullable|string',
             'type' => 'required|string',
             'amount' => 'required|numeric',
         ]);
