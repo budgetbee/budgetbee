@@ -21,7 +21,7 @@ BudgetBee is a personal budget system
 <img src="https://github.com/budgetbee/budgetbee/raw/main/web/assets/images/budgetbee_screenshot.webp" width="100%" />
 </p>
 
-If you want contribute in this project, you can!
+If you want to contribute to this project, you can!
 
 <a href="https://bmc.link/alejandrork" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 37px !important;width: 170px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
 
