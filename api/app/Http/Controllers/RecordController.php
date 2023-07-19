@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Record;
-use App\Models\Account;
 use DateTime;
+use Illuminate\Support\Facades\Log;
 
 class RecordController extends Controller
 {
@@ -43,7 +43,7 @@ class RecordController extends Controller
             'from_account_id' => 'required|integer|exists:App\Models\Account,id',
             'to_account_id' => 'integer|exists:App\Models\Account,id',
             'category_id' => 'integer|exists:App\Models\Category,id',
-            'name' => 'string',
+            'name' => 'nullable|string',
             'type' => 'required|string',
             'amount' => 'required|numeric',
         ]);
@@ -100,10 +100,11 @@ class RecordController extends Controller
     public function delete($id)
     {
         $record = Record::find($id);
-
-        $this->authorize('update', $record);
-
+        
+        $this->authorize('delete', $record);
+        
         $record->delete();
+        Log::info('Delete record', $record->toArray());
 
         return response()->json([]);
     }

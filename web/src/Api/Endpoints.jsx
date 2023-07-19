@@ -372,6 +372,19 @@ const Endpoints = {
         }
     },
 
+    deleteRecord: async (record_id) => {
+        try {
+            const response = await axios.delete(
+                `${API_BASE_URL}/record/${record_id}`,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            return null;
+        }
+    },
+
     getBalance: async (account_id, from_date) => {
         try {
             const id = account_id ?? "";

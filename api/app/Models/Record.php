@@ -25,6 +25,42 @@ class Record extends Model
 
     protected $hidden = ['category', 'account', 'toAccount'];
 
+    public static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($record) {
+            if ($record->type == 'transfer') {
+                static::withoutEvents(function () use ($record) {
+                    $recordAssoc = Record::find($record->link_record_id);
+                    if ($recordAssoc) {
+                        $recordAssoc->delete();
+                    }
+                });
+            }
+        });
+
+        static::updating(function ($record) {
+            if ($record->type == 'transfer') {
+                static::withoutEvents(function () use ($record) {
+                    $recordAssoc = Record::find($record->link_record_id);
+                    if ($recordAssoc) {
+                        $recordAssoc->fill([
+                            'amount' => -$record->amount,
+                            'date' => $record->date,
+                            'from_account_id' => $record->to_account_id,
+                            'to_account_id' => $record->from_account_id,
+                            'type' => $record->type,
+                            'name' => $record->name,
+                            'category_id' => $record->category_id
+                        ]);
+                        $recordAssoc->save();
+                    }
+                });
+            }
+        });
+    }
+
     public static function newFactory(): Factory
     {
         return RecordFactory::new();

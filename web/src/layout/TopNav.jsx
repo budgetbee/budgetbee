@@ -10,15 +10,16 @@ export default function TopNav({
     leftIcon,
     rightFunction,
     rightIcon,
+    right2Function,
+    right2Icon,
 }) {
     const [openSidebarMenu, setOpenSidebarMenu] = useState(false);
     const [activePage, setActivePage] = useState("");
 
     useEffect(() => {
-        // Get the active page from the URL's first parameter
         const url = window.location.href;
         const segments = url.split("/");
-        const activePageFromUrl = segments[3]; // Assuming the active page is the 3rd segment of the URL
+        const activePageFromUrl = segments[3];
 
         setActivePage(activePageFromUrl);
     }, []);
@@ -34,11 +35,11 @@ export default function TopNav({
     };
 
     const handleRightClick = () => {
-        if (rightFunction) {
-            rightFunction();
-        } else {
-            window.history.back();
-        }
+        rightFunction();
+    };
+
+    const handleRight2Click = () => {
+        right2Function();
     };
 
     if (menu) {
@@ -61,17 +62,30 @@ export default function TopNav({
                     className="text-white text-2xl"
                 />
             </div>
-            {rightFunction && (
-                <div
-                    className="py-3 pr-5 pl-10 cursor-pointer"
-                    onClick={handleRightClick}
-                >
-                    <FontAwesomeIcon
-                        icon={rightIcon}
-                        className="text-white text-2xl"
-                    />
-                </div>
-            )}
+            <div className="flex flex-row gap-x-2">
+                {rightFunction && (
+                    <div
+                        className="py-3 px-5 cursor-pointer"
+                        onClick={handleRightClick}
+                    >
+                        <FontAwesomeIcon
+                            icon={rightIcon}
+                            className="text-white text-2xl"
+                        />
+                    </div>
+                )}
+                {right2Function && (
+                    <div
+                        className="py-3 px-5 cursor-pointer"
+                        onClick={handleRight2Click}
+                    >
+                        <FontAwesomeIcon
+                            icon={right2Icon}
+                            className="text-white text-2xl"
+                        />
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
