@@ -8,7 +8,7 @@ import CategoryPicker from "./Components/CategoryPicker";
 import TopNav from "../../layout/TopNav";
 
 // Icons
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 export default function Form() {
     const [isLoading, setIsLoading] = useState(true);
@@ -75,6 +75,13 @@ export default function Form() {
         handleBackFunction();
     };
 
+    const handleDeleteRecord = async () => {
+        if (confirm("Delete this record?") === true) {
+            await Api.deleteRecord(record_id);
+            window.location.href = "/";
+        }
+    };
+
     if (isLoading) {
         return <></>;
     }
@@ -88,7 +95,15 @@ export default function Form() {
                 />
             )}
             <form>
-                <TopNav leftFunction={handleBackFunction} rightFunction={handleSaveForm} rightIcon={faCheck} />
+                <TopNav
+                    leftFunction={handleBackFunction}
+                    rightFunction={handleSaveForm}
+                    rightIcon={faCheck}
+                    {...(record_id && {
+                        right2Function: handleDeleteRecord,
+                        right2Icon: faTrash,
+                    })}
+                />
                 <div className="flex flex-col h-screen max-w-full">
                     <div className="basis-[6%]"></div>
                     <div
