@@ -101,7 +101,7 @@ class RecordController extends Controller
     {
         $record = Record::find($id);
 
-        $this->authorize('update', $record);
+        $this->authorize('delete', $record);
 
         $record->delete();
 
