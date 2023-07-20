@@ -21,7 +21,7 @@ class Account extends Model
         'user_id', 'name', 'type_id', 'color', 'initial_balance', 'current_balance'
     ];
 
-    protected $appends = ['type_name', 'balance'];
+    protected $appends = ['type_name', 'balance', 'total_incomes', 'total_expenses'];
 
     protected $hidden = ['type'];
 
@@ -46,6 +46,32 @@ class Account extends Model
 
         $initialBalance = $this->initial_balance;
         return Record::where('from_account_id', $this->id)
+            ->orderBy('date')
+            ->pluck('amount')
+            ->reduce(function ($balance, $amount) {
+                return $balance + $amount;
+            }, $initialBalance);
+    }
+
+    public function getTotalIncomesAttribute()
+    {
+
+        $initialBalance = $this->initial_balance;
+        return Record::where('from_account_id', $this->id)
+            ->where('type', 'income')
+            ->orderBy('date')
+            ->pluck('amount')
+            ->reduce(function ($balance, $amount) {
+                return $balance + $amount;
+            }, $initialBalance);
+    }
+
+    public function getTotalExpensesAttribute()
+    {
+
+        $initialBalance = $this->initial_balance;
+        return Record::where('from_account_id', $this->id)
+            ->where('type', 'expense')
             ->orderBy('date')
             ->pluck('amount')
             ->reduce(function ($balance, $amount) {
