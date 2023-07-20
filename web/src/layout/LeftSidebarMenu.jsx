@@ -114,12 +114,12 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
     const linkArray = Object.entries(links);
 
     return (
-        <div className={`fixed z-40 inset-0 flex ${open ? "" : "w-0"} md:w-64`}>
+        <div className={`fixed z-40 inset-0 flex ${open ? "" : "w-0"}`}>
             {showVersionModal && newVersionModal}
             {/* Overlay */}
             {open && (
                 <div
-                    className="fixed inset-0 bg-black opacity-50 md:hidden"
+                    className="fixed inset-0 bg-black opacity-50"
                     onClick={() => setOpen(false)}
                 ></div>
             )}
@@ -129,7 +129,7 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
                 ref={menuRef}
                 className={`flex flex-col relative transform duration-300 ease-in-out bg-black ${
                     open ? "translate-x-0" : "-translate-x-full"
-                } w-64 md:w-72 md:translate-x-0`}
+                } w-64`}
                 style={{ zIndex: open ? 1 : -1 }}
             >
                 {/* Sidebar Header */}
@@ -138,7 +138,7 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
                         {userName}
                     </h1>
                     <button
-                        className="text-white md:hidden"
+                        className="text-white"
                         onClick={() => setOpen(false)}
                     >
                         Close
