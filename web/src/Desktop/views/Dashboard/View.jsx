@@ -1,21 +1,20 @@
 import React, { useState } from "react";
+import Layout from "../../layout/Layout";
 
 import Accounts from "./Components/Accounts";
 import LastRecords from "./Components/LastRecords";
 import BalanceChart from "./Components/BalanceChart";
 import CategoryRecords from "./Components/CategoryRecords";
 import CategoryChart from "./Components/CategoryChart";
-import TopNav from "../../layout/TopNav";
-import FloatMenu from "../../layout/FloatMenu";
+// import TopNav from "../../layout/TopNav";
 
 export default function Dashboard() {
     const [activeAccount, setActiveAccount] = useState(null);
 
     return (
-        <div>
-            <TopNav menu={true} />
+        <Layout>
+            {/* <TopNav menu={true} /> */}
             <div className="flex flex-col gap-y-4 bg-black px-3 py-5 mt-14 pt-4">
-                <FloatMenu />
                 <div>
                     <Accounts
                         activeAccount={activeAccount}
@@ -35,6 +34,6 @@ export default function Dashboard() {
                     <LastRecords activeAccount={activeAccount} />
                 </div>
             </div>
-        </div>
+        </Layout>
     );
 }

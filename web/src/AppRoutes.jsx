@@ -1,5 +1,6 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
+import { isMobile } from "react-device-detect";
 
 import Dashboard from "./views/Dashboard/View";
 import AccountList from "./views/Account/List";
@@ -10,6 +11,17 @@ import CategoryForm from "./views/Category/Form";
 import CategoryList from "./views/Category/List";
 import Settings from "./views/Settings/Settings";
 import SettingsUserForm from "./views/User/UserForm";
+
+import DashboardDesktop from "./Desktop/views/Dashboard/View";
+import AccountListDesktop from "./Desktop/views/Account/List";
+import AccountFormDesktop from "./Desktop/views/Account/Form";
+import RecordFormDesktop from "./Desktop/views/Record/Form";
+import RecordListDesktop from "./Desktop/views/Record/List";
+import CategoryFormDesktop from "./Desktop/views/Category/Form";
+import CategoryListDesktop from "./Desktop/views/Category/List";
+import SettingsDesktop from "./Desktop/views/Settings/Settings";
+import SettingsUserFormDesktop from "./Desktop/views/User/UserForm";
+
 import Login from "./views/Auth/Login";
 
 function AppRoutes() {
@@ -17,20 +29,20 @@ function AppRoutes() {
     return (
         <>
             <Routes>
-                <Route exact path="/" element={<Dashboard />} />
+                <Route exact path="/" element={isMobile ? <Dashboard /> : <DashboardDesktop />} />
                 <Route exact path="/login" element={<Login />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/accounts/" element={<AccountList />} />
-                <Route path="/account" element={<AccountForm />} />
-                <Route path="/account/:account_id" element={<AccountForm />} />
-                <Route path="/record" element={<RecordForm />} />
-                <Route path="/record/list/:account_id?" element={<RecordList />} />
-                <Route path="/record/:record_id" element={<RecordForm />} />
-                <Route path="/category" element={<CategoryForm />} />
-                <Route path="/category/list/:parent_id?" element={<CategoryList />} />
-                <Route path="/category/:category_id" element={<CategoryForm />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/settings/user/:user_id?" element={<SettingsUserForm />} />
+                <Route path="/dashboard" element={isMobile ? <Dashboard /> : <DashboardDesktop />} />
+                <Route path="/accounts/" element={isMobile ? <AccountList /> : <AccountListDesktop />} />
+                <Route path="/account" element={isMobile ? <AccountForm /> : <AccountFormDesktop />} />
+                <Route path="/account/:account_id" element={isMobile ? <AccountForm /> : <AccountFormDesktop />} />
+                <Route path="/record" element={isMobile ? <RecordForm /> : <RecordFormDesktop />} />
+                <Route path="/record/list/:account_id?" element={isMobile ? <RecordList /> : <RecordListDesktop />} />
+                <Route path="/record/:record_id" element={isMobile ? <RecordForm /> : <RecordFormDesktop />} />
+                <Route path="/category" element={isMobile ? <CategoryForm /> : <CategoryFormDesktop />} />
+                <Route path="/category/list/:parent_id?" element={isMobile ? <CategoryList /> : <CategoryListDesktop />} />
+                <Route path="/category/:category_id" element={isMobile ? <CategoryForm /> : <CategoryFormDesktop />} />
+                <Route path="/settings" element={isMobile ? <Settings /> : <SettingsDesktop />} />
+                <Route path="/settings/user/:user_id?" element={isMobile ? <SettingsUserForm /> : <SettingsUserFormDesktop />} />
             </Routes>
         </>
     );

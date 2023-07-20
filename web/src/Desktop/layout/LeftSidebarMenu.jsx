@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link } from "react-router-dom";
 import Cookies from "universal-cookie";
@@ -9,11 +9,9 @@ import {
     faGear,
 } from "@fortawesome/free-solid-svg-icons";
 
-import Api from "../Api/Endpoints";
+import Api from "../../Api/Endpoints";
 
-export default function LeftSidebarMenu({ open, setOpen, activePage }) {
-    const menuRef = useRef();
-    const [userName, setUserName] = useState("");
+export default function LeftSidebarMenu({ activePage }) {
     const [appVersion, setAppVersion] = useState("");
     const [appLatestVersion, setAppLatestVersion] = useState("");
     const [showVersionModal, setShowVersionModal] = useState(false);
@@ -22,7 +20,6 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
 
     useEffect(() => {
         async function getUser() {
-            const data = await Api.getUser();
             const appVersion = await Api.getVersion();
             setAppVersion(appVersion.version);
             setAppLatestVersion(appVersion.latest_version);
@@ -37,7 +34,6 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
                 });
                 setShowVersionModal(true);
             }
-            setUserName(data.name);
         }
         getUser();
     }, []);
@@ -114,37 +110,15 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
     const linkArray = Object.entries(links);
 
     return (
-        <div className={`fixed z-40 inset-0 flex ${open ? "" : "w-0"} md:w-64`}>
+        <div className={`flex h-screen relative block`}>
             {showVersionModal && newVersionModal}
-            {/* Overlay */}
-            {open && (
-                <div
-                    className="fixed inset-0 bg-black opacity-50 md:hidden"
-                    onClick={() => setOpen(false)}
-                ></div>
-            )}
+
+            <div className="relative h-screen w-72"></div>
 
             {/* Sidebar */}
             <div
-                ref={menuRef}
-                className={`flex flex-col relative transform duration-300 ease-in-out bg-black ${
-                    open ? "translate-x-0" : "-translate-x-full"
-                } w-64 md:w-72 md:translate-x-0`}
-                style={{ zIndex: open ? 1 : -1 }}
+                className={`fixed flex flex-col transform h-screen duration-300 ease-in-out bg-gray-900 w-72`}
             >
-                {/* Sidebar Header */}
-                <div className="flex items-center justify-between p-4 bg-gray-900">
-                    <h1 className="text-white text-xl font-semibold">
-                        {userName}
-                    </h1>
-                    <button
-                        className="text-white md:hidden"
-                        onClick={() => setOpen(false)}
-                    >
-                        Close
-                    </button>
-                </div>
-
                 {/* Menu Options */}
                 <nav className="py-4 text-white text-md">
                     <ul>
