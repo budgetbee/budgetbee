@@ -98,7 +98,7 @@ export default function LeftSidebarMenu({ activePage }) {
                     <button
                         type="button"
                         onClick={handleCloseVersionModal}
-                        class="text-white bg-indigo-700 hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2"
+                        className="text-white bg-indigo-700 hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2"
                     >
                         Close
                     </button>
