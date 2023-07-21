@@ -44,7 +44,7 @@ class RecordFactory extends Factory
         
         switch ($recordType) {
             case 'income':
-                $randomCategory = 10;
+                $randomCategory = Category::where('parent_category_id', 10)->inRandomOrder()->first()->id;
                 $amount = $faker->randomFloat(2, 0, 777);
                 break;
             case 'expense':
