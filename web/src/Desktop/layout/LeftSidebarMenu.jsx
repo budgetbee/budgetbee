@@ -10,6 +10,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import Api from "../../Api/Endpoints";
+import logo from "../../assets/images/logo_color_1.svg";
 
 export default function LeftSidebarMenu({ activePage }) {
     const [appVersion, setAppVersion] = useState("");
@@ -81,7 +82,7 @@ export default function LeftSidebarMenu({ activePage }) {
     };
 
     const newVersionModal = (
-        <div className="fixed inset-0 flex flex-col items-center justify-center bg-black/50">
+        <div className="fixed z-50 inset-0 flex flex-col items-center justify-center bg-black/50">
             <div className="flex flex-col divide-y px-5 py-3 w-11/12 bg-gray-900 text-white rounded">
                 <div className="py-3 text-xl">BudgetBee has a new version!</div>
                 <div className="py-3 max-h-96 overflow-auto w-full block">
@@ -119,6 +120,9 @@ export default function LeftSidebarMenu({ activePage }) {
             <div
                 className={`fixed flex flex-col transform h-screen duration-300 ease-in-out bg-gray-900 w-72`}
             >
+                <div className="px-4 pt-10 pb-5">
+                    <img className="px-5" src={logo} alt="logo" />
+                </div>
                 {/* Menu Options */}
                 <nav className="py-4 text-white text-md">
                     <ul>
@@ -128,7 +132,7 @@ export default function LeftSidebarMenu({ activePage }) {
                             return (
                                 <Link key={key} to={link.href}>
                                     <li
-                                        className={`flex flex-row gap-x-3 items-center px-4 py-3 cursor-pointer ${activeClass}`}
+                                        className={`flex flex-row gap-x-3 items-center px-4 py-3 cursor-pointer ${activeClass} hover:bg-gray-700/50`}
                                     >
                                         <FontAwesomeIcon
                                             icon={link.icon}
