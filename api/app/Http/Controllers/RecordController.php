@@ -109,15 +109,31 @@ class RecordController extends Controller
         return response()->json([]);
     }
 
-    public function getLastRecords(Request $request, $number)
+    public function getLastRecords(Request $request)
     {
-        $record = Record::where('user_id', $request->user()->id)
-            ->orderByDesc('date')
+        $query = Record::where('user_id', $request->user()->id);
+
+        if ($request->has('account_id')) {
+            $query->where('from_account_id', $request->query('account_id'));
+        }
+        if ($request->has('from_date')) {
+            $query->where('date', '>=', (new DateTime($request->query('from_date')))->format('Y-m-d'));
+        }
+        if ($request->has('to_date')) {
+            $query->where('date', '<=', (new DateTime($request->query('to_date')))->format('Y-m-d'));
+        }
+        if ($request->has('search_term')) {
+            $query->where('name', 'like', '%' . $request->query('search_term') . '%');
+        }
+        if ($request->has('limit')) {
+            $query->limit($request->query('limit'));
+        }
+
+        $records = $query->orderByDesc('date')
             ->orderByDesc('id')
-            ->limit($number)
             ->get();
 
-        return response()->json($record);
+        return response()->json($records);
     }
 
     public function getRecordsByCategory(Request $request, $id)

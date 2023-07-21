@@ -1,26 +1,18 @@
 import React, { useEffect, useState } from "react";
-import numeral from "numeral";
-// import "numeral/locales/es";
 
 import Api from "../../../../Api/Endpoints";
 import DoughnutChart from "../../../../Components/Chart/DoughnutChart";
-import DatesSelect from "../../../../Components/Miscellaneous/DatesSelect";
 import Loader from "../../../../Components/Miscellaneous/Loader";
 
-export default function CategoryChart({ activeAccount }) {
+export default function CategoryExpenseChart({ searchData }) {
     const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState(null);
     const [parentCategories, setParentCategories] = useState(null);
-    const [expensesBalance, setExpensesBalance] = useState(null);
-    const [fromDate, setFromDate] = useState(null);
     const [parentCategory, setParentCategory] = useState(null);
 
-    // numeral.locale("es");
-
     useEffect(() => {
-        async function getCategoriesBalance() {
-            const parentCategories = await Api.getCategoriesBalance(activeAccount, fromDate);
-            const balance = await Api.getExpensesBalance(activeAccount, fromDate);
+        async function getExpenseCategoriesBalance() {
+            const parentCategories = await Api.getExpenseCategoriesBalance(searchData);
 
             const data = {};
             Object.keys(parentCategories).forEach((key) => {
@@ -33,13 +25,12 @@ export default function CategoryChart({ activeAccount }) {
 
             setData(data);
             setParentCategories(parentCategories);
-            setExpensesBalance(balance);
             setIsLoading(false);
         }
         if (!parentCategory) {
-            getCategoriesBalance();
+            getExpenseCategoriesBalance();
         }
-    }, [activeAccount, fromDate]);
+    }, [searchData]);
 
     useEffect(() => {
         if (parentCategory) {
@@ -73,13 +64,10 @@ export default function CategoryChart({ activeAccount }) {
 
     return (
         <div>
-            <div className="flex flex-col gap-x-2 p-4 bg-gray-700 rounded py-4">
+            <div className="flex flex-col gap-x-2 p-4 bg-gray-700 rounded-3xl py-4">
                 <div className="flex flex-row justify-between items-center text-white text-2xl pb-4">
                     <div className="font-bold">
-                        {numeral(expensesBalance).format("$0,0.00 a")}
-                    </div>
-                    <div>
-                        <DatesSelect setDates={setFromDate} />
+                        Expense
                     </div>
                 </div>
                 <div className="h-64">

@@ -7,7 +7,7 @@ import Api from "../../../../Api/Endpoints";
 import RecordCard from "../../../../Components/Record/Card";
 import DatesSelect from "../../../../Components/Miscellaneous/DatesSelect";
 
-export default function CategoryRecords({ activeAccount }) {
+export default function CategoryRecords({ searchData }) {
     const [isLoading, setIsLoading] = useState(true);
     const [showRecords, setShowRecords] = useState(false);
     const [data, setData] = useState(null);
@@ -19,15 +19,12 @@ export default function CategoryRecords({ activeAccount }) {
 
     useEffect(() => {
         async function getBalanceByCategory() {
-            const data = await Api.getBalanceByCategory(
-                activeAccount,
-                fromDate
-            );
+            const data = await Api.getBalanceByCategory(searchData);
             setData(Object.entries(data));
             setIsLoading(false);
         }
         getBalanceByCategory();
-    }, [activeAccount, fromDate]);
+    }, [searchData]);
 
     const handleExpand = (parentId) => {
         if (expandedItems.includes(parentId)) {
@@ -87,19 +84,16 @@ export default function CategoryRecords({ activeAccount }) {
     return (
         <div>
             {showRecords && recordsModal}
-            <div className="flex flex-col gap-y-3 p-4 bg-gray-700 rounded py-4 text-white text-lg">
+            <div className="flex flex-col gap-y-3 p-4 bg-gray-700 rounded-3xl py-4 text-white text-lg">
                 <div className="flex flex-row justify-between items-center text-white text-2xl pb-4">
                     <div className="font-bold">Expenses</div>
-                    <div>
-                        <DatesSelect setDates={setFromDate} />
-                    </div>
                 </div>
                 <div className="flex flex-col divide-y divide-gray-500">
                     {data.map(([key, type]) => {
                         return (
                             <div
                                 key={key}
-                                className="flex flex-col gap-y-3 py-5"
+                                className="flex flex-col gap-y-3 py-5 cursor-pointer"
                             >
                                 {Object.entries(type).map(
                                     ([keyParent, parent]) => {

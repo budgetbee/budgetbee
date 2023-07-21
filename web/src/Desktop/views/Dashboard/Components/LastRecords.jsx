@@ -4,24 +4,25 @@ import Api from "../../../../Api/Endpoints";
 import RecordCard from "../../../../Components/Record/Card";
 import { Link } from "react-router-dom";
 
-export default function LastRecords({ activeAccount }) {
+export default function LastRecords({ searchData }) {
     const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState(null);
 
     useEffect(() => {
         async function getLastRecords() {
-            const data = await Api.getLastRecords(5, activeAccount);
+            searchData.limit = 5;
+            const data = await Api.getLastRecords(searchData);
             setData(data);
             setIsLoading(false);
         }
         getLastRecords();
-    }, [activeAccount]);
+    }, [searchData]);
 
     if (isLoading) {
         return <></>;
     }
 
-    const account_id = activeAccount ?? "";
+    const account_id = searchData.account_id ?? "";
 
     return (
         <div>

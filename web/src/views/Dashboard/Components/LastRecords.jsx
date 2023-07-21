@@ -10,7 +10,8 @@ export default function LastRecords({ activeAccount }) {
 
     useEffect(() => {
         async function getLastRecords() {
-            const data = await Api.getLastRecords(5, activeAccount);
+            const searchData = {limit: 5, account_id: activeAccount};
+            const data = await Api.getLastRecords(searchData);
             setData(data);
             setIsLoading(false);
         }

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import numeral from "numeral";
-// import "numeral/locales/es";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import Api from "../../../Api/Endpoints";
@@ -15,14 +14,12 @@ export default function CategoryRecords({ activeAccount }) {
     const [expandedItems, setExpandedItems] = useState([]);
     const [fromDate, setFromDate] = useState(null);
 
-    // numeral.locale("es");
-
     useEffect(() => {
         async function getBalanceByCategory() {
-            const data = await Api.getBalanceByCategory(
-                activeAccount,
-                fromDate
-            );
+            const data = await Api.getBalanceByCategory({
+                account_id: activeAccount,
+                from_date: fromDate,
+            });
             setData(Object.entries(data));
             setIsLoading(false);
         }

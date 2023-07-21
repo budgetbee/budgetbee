@@ -45,7 +45,7 @@ Route::prefix('account')->middleware('auth:sanctum')->group(function () {
 
 Route::prefix('record')->middleware('auth:sanctum')->group(function () {
     Route::get('', [RecordController::class, 'get']);
-    Route::get('last{number}', [RecordController::class, 'getLastRecords']);
+    Route::get('last', [RecordController::class, 'getLastRecords']);
     Route::get('category/{id}', [RecordController::class, 'getRecordsByCategory']);
     Route::get('{id}', [RecordController::class, 'getById']);
     Route::post('', [RecordController::class, 'create']);
@@ -65,15 +65,14 @@ Route::prefix('category')->middleware('auth:sanctum')->group(function () {
 
 Route::prefix('balance')->middleware('auth:sanctum')->group(function () {
     Route::get('', [BalanceController::class, 'getBalance']);
+    Route::get('all', [BalanceController::class, 'getAll']);
     Route::get('expenses', [BalanceController::class, 'getExpensesBalance']);
-    Route::get('expenses/{id}', [BalanceController::class, 'getExpensesBalanceByAccount']);
     Route::get('timeline', [BalanceController::class, 'getTimeline']);
     Route::get('category', [BalanceController::class, 'getBalanceByCategory']);
     Route::get('category/account/{id}', [BalanceController::class, 'getBalanceByCategoryAndAccount']);
-    Route::get('categories', [BalanceController::class, 'getByCategories']);
-    Route::get('categories/{id}', [BalanceController::class, 'getByCategoriesAndAccount']);
+    Route::get('categories/income', [BalanceController::class, 'getByIncomeCategories']);
+    Route::get('categories/expense', [BalanceController::class, 'getByExpenseCategories']);
+    Route::get('categories/top', [BalanceController::class, 'getTopExpenses']);
     Route::get('subcategories/{id}', [BalanceController::class, 'getBySubcategories']);
     Route::get('subcategories/{id}/account/{accountId}', [BalanceController::class, 'getBySubcategoriesAndAccount']);
-    Route::get('{id}', [BalanceController::class, 'getBalanceByAccount']);
-    Route::get('timeline/{id}', [BalanceController::class, 'getTimelineByAccount']);
 });

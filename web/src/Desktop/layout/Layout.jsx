@@ -3,7 +3,7 @@ import LeftSidebarMenu from "./LeftSidebarMenu";
 
 const Layout = ({ children }) => {
   return (
-    <div className="flex flex-row bg-gray-900">
+    <div className="flex flex-row bg-gray-800 text-white">
       <LeftSidebarMenu />
       <div className="w-full">{children}</div>
     </div>

@@ -15,7 +15,7 @@ export default function DoughnutChart({ data, setParentKey }) {
             {
                 data: dataEntries.map(([, value]) => value.amount),
                 backgroundColor: dataEntries.map(([, value]) => value.color),
-                borderColor: ["rgba(75,192,192,0)"],
+                borderColor: ["rgb(55,65,81, 0)"],
             },
         ],
     };
@@ -36,6 +36,11 @@ export default function DoughnutChart({ data, setParentKey }) {
     const chartRef = useRef(null);
 
     const onClick = (event: MouseEvent<HTMLCanvasElement>) => {
+
+        if (!setParentKey) {
+            return;
+        }
+
         const chart = chartRef.current;
 
         if (isZoom) {
@@ -63,7 +68,9 @@ export default function DoughnutChart({ data, setParentKey }) {
 
     const handleZoomout = () => {
         setIsZoom(false);
-        setParentKey(null);
+        if (setParentKey) {
+            setParentKey(null);
+        }
     };
 
     return (

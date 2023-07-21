@@ -1,17 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 
+import Layout from "../../layout/Layout";
 import Api from "../../../Api/Endpoints";
 import AccountCard from "../../../Components/Account/Card";
-import TopNav from "../../../layout/TopNav";
 
-// Icons
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBars, faPlus } from "@fortawesome/free-solid-svg-icons";
 
 export default function List() {
     const [isLoading, setIsLoading] = useState(true);
-    const [openSidebarMenu, setOpenSidebarMenu] = useState(false);
     const [data, setData] = useState(null);
 
     useEffect(() => {
@@ -34,16 +29,13 @@ export default function List() {
         });
     }
 
-    const handleAddNewClick = () => {
-        window.location.href = '/account';
-    };
-
     return (
-        <div className="absolute bg-gray-800 top-0 left-0 w-full min-h-screen">
-            <TopNav menu={true} rightFunction={handleAddNewClick} rightIcon={faPlus} />
-            <div className="flex flex-col divide-y divide-gray-600/50 rounded p-px mt-14">
-                {view}
+        <Layout>
+            <div className="bg-gray-800 top-0 left-0 w-full min-h-screen">
+                <div className="flex flex-col divide-y divide-gray-600/50 rounded p-px mt-14">
+                    {view}
+                </div>
             </div>
-        </div>
+        </Layout>
     );
 }

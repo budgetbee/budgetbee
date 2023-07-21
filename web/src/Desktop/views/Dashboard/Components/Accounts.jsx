@@ -1,15 +1,9 @@
-import { React, useEffect, useState } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-
-import "swiper/css";
-import "swiper/css/free-mode";
-import "swiper/css/pagination";
-import { FreeMode, Pagination } from "swiper";
+import React, { useEffect, useState } from "react";
 
 import Api from "../../../../Api/Endpoints";
 import AccountCardMini from "../../../../Components/Account/CardMini";
 
-export default function Accounts({ activeAccount, setActiveAccount }) {
+export default function Accounts({ activeAccount, setSearchData }) {
     const [isLoading, setIsLoading] = useState(true);
     const [adjustBalanceOpen, setAdjustBalanceOpen] = useState(false);
     const [data, setData] = useState(null);
@@ -24,16 +18,18 @@ export default function Accounts({ activeAccount, setActiveAccount }) {
     }, [activeAccount]);
 
     const handleClick = (id) => {
-        let check = id == activeAccount ? null : id;
-        setActiveAccount(check);
-    };
+        const check = id === activeAccount ? null : id;
+        const account = { account_id: check };
+        setSearchData((prevData) => ({ ...prevData, ...account }));
+    };    
 
     const handleSaveForm = async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
         const formObject = Object.fromEntries(formData.entries());
         await Api.accountAdjustBalance(formObject, activeAccount);
-        setActiveAccount(null);
+        const account = { account_id: null };
+        setSearchData((prevData) => ({ ...prevData, ...account }));
         setAdjustBalanceOpen(false);
     };
 
@@ -62,13 +58,13 @@ export default function Accounts({ activeAccount, setActiveAccount }) {
                         type="number"
                         name="balance"
                         id="balance"
-                        class="block w-full p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                        className="block w-full p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500"
                         step="any"
                     ></input>
 
                     <button
                         type="submit"
-                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+                        className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
                     >
                         SAVE
                     </button>
@@ -78,29 +74,25 @@ export default function Accounts({ activeAccount, setActiveAccount }) {
     );
 
     return (
-        <div className="rounded p-2 max-w-full block">
+        <div className="rounded-2xl p-5 max-w-full block bg-gray-700">
             {adjustBalanceOpen && adjustBalanceForm}
-            <Swiper
-                spaceBetween={10}
-                slidesPerView={2.5}
-                freeMode={true}
-                modules={[FreeMode, Pagination]}
-            >
+            <div className="flex flex-col gap-y-2 max-h-96 overflow-y-scroll">
                 {data.map((account, index) => {
                     let isGray =
                         activeAccount != null && activeAccount !== account.id;
                     return (
-                        <SwiperSlide key={index}>
-                            <div onClick={() => handleClick(account.id)}>
-                                <AccountCardMini
-                                    account={account}
-                                    isGray={isGray}
-                                />
-                            </div>
-                        </SwiperSlide>
+                        <div
+                            key={index}
+                            onClick={() => handleClick(account.id)}
+                        >
+                            <AccountCardMini
+                                account={account}
+                                isGray={isGray}
+                            />
+                        </div>
                     );
                 })}
-            </Swiper>
+            </div>
             {activeAccount && adjustBalance}
         </div>
     );
