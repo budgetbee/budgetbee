@@ -46,10 +46,12 @@ class BalanceController extends Controller
         $records = $query->get();
 
         $data = $records->reduce(function ($carry, $record) {
-            if ($record->type == 'income') {
-                $carry['incomes'] += $record->amount;
-            } elseif ($record->type == 'expense') {
-                $carry['expenses'] += $record->amount;
+            if ($record->type !== 'expenses') {
+                if ($record->parent_category_id == 10) {
+                    $carry['incomes'] += $record->amount;
+                } else {
+                    $carry['expenses'] += $record->amount;
+                }
             }
             $carry['balance'] += $record->amount;
             return $carry;
@@ -170,7 +172,7 @@ class BalanceController extends Controller
             $childKey = $record->category_name;
             $data[$childKey]['amount'] ??= 0;
 
-            $amount = round(-$record->amount, 2);
+            $amount = round($record->amount, 2);
 
             $data[$childKey]['amount'] += $amount;
         }
