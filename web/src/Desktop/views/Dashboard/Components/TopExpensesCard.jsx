@@ -25,6 +25,7 @@ export default function TopExpensesCard({ searchData }) {
                     const inline_style = {
                         backgroundColor: category.color,
                     };
+                    const name = category.name.length > 15 ? category.name.slice(0, 15) + "..." : category.name;
                     return (
                         <div
                             key={index}
@@ -37,7 +38,7 @@ export default function TopExpensesCard({ searchData }) {
                                 >
                                     <FontAwesomeIcon icon={category.icon} className="text-sm"/>
                                 </div>
-                                <span>{category.name}</span>
+                                <span>{name}</span>
                             </div>
                             <div>
                                 <span className="font-bold">

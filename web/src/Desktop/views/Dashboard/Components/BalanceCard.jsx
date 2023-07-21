@@ -17,8 +17,8 @@ export default function BalanceCard({ searchData }) {
     }, [searchData]);
 
     return (
-        <div className="flex flex-col gap-x-2 px-10 py-4 bg-gray-700 rounded-3xl py-4 h-full">
-            <div className="flex flex-row justify-between items-center text-white text-2xl pb-4">
+        <div className="flex flex-col gap-x-2 items-center justify-between px-5 py-4 bg-gray-700 rounded-3xl py-4 h-full">
+            <div className="flex flex-row justify-between items-center text-white text-2xl">
                 <div className="flex flex-row gap-x-3 items-center">
                     <FontAwesomeIcon
                         icon="fa-solid fa-coins"

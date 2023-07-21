@@ -19,7 +19,7 @@ export default function IncomeExpensesBalanceCard({ searchData }) {
     }, [searchData]);
 
     return (
-        <div className="grid grid-cols-2 divide-x divide-solid divide-gray-400 px-5 py-4 bg-gray-700 rounded-3xl py-4 h-full">
+        <div className="grid grid-cols-2 divide-x divide-solid divide-gray-400 items-center py-4 bg-gray-700 rounded-3xl py-4 h-full">
             <div className="flex flex-col items-center text-center">
                 <div className="flex flex-row justify-between items-center text-white text-lg pb-4">
                     <div className="flex flex-row gap-x-3 items-center">

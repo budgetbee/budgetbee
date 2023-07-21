@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import Layout from "../../layout/Layout";
+import moment from "moment";
 
+import Layout from "../../layout/Layout";
 import Accounts from "./Components/Accounts";
 import LastRecords from "./Components/LastRecords";
 import BalanceCard from "./Components/BalanceCard";
@@ -13,7 +14,10 @@ import CategoryExpenseChart from "./Components/CategoryExpenseChart";
 import TopNav from "../../layout/TopNav";
 
 export default function Dashboard() {
-    const [searchData, setSearchData] = useState([]);
+    const [searchData, setSearchData] = useState({
+        from_date: moment().startOf("year").format("YYYY-MM-DD"),
+        to_date: moment().format("YYYY-MM-DD"),
+    });
 
     return (
         <Layout>
@@ -24,12 +28,12 @@ export default function Dashboard() {
                         <div className="basis-2/12">
                             <BalanceCard searchData={searchData} />
                         </div>
-                        <div className="basis-5/12">
+                        <div className="basis-4/12">
                             <IncomeExpensesBalanceCard
                                 searchData={searchData}
                             />
                         </div>
-                        <div className="basis-5/12">
+                        <div className="grow">
                             <TopExpensesCard searchData={searchData} />
                         </div>
                     </div>
