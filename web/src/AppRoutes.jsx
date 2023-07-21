@@ -13,7 +13,7 @@ import Settings from "./views/Settings/Settings";
 import SettingsUserForm from "./views/User/UserForm";
 
 import DashboardDesktop from "./Desktop/views/Dashboard/View";
-import AccountListDesktop from "./Desktop/views/Account/List";
+import AccountsDesktop from "./Desktop/views/Account/View";
 import AccountFormDesktop from "./Desktop/views/Account/Form";
 import RecordFormDesktop from "./Desktop/views/Record/Form";
 import RecordListDesktop from "./Desktop/views/Record/List";
@@ -32,7 +32,7 @@ function AppRoutes() {
                 <Route exact path="/" element={isMobile ? <Dashboard /> : <DashboardDesktop />} />
                 <Route exact path="/login" element={<Login />} />
                 <Route path="/dashboard" element={isMobile ? <Dashboard /> : <DashboardDesktop />} />
-                <Route path="/accounts/" element={isMobile ? <AccountList /> : <AccountListDesktop />} />
+                <Route path="/accounts/" element={isMobile ? <AccountList /> : <AccountsDesktop />} />
                 <Route path="/account" element={isMobile ? <AccountForm /> : <AccountFormDesktop />} />
                 <Route path="/account/:account_id" element={isMobile ? <AccountForm /> : <AccountFormDesktop />} />
                 <Route path="/record" element={isMobile ? <RecordForm /> : <RecordFormDesktop />} />
