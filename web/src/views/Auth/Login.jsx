@@ -1,12 +1,11 @@
 import { React, useState } from "react";
 
 import Api from "../../Api/Endpoints";
-import logo from "./logo.png";
+import logo from "../../assets/images/logo.png";
 
 // Icons
 export default function Login() {
     const [isLoading, setIsLoading] = useState(false);
-    const [formValues, setFormValues] = useState(null);
     const [formError, setFormError] = useState("");
 
     const handleSendForm = async (e) => {
@@ -15,7 +14,6 @@ export default function Login() {
         setFormError("");
         const formData = new FormData(e.target);
         const formObject = Object.fromEntries(formData.entries());
-        setFormValues(formObject);
         const ret = await Api.userLogin(formObject);
         if (ret !== null) {
             window.location = "/";
@@ -121,33 +119,6 @@ export default function Login() {
                                         className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
                                         required=""
                                     ></input>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-start">
-                                        <div className="flex items-center h-5">
-                                            <input
-                                                id="remember"
-                                                aria-describedby="remember"
-                                                type="checkbox"
-                                                className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300"
-                                                required=""
-                                            ></input>
-                                        </div>
-                                        <div className="ml-3 text-sm">
-                                            <label
-                                                for="remember"
-                                                className="text-gray-500"
-                                            >
-                                                Remember me
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <a
-                                        href="#"
-                                        className="text-sm font-medium text-primary-600 hover:underline"
-                                    >
-                                        Forgot password?
-                                    </a>
                                 </div>
                                 {button}
                             </form>
