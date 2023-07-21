@@ -44,7 +44,8 @@ class RecordFactory extends Factory
         
         switch ($recordType) {
             case 'income':
-                $amount = $faker->randomFloat(2, 0, 500);
+                $randomCategory = 10;
+                $amount = $faker->randomFloat(2, 0, 777);
                 break;
             case 'expense':
                 $amount = $faker->randomFloat(2, -300, 10);
