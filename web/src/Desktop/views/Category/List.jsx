@@ -1,145 +1,177 @@
-import { React, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-
+import React, { useEffect, useState } from "react";
+import Layout from "../../layout/Layout";
 import Api from "../../../Api/Endpoints";
-
-// Icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faPlus } from "@fortawesome/free-solid-svg-icons";
 
 export default function List() {
-    const [isLoading, setIsLoading] = useState(true);
-    const [parentCategories, setParentCategories] = useState(null);
-    const [categories, setCategories] = useState(null);
-    const [parentCategory, setParentCategory] = useState(null);
+  const [parentCategories, setParentCategories] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [parentCategory, setParentCategory] = useState();
+  const [newCategory, setNewCategory] = useState(null);
+  const [categoryToEdit, setCategoryToEdit] = useState(null);
 
-    useEffect(() => {
-        async function getParentCategories() {
-            const data = await Api.getParentCategories();
-            setParentCategories(data);
-            setIsLoading(false);
-        }
-        getParentCategories();
-    }, []);
-
-    useEffect(() => {
-        if (parentCategory !== null) {
-            setIsLoading(true);
-            async function getCategoriesByParent() {
-                const data = await Api.getCategoriesByParent(parentCategory);
-                setCategories(data);
-                setIsLoading(false);
-            }
-            getCategoriesByParent();
-        }
-    }, [parentCategory]);
-
-    const handleParentCategoryClick = (id) => {
-        setParentCategory(id);
-    };
-
-    const handleRemoveParentCategory = () => {
-        setParentCategory(null);
-    };
-
-    if (isLoading) {
-        return <></>;
+  useEffect(() => {
+    async function fetchParentCategories() {
+      const data = await Api.getParentCategories();
+      setParentCategories(data);
     }
+    fetchParentCategories();
+  }, []);
 
-    let body;
-
-    if (parentCategory !== null && categories !== null) {
-        body = (
-            <div className="">
-                <div className="fixed w-full top-0 flex flex-row justify-between bg-gray-700 items-center px-5 h-14">
-                    <div onClick={handleRemoveParentCategory}>
-                        <FontAwesomeIcon
-                            icon={faArrowLeft}
-                            className={"text-white text-2xl"}
-                        />
-                    </div>
-                    <div>
-                        <Link to="/category">
-                            <FontAwesomeIcon
-                                icon={faPlus}
-                                className={"text-white text-2xl"}
-                            />
-                        </Link>
-                    </div>
-                </div>
-                <div className="flex flex-col gap-y-5 text-xl p-5 mt-14 pt-4">
-                    {categories.map((category, index) => {
-                        return (
-                            <Link to={"/category/" + category.id}>
-                                <div
-                                    className="flex flex-row gap-x-5 items-center text-white"
-                                    index={index}
-                                >
-                                    <div
-                                        className="w-12 h-12 rounded-full flex items-center justify-center"
-                                        style={{ background: category.color }}
-                                    >
-                                        <FontAwesomeIcon icon={category.icon} />
-                                    </div>
-                                    <div>{category.name}</div>
-                                </div>
-                            </Link>
-                        );
-                    })}
-                </div>
-            </div>
-        );
-    } else {
-        body = (
-            <div className="">
-                <div className="fixed w-full top-0 flex flex-row justify-between bg-gray-700 items-center px-5 h-14">
-                    <div>
-                        <Link to={"/dashboard"}>
-                            <FontAwesomeIcon
-                                icon={faArrowLeft}
-                                className={"text-white text-2xl"}
-                            />
-                        </Link>
-                    </div>
-                    <div>
-                        <Link to="/category">
-                            <FontAwesomeIcon
-                                icon={faPlus}
-                                className={"text-white text-2xl"}
-                            />
-                        </Link>
-                    </div>
-                </div>
-                <div className="flex flex-col gap-y-5 text-xl p-5 mt-14 pt-4">
-                    {parentCategories.map((parentCategory, index) => {
-                        return (
-                            <div
-                                className="flex flex-row gap-x-5 items-center text-white"
-                                index={index}
-                                onClick={() =>
-                                    handleParentCategoryClick(parentCategory.id)
-                                }
-                            >
-                                <div
-                                    className="w-12 h-12 rounded-full flex items-center justify-center"
-                                    style={{ background: parentCategory.color }}
-                                >
-                                    <FontAwesomeIcon
-                                        icon={parentCategory.icon}
-                                    />
-                                </div>
-                                <div>{parentCategory.name}</div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-        );
+  useEffect(() => {
+    async function fetchCategoriesByParent() {
+      if (parentCategory) {
+        const data = await Api.getCategoriesByParent(parentCategory.id);
+        setCategories(data);
+      }
     }
+    fetchCategoriesByParent();
+  }, [parentCategory]);
 
-    return (
-        <div className="absolute bg-gray-800 top-0 left-0 w-full min-h-screen">
-            {body}
+  const handleParentCategoryClick = (pCat) => {
+    setParentCategory(pCat);
+  };
+
+  const handleCreateCategory = (parentCategory) => {
+    setNewCategory({
+      parent_category_id: parentCategory.id,
+      icon: parentCategory.icon,
+    });
+  };
+
+  const saveNewCategory = async () => {
+    await Api.createOrUpdateCategory(newCategory);
+    const data = await Api.getCategoriesByParent(parentCategory.id);
+    setCategories(data);
+    setNewCategory(null);
+  };
+
+  const saveEditCategory = async () => {
+    const id = categoryToEdit.id;
+    await Api.createOrUpdateCategory(categoryToEdit, id);
+    const data = await Api.getCategoriesByParent(parentCategory.id);
+    setCategories(data);
+    setCategoryToEdit(null);
+  };
+
+  const handleNewCategoryName = (event) => {
+    const data = { name: event.target.value };
+    setNewCategory((prevData) => ({ ...prevData, ...data }));
+  };
+
+  const handleCategoryEditMode = (category) => {
+    setCategoryToEdit({
+      id: category.id,
+      parent_category_id: category.parent_category_id,
+      icon: category.icon,
+    });
+  };
+
+  const handleEditCategoryName = (event) => {
+    const data = { name: event.target.value };
+    setCategoryToEdit((prevData) => ({ ...prevData, ...data }));
+  };
+
+  const createNewCategory = (
+    <div className="pb-5">
+      {!newCategory ? (
+        <button
+          type="button"
+          onClick={() => handleCreateCategory(parentCategory)}
+          className="w-11/12 block m-auto py-3 text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 focus:ring-blue-800 shadow-lg shadow-blue-500/50 shadow-lg shadow-blue-800/80 font-medium rounded-lg text-xl text-center"
+        >
+          Create
+        </button>
+      ) : (
+        <div className="flex flex-row gap-x-5 py-3 items-center text-white hover:bg-gray-400/10 transition px-10">
+          <div
+            className="w-12 h-12 rounded-full flex items-center justify-center"
+            style={{ background: parentCategory.color }}
+          >
+            <FontAwesomeIcon icon={parentCategory.icon} />
+          </div>
+          <div className="w-96">
+            <input
+              type="text"
+              onChange={handleNewCategoryName}
+              className="block w-full p-4 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+          <div className="pl-5">
+            <button type="button" onClick={saveNewCategory}>
+              <FontAwesomeIcon icon="fa-solid fa-check" className="text-2xl text-green-400" />
+            </button>
+          </div>
+          <div className="pl-5">
+            <button type="button" onClick={() => setNewCategory(null)}>
+              <FontAwesomeIcon icon="fa-solid fa-xmark" className="text-2xl text-gray-400" />
+            </button>
+          </div>
         </div>
-    );
+      )}
+    </div>
+  );
+
+  return (
+    <Layout>
+      <div className="flex flex-row gap-x-10 bg-gray-800 top-0 left-0 w-full px-10 mt-14">
+        <div className="flex flex-col divide-y divide-gray-600/50 rounded-3xl bg-gray-700 py-10 basis-6/12">
+          {parentCategories.map((pCat, index) => (
+            <div
+              key={index}
+              className="flex flex-row gap-x-5 py-3 cursor-pointer items-center text-white hover:bg-gray-400/10 transition px-10"
+              onClick={() => handleParentCategoryClick(pCat)}
+            >
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center"
+                style={{ background: pCat.color }}
+              >
+                <FontAwesomeIcon icon={pCat.icon} />
+              </div>
+              <div>{pCat.name}</div>
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-col divide-y divide-gray-600/50 rounded-3xl bg-gray-700 py-10 basis-6/12">
+          {categories.length > 0 && createNewCategory}
+          {categories.map((category, index) => (
+            <div key={index} className="flex flex-row justify-between hover:bg-gray-400/10 transition px-10">
+              <div className="flex flex-row gap-x-5 py-3 items-center text-white" index={index}>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: category.color }}>
+                  <FontAwesomeIcon icon={category.icon} />
+                </div>
+                <div>
+                  {category.id !== categoryToEdit?.id ? (
+                    category.name
+                  ) : (
+                    <input
+                      type="text"
+                      onChange={handleEditCategoryName}
+                      defaultValue={category.name}
+                      className="block w-full p-3 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-row gap-x-10">
+                {category.id === categoryToEdit?.id && (
+                  <>
+                    <button type="button" onClick={saveEditCategory}>
+                      <FontAwesomeIcon icon="fa-solid fa-check" className="text-2xl text-green-400" />
+                    </button>
+                    <button type="button" onClick={() => setCategoryToEdit(null)}>
+                      <FontAwesomeIcon icon="fa-solid fa-xmark" className="text-2xl text-gray-400" />
+                    </button>
+                  </>
+                )}
+                <button type="button" onClick={() => handleCategoryEditMode(category)}>
+                  <FontAwesomeIcon icon="fa-solid fa-pen-to-square" className="text-2xl text-gray-400" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Layout>
+  );
 }

@@ -17,7 +17,6 @@ import AccountsDesktop from "./Desktop/views/Account/View";
 import AccountFormDesktop from "./Desktop/views/Account/Form";
 import RecordFormDesktop from "./Desktop/views/Record/Form";
 import RecordListDesktop from "./Desktop/views/Record/List";
-import CategoryFormDesktop from "./Desktop/views/Category/Form";
 import CategoryListDesktop from "./Desktop/views/Category/List";
 import SettingsDesktop from "./Desktop/views/Settings/Settings";
 import SettingsUserFormDesktop from "./Desktop/views/User/UserForm";
@@ -38,9 +37,9 @@ function AppRoutes() {
                 <Route path="/record" element={isMobile ? <RecordForm /> : <RecordFormDesktop />} />
                 <Route path="/record/list/:account_id?" element={isMobile ? <RecordList /> : <RecordListDesktop />} />
                 <Route path="/record/:record_id" element={isMobile ? <RecordForm /> : <RecordFormDesktop />} />
-                <Route path="/category" element={isMobile ? <CategoryForm /> : <CategoryFormDesktop />} />
+                <Route path="/category" element={isMobile ? <CategoryForm /> : <CategoryListDesktop />} />
                 <Route path="/category/list/:parent_id?" element={isMobile ? <CategoryList /> : <CategoryListDesktop />} />
-                <Route path="/category/:category_id" element={isMobile ? <CategoryForm /> : <CategoryFormDesktop />} />
+                <Route path="/category/:category_id" element={isMobile ? <CategoryForm /> : <CategoryListDesktop />} />
                 <Route path="/settings" element={isMobile ? <Settings /> : <SettingsDesktop />} />
                 <Route path="/settings/user/:user_id?" element={isMobile ? <SettingsUserForm /> : <SettingsUserFormDesktop />} />
             </Routes>
