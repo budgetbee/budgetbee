@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import Api from "../../../Api/Endpoints";
+import SettingsLayout from "../../layout/SettingsLayout";
 
 // Icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -16,7 +17,6 @@ export default function UserForm() {
         async function getUser() {
             const userData = await Api.getUser(user_id);
             setUser(userData);
-
         }
         if (user_id > 0) {
             getUser();
@@ -30,42 +30,43 @@ export default function UserForm() {
 
         if (user === null) {
             await Api.userRegister(formObject);
-        }
-        else {
+        } else {
             await Api.userUpdate(formObject, user.id);
         }
         window.location = "/settings";
     };
 
     return (
-        <div className="min-h-screen bg-gray-800">
+        <SettingsLayout>
             <form onSubmit={handleSaveForm}>
-                <div className="fixed w-full top-0 basis-1/12 flex flex-row justify-between items-center bg-gray-700 mb-5 h-14">
+                <div className="w-full top-0 basis-1/12 flex flex-row justify-between items-center mb-5 h-14">
                     <div
                         onClick={() => window.history.back()}
-                        className="py-3 pl-5 pr-10 cursor-pointer"
+                        className="flex flex-row px-5 py-3 gap-x-5 bg-gray-700 hover:bg-gray-500/50 rounded-full justify-between cursor-pointer items-center transition"
                     >
                         <FontAwesomeIcon
                             icon={faArrowLeft}
-                            className={"text-white text-2xl"}
+                            className={"text-white text-xl"}
                         />
+                        <span>back</span>
                     </div>
                     <div>
                         <button
                             type="submit"
-                            className="py-3 pl-10 pr-5 cursor-pointer"
+                            className="flex flex-row px-5 py-3 gap-x-5  bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 focus:ring-green-800 shadow-lg shadow-green-500/50 shadow-lg shadow-green-800/80 rounded-full justify-between cursor-pointer items-center transition"
                         >
                             <FontAwesomeIcon
                                 icon={faCheck}
-                                className={"text-white text-2xl"}
+                                className={"text-white text-xl"}
                             />
+                            <span>save</span>
                         </button>
                     </div>
                 </div>
-                <h2 className="px-5 text-2xl font-bold text-white mt-14 py-4">
+                <h2 className="text-2xl font-bold text-white py-4">
                     Basic info
                 </h2>
-                <div className="flex flex-col gap-y-4 px-5">
+                <div className="flex flex-col gap-y-4">
                     <div className="mb-6">
                         <label
                             htmlFor="name"
@@ -82,7 +83,7 @@ export default function UserForm() {
                         ></input>
                     </div>
                 </div>
-                <div className="flex flex-col gap-y-4 px-5">
+                <div className="flex flex-col gap-y-4">
                     <div className="mb-6">
                         <label
                             htmlFor="name"
@@ -99,10 +100,10 @@ export default function UserForm() {
                         ></input>
                     </div>
                 </div>
-                <h2 className="px-5 text-2xl font-bold text-white mt-8 py-4">
+                <h2 className="text-2xl font-bold text-white mt-8 py-4">
                     Security
                 </h2>
-                <div className="flex flex-col gap-y-4 px-5">
+                <div className="flex flex-col gap-y-4">
                     <div className="mb-6">
                         <label
                             htmlFor="name"
@@ -118,7 +119,7 @@ export default function UserForm() {
                         ></input>
                     </div>
                 </div>
-                <div className="flex flex-col gap-y-4 px-5">
+                <div className="flex flex-col gap-y-4">
                     <div className="mb-6">
                         <label
                             htmlFor="name"
@@ -135,6 +136,6 @@ export default function UserForm() {
                     </div>
                 </div>
             </form>
-        </div>
+        </SettingsLayout>
     );
 }

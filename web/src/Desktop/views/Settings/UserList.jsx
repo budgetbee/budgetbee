@@ -1,8 +1,9 @@
 import { React, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import Api from "../../../../Api/Endpoints";
-import Loader from "../../../../Components/Miscellaneous/Loader";
+import Api from "../../../Api/Endpoints";
+import Loader from "../../../Components/Miscellaneous/Loader";
+import SettingsLayout from "../../layout/SettingsLayout";
 
 export default function UserList() {
     const [isLoading, setIsLoading] = useState(true);
@@ -50,7 +51,7 @@ export default function UserList() {
     }
 
     return (
-        <div className="mt-20 px-2 m-auto relative">
+        <SettingsLayout>
             <table className="w-full text-sm text-left text-gray-400">
                 <thead className="text-xs uppercase bg-gray-700 text-gray-400">
                     <tr>
@@ -74,6 +75,6 @@ export default function UserList() {
                 <tbody>{view}</tbody>
             </table>
             {isLoading && <Loader classes="w-10 mt-5" />}
-        </div>
+        </SettingsLayout>
     );
 }
