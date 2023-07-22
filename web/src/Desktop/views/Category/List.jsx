@@ -78,7 +78,7 @@ export default function List() {
         <button
           type="button"
           onClick={() => handleCreateCategory(parentCategory)}
-          className="w-11/12 block m-auto py-3 text-white bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 focus:ring-blue-800 shadow-lg shadow-blue-500/50 shadow-lg shadow-blue-800/80 font-medium rounded-lg text-xl text-center"
+          className="w-11/12 block m-auto py-3 text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 focus:ring-green-800 shadow-lg shadow-green-500/50 shadow-lg shadow-green-800/80 font-medium rounded-lg text-xl text-center"
         >
           Create
         </button>
