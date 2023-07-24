@@ -3,24 +3,15 @@ import { useParams } from "react-router-dom";
 import moment from "moment";
 
 import Api from "../../../Api/Endpoints";
-import Calculator from "./Components/Calculator";
 import CategoryPicker from "./Components/CategoryPicker";
-import TopNav from "../../../layout/TopNav";
-
-// Icons
-import { faCheck, faTrash } from "@fortawesome/free-solid-svg-icons";
+import Layout from "../../layout/Layout";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export default function Form() {
-    const [isLoading, setIsLoading] = useState(true);
-    const [amount, setAmount] = useState(0);
-    const [type, setType] = useState("expense");
-    const [account, setAccount] = useState(null);
-    const [toAccount, setToAccount] = useState(null);
-    const [date, setDate] = useState(null);
-    const [name, setName] = useState(null);
-    const [accounts, setAccounts] = useState(null);
+    const [accounts, setAccounts] = useState([]);
     const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
     const [category, setCategory] = useState({ id: 0, name: "" });
+    const [record, setRecord] = useState(null);
 
     const { record_id } = useParams();
 
@@ -30,49 +21,35 @@ export default function Form() {
             setAccounts(accounts);
             if (record_id !== undefined) {
                 const record = await Api.getRecordById(record_id);
-                setType(record.type);
+                setRecord(record);
                 setCategory({
                     id: record.category_id,
                     name: record.category_name,
                 });
-                setAmount(Math.abs(record.amount));
-                setAccount(record.from_account_id);
-                setToAccount(record.to_account_id);
-                setDate(record.date);
-                setName(record.name);
             }
-            setIsLoading(false);
         }
         getData();
     }, []);
-
-    const handleRecordType = (event) => {
-        const target = event.target;
-        const type = target.getAttribute("data-type");
-        setType(type);
-    };
 
     const handleOpenCategory = () => {
         setCategoryPickerOpen(true);
     };
 
-    const handleInputName = (event) => {
-        setName(event.target.value);
+    const handleInputChange = (event) => {
+        const target = event.target;
+        const value =
+            target.type === "checkbox" ? target.checked : target.value;
+        const name = target.name;
+
+        setRecord({ ...record, [name]: value });
     };
 
-    const handleInputDate = (event) => {
-        setDate(event.target.value);
-    };
-
-    const handleBackFunction = async () => {
-        window.location.href = "/";
-    };
-
-    const handleSaveForm = async () => {
+    const handleSaveForm = async (e) => {
+        e.preventDefault();
         const formData = new FormData(document.querySelector("form"));
         const formObject = Object.fromEntries(formData.entries());
         await Api.createRecord(formObject, record_id);
-        handleBackFunction();
+        window.location.href = "/";
     };
 
     const handleDeleteRecord = async () => {
@@ -82,202 +59,258 @@ export default function Form() {
         }
     };
 
-    if (isLoading) {
-        return <></>;
-    }
-
     return (
-        <div className="">
+        <Layout className="">
             {categoryPickerOpen && (
                 <CategoryPicker
                     setOpen={setCategoryPickerOpen}
                     setCategory={setCategory}
                 />
             )}
-            <form>
-                <TopNav
-                    leftFunction={handleBackFunction}
-                    rightFunction={handleSaveForm}
-                    rightIcon={faCheck}
-                    {...(record_id && {
-                        right2Function: handleDeleteRecord,
-                        right2Icon: faTrash,
-                    })}
-                />
-                <div className="flex flex-col h-screen max-w-full">
-                    <div className="basis-[6%]"></div>
-                    <div
-                        className={`basis-6/12 flex flex-col text-white ${
-                            type === "income"
-                                ? "bg-[#4a883b]"
-                                : type === "expense"
-                                ? "bg-[#ab3a3a]"
-                                : "bg-[#3f45a3]"
-                        }`}
-                    >
-                        <div
-                            className="basis-2/12 flex flex-row items-center text-center font-bold divide-x cursor-pointer"
-                            onClick={handleRecordType}
-                        >
-                            <div
-                                data-type="income"
-                                className={`type-btn basis-1/3 py-5 ${
-                                    type === "income" ? "bg-black/20" : ""
-                                }`}
-                            >
-                                Income
-                            </div>
-                            <div
-                                data-type="expense"
-                                className={`type-btn basis-1/3 py-5 ${
-                                    type === "expense" ? "bg-black/20" : ""
-                                }`}
-                            >
-                                Expense
-                            </div>
-                            <div
-                                data-type="transfer"
-                                className={`type-btn basis-1/3 py-5 ${
-                                    type === "transfer" ? "bg-black/20" : ""
-                                }`}
-                            >
-                                Transfer
-                            </div>
-                            <input
-                                type="hidden"
-                                name="type"
-                                value={type}
-                            ></input>
-                        </div>
-                        <div className="basis-5/12 flex flex-row text-7xl text-center items-center gap-x-4 px-5">
-                            <div className="basis-1/12 text-4xl">
-                                {type === "transfer"
-                                    ? ""
-                                    : type === "income"
-                                    ? "+"
-                                    : type === "expense"
-                                    ? "-"
-                                    : ""}
-                            </div>
-                            <div className="2/12 text-4xl">$</div>
-                            <div className="basis-9/12 text-right">
-                                {amount}
-                            </div>
-                            <input type="hidden" name="amount" value={amount} />
-                        </div>
-                        <div className="basis-2/12 flex flex-row text-center items-center">
-                            <div className="basis-1/2 flex flex-col">
-                                <div className="text-sm text-gray-300">
-                                    Account
-                                </div>
-                                <div>
-                                    <select
-                                        name="from_account_id"
-                                        id="from_account_id"
-                                        required="required"
-                                        className="text-center cursor-pointer appearance-none bg-transparent"
+            <form onSubmit={handleSaveForm}>
+                <div className="flex px-10 mt-14">
+                    <div className="bg-gray-700 rounded-3xl p-5">
+                        <div className="flex flex-col gap-y-5">
+                            <ul class="grid w-full gap-6 md:grid-cols-3">
+                                <li>
+                                    <input
+                                        type="radio"
+                                        id="income"
+                                        name="type"
+                                        value="income"
+                                        class="hidden peer"
+                                        onChange={handleInputChange}
+                                        defaultChecked={
+                                            record && record.type === "income"
+                                        }
+                                        required
+                                    ></input>
+                                    <label
+                                        for="income"
+                                        class="inline-flex items-center justify-center w-full p-5 text-gray-400 bg-gray-800 border border-gray-200 rounded-lg cursor-pointer hover:text-gray-300 border-gray-700 peer-checked:text-green-400 peer-checked:border-green-400 peer-checked:text-green-400 hover:text-gray-600 hover:bg-gray-100 hover:bg-gray-700"
                                     >
-                                        {accounts.map((acc, index) => {
-                                            return (
-                                                <option
-                                                    className="text-black p-5"
-                                                    value={acc.id}
-                                                    selected={
-                                                        account === acc.id
-                                                    }
-                                                >
-                                                    {acc.name}
-                                                </option>
-                                            );
-                                        })}
-                                    </select>
-                                </div>
+                                        <div class="block">
+                                            <div class="w-full text-lg font-semibold">
+                                                Income
+                                            </div>
+                                        </div>
+                                    </label>
+                                </li>
+                                <li>
+                                    <input
+                                        type="radio"
+                                        id="expense"
+                                        name="type"
+                                        value="expense"
+                                        class="hidden peer"
+                                        onChange={handleInputChange}
+                                        defaultChecked={
+                                            record && record.type === "expense"
+                                        }
+                                        required
+                                    ></input>
+                                    <label
+                                        for="expense"
+                                        class="inline-flex items-center justify-center w-full p-5 text-gray-400 bg-gray-800 border border-gray-200 rounded-lg cursor-pointer hover:text-gray-300 border-gray-700 peer-checked:text-green-400 peer-checked:border-green-400 peer-checked:text-green-400 hover:text-gray-600 hover:bg-gray-100 hover:bg-gray-700"
+                                    >
+                                        <div class="block">
+                                            <div class="w-full text-lg font-semibold">
+                                                Expense
+                                            </div>
+                                        </div>
+                                    </label>
+                                </li>
+                                <li>
+                                    <input
+                                        type="radio"
+                                        id="transfer"
+                                        name="type"
+                                        value="transfer"
+                                        class="hidden peer"
+                                        onChange={handleInputChange}
+                                        defaultChecked={
+                                            record && record.type === "transfer"
+                                        }
+                                        required
+                                    ></input>
+                                    <label
+                                        for="transfer"
+                                        class="inline-flex items-center justify-center w-full p-5 text-gray-400 bg-gray-800 border border-gray-200 rounded-lg cursor-pointer hover:text-gray-300 border-gray-700 peer-checked:text-green-400 peer-checked:border-green-400 peer-checked:text-green-400 hover:text-gray-600 hover:bg-gray-100 hover:bg-gray-700"
+                                    >
+                                        <div class="block">
+                                            <div class="w-full text-lg font-semibold">
+                                                Transfer
+                                            </div>
+                                        </div>
+                                    </label>
+                                </li>
+                            </ul>
+
+                            <div>
+                                <label
+                                    for="from_account_id"
+                                    class="block mb-2 text-sm font-medium text-gray-900 text-white"
+                                >
+                                    Account
+                                </label>
+                                <select
+                                    name="from_account_id"
+                                    id="from_account_id"
+                                    onChange={handleInputChange}
+                                    className="basis-4/12 block w-full p-4 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                                    required
+                                >
+                                    <option value="">Select account...</option>
+                                    {accounts.map((account) => (
+                                        <option
+                                            key={account.id}
+                                            value={account.id}
+                                            selected={
+                                                account.id ===
+                                                record?.from_account_id
+                                            }
+                                        >
+                                            {account.name}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
-                            {type === "transfer" ? (
-                                <div className="basis-1/2 flex flex-col">
-                                    <div className="text-sm text-gray-300">
-                                        To account
-                                    </div>
-                                    <div>
+                            <div>
+                                {record?.type === "transfer" ? (
+                                    <>
+                                        <label
+                                            for="to_account_id"
+                                            class="block mb-2 text-sm font-medium text-gray-900 text-white"
+                                        >
+                                            To account
+                                        </label>
                                         <select
                                             name="to_account_id"
                                             id="to_account_id"
-                                            required="required"
-                                            className="text-center cursor-pointer appearance-none bg-transparent"
+                                            className="basis-4/12 block w-full p-4 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                                            required
                                         >
-                                            {accounts.map((acc, index) => {
-                                                return (
-                                                    <option
-                                                        className="text-black"
-                                                        value={acc.id}
-                                                        selected={
-                                                            toAccount === acc.id
-                                                        }
-                                                    >
-                                                        {acc.name}
-                                                    </option>
-                                                );
-                                            })}
+                                            <option value="">
+                                                Select account...
+                                            </option>
+                                            {accounts.map((account) => (
+                                                <option
+                                                    key={account.id}
+                                                    value={account.id}
+                                                    selected={
+                                                        account.id ===
+                                                        record?.to_account_id
+                                                    }
+                                                >
+                                                    {account.name}
+                                                </option>
+                                            ))}
                                         </select>
+                                    </>
+                                ) : (
+                                    <div
+                                        className="basis-4/12 block w-full p-4 cursor-pointer border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                                        onClick={handleOpenCategory}
+                                    >
+                                        <label
+                                            for="date"
+                                            class="block mb-2 text-sm font-medium text-gray-900 text-white"
+                                        >
+                                            Category
+                                        </label>
+                                        <div>{category.name}</div>
+                                        <input
+                                            type="hidden"
+                                            onChange={handleInputChange}
+                                            name="category_id"
+                                            value={category.id}
+                                        />
                                     </div>
-                                </div>
-                            ) : (
-                                <div
-                                    className="basis-1/2 flex flex-col cursor-pointer"
-                                    onClick={handleOpenCategory}
+                                )}
+                            </div>
+
+                            <div>
+                                <label
+                                    for="date"
+                                    class="block mb-2 text-sm font-medium text-gray-900 text-white"
                                 >
-                                    <div className="text-sm text-gray-300">
-                                        Category
-                                    </div>
-                                    <div>{category.name}</div>
-                                    <input
-                                        type="hidden"
-                                        name="category_id"
-                                        value={category.id}
-                                    />
-                                </div>
-                            )}
-                        </div>
-                        <div className="basis-2/12 flex flex-row text-center items-center">
-                            <div className="basis-1/2 flex flex-col">
-                                <div className="text-sm text-gray-300">
                                     Date
-                                </div>
-                                <div>
-                                    <input
-                                        type="date"
-                                        name="date"
-                                        className="w-3/4 text-center cursor-pointer appearance-none bg-transparent"
-                                        onChange={handleInputDate}
-                                        value={
-                                            date
-                                                ? moment(date).format(
-                                                      "YYYY-MM-DD"
-                                                  )
-                                                : moment(new Date()).format(
-                                                      "YYYY-MM-DD"
-                                                  )
-                                        }
-                                    />
-                                </div>
+                                </label>
+                                <input
+                                    type="date"
+                                    name="date"
+                                    className="basis-4/12 block w-full p-4 cursor-pointer border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                                    onChange={handleInputChange}
+                                    defaultValue={record?.date}
+                                    value={
+                                        record?.date
+                                            ? moment(record?.date).format(
+                                                  "YYYY-MM-DD"
+                                              )
+                                            : moment(new Date()).format(
+                                                  "YYYY-MM-DD"
+                                              )
+                                    }
+                                />
+                            </div>
+
+                            <div>
+                                <label
+                                    for="name"
+                                    class="block mb-2 text-sm font-medium text-gray-900 text-white"
+                                >
+                                    Description
+                                </label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    id="name"
+                                    onChange={handleInputChange}
+                                    defaultValue={record?.name}
+                                    className="basis-4/12 block w-full p-4 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                                    required
+                                ></input>
+                            </div>
+
+                            <div>
+                                <label
+                                    for="amount"
+                                    class="block mb-2 text-sm font-medium text-gray-900 text-white"
+                                >
+                                    Amount
+                                </label>
+                                <input
+                                    type="number"
+                                    step="any"
+                                    name="amount"
+                                    id="amount"
+                                    onChange={handleInputChange}
+                                    defaultValue={record?.amount}
+                                    className="basis-4/12 block w-full p-4 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                                    required
+                                ></input>
+                            </div>
+
+                            <div className="flex flex-row gap-x-3">
+                                <button
+                                    type="submit"
+                                    className="grow flex flex-row px-5 text-xl font-bold py-3 gap-x-5 bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 focus:ring-green-800 shadow-lg shadow-green-500/50 shadow-lg shadow-green-800/80 rounded-full justify-center cursor-pointer items-center transition"
+                                >
+                                    <FontAwesomeIcon icon="fa-solid fa-check" />
+                                    Save
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleDeleteRecord}
+                                    className="basis-1/12 flex flex-row px-5 text-xl font-bold py-3 gap-x-5 bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 focus:ring-red-800 shadow-lg shadow-red-500/50 shadow-lg shadow-red-800/80 rounded-xl justify-center cursor-pointer items-center transition"
+                                >
+                                    <FontAwesomeIcon icon="fa-solid fa-trash" />
+                                </button>
                             </div>
                         </div>
                     </div>
-                    <div className="basis-1/12">
-                        <textarea
-                            type="text"
-                            name="name"
-                            className="w-full h-full bg-gray-900 text-gray-200 p-4"
-                            placeholder="Description..."
-                            onChange={handleInputName}
-                            value={name ?? ""}
-                        />
-                    </div>
-                    <div className="basis-5/12">
-                        <Calculator value={amount} setValue={setAmount} />
-                    </div>
                 </div>
             </form>
-        </div>
+        </Layout>
     );
 }
