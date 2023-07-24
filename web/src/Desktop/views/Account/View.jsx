@@ -62,6 +62,7 @@ export default function View() {
                 name="name"
                 id="name"
                 onChange={handleNewAccountChange}
+                placeholder="Account name"
                 className="basis-4/12 block w-full p-4 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
             />
             <select
@@ -83,6 +84,7 @@ export default function View() {
                 step="any"
                 name="initial_balance"
                 id="initial_balance"
+                placeholder="Initial balance"
                 onChange={handleNewAccountChange}
                 className="basis-2/12 block w-full p-4 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500 appearance-none"
             />
