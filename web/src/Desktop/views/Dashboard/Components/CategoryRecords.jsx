@@ -57,10 +57,10 @@ export default function CategoryRecords({ searchData }) {
     if (showRecords && records.length > 0) {
         recordsModal = (
             <div
-                className="fixed inset-0 flex flex-col items-center justify-center bg-black/50"
+                className="fixed inset-0 flex flex-col items-center justify-center bg-black/50 z-30"
                 onClick={handleHideRecords}
             >
-                <div className="w-11/12 bg-gray-900 text-white rounded">
+                <div className="w-5/12 bg-gray-900 text-white rounded">
                     <div className="px-5 py-3 text-xl">Records</div>
                     <div className="max-h-96 overflow-auto w-full bg-black block">
                         <div className="records">
