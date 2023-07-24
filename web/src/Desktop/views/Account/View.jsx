@@ -49,7 +49,7 @@ export default function View() {
     };
 
     const createNewForm = (
-        <div className="flex flex-row gap-x-5">
+        <div className="flex flex-row gap-x-5 items-center">
             <input
                 type="color"
                 name="color"
