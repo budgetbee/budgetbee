@@ -16,8 +16,6 @@ export default function TopExpensesCard({ searchData }) {
         getTopExpenses();
     }, [searchData]);
 
-    console.log(topExpenses);
-
     return (
         <div className="py-4 bg-gray-700 rounded-3xl h-full">
             <div className="flex flex-row divide-x text-lg py-2 text-left h-full">
