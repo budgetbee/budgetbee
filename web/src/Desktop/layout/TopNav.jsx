@@ -19,7 +19,7 @@ export default function TopNav({ setSearchData }) {
         <div className="w-full flex flex-row px-10 gap-x-5 h-24 items-center">
             <div className="flex gap-x-2 items-center basis-10/12">
                 <form onSubmit={handleSearchForm}>
-                    <div date-rangepicker className="flex gap-x-2 items-center">
+                    <div date-rangepicker="true" className="flex gap-x-2 items-center">
                         <div>
                             <DateRangeSelector
                                 setStartDate={setStartDate}
@@ -28,7 +28,7 @@ export default function TopNav({ setSearchData }) {
                         </div>
                         <div className="px-5">
                             <label
-                                for="search"
+                                htmlFor="search"
                                 className="mb-2 text-sm font-medium sr-only text-white"
                             >
                                 Search
@@ -44,9 +44,9 @@ export default function TopNav({ setSearchData }) {
                                     >
                                         <path
                                             stroke="currentColor"
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
                                             d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
                                         />
                                     </svg>
