@@ -12,12 +12,16 @@ import {
 import Api from "../../Api/Endpoints";
 import logo from "../../assets/images/logo_color_1.svg";
 
-export default function LeftSidebarMenu({ activePage }) {
+export default function LeftSidebarMenu() {
     const [appVersion, setAppVersion] = useState("");
     const [appLatestVersion, setAppLatestVersion] = useState("");
     const [showVersionModal, setShowVersionModal] = useState(false);
 
     const cookies = new Cookies("checkVersionCheck");
+
+    const currentPath = window.location.pathname;
+    const pathParts = currentPath.split("/");
+    const activePage = pathParts[1];
 
     useEffect(() => {
         async function getUser() {
