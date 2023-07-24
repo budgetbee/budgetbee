@@ -1,16 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import numeral from "numeral";
-// import moment from "moment";
-// import "numeral/locales/es";
 
 export default function Card({ account }) {
     const inline_style = {
         backgroundColor: account.color,
     };
-
-    // numeral.locale("es");
-    // moment.locale("es");
 
     return (
         <Link to={`/account/${account.id}`}>

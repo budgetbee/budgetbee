@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBars } from "@fortawesome/free-solid-svg-icons";
 
 import Accounts from "./Components/Accounts";
 import LastRecords from "./Components/LastRecords";
@@ -12,7 +10,6 @@ import FloatMenu from "../../layout/FloatMenu";
 
 export default function Dashboard() {
     const [activeAccount, setActiveAccount] = useState(null);
-    const [openSidebarMenu, setOpenSidebarMenu] = useState(false);
 
     return (
         <div>

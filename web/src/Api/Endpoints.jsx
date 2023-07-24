@@ -22,6 +22,16 @@ const handleErrors = (error) => {
     }
 };
 
+const queryBuilder = (data) => {
+    return Object.entries(data)
+        .filter(
+            ([key, value]) =>
+                value !== null && value !== undefined && value !== ""
+        )
+        .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+        .join("&");
+};
+
 const Endpoints = {
     getVersion: async () => {
         try {
@@ -264,15 +274,11 @@ const Endpoints = {
         }
     },
 
-    getLastRecords: async (number, account_id) => {
+    getLastRecords: async (data) => {
         try {
-            let param =
-                account_id > 0
-                    ? `account/${account_id}/record/last${number}`
-                    : `record/last${number}`;
-
+            const queryString = queryBuilder(data);
             const response = await axios.get(
-                `${API_BASE_URL}/${param}`,
+                `${API_BASE_URL}/record/last?${queryString}`,
                 HEADERS
             );
             return response.data;
@@ -385,12 +391,11 @@ const Endpoints = {
         }
     },
 
-    getBalance: async (account_id, from_date) => {
+    getBalance: async (data) => {
         try {
-            const id = account_id ?? "";
-            const fromDate = from_date ? "?from=" + from_date : "";
+            const queryString = queryBuilder(data);
             const response = await axios.get(
-                `${API_BASE_URL}/balance/${id}${fromDate}`,
+                `${API_BASE_URL}/balance?${queryString}`,
                 HEADERS
             );
             return response.data;
@@ -401,12 +406,11 @@ const Endpoints = {
         }
     },
 
-    getExpensesBalance: async (account_id, from_date) => {
+    getExpensesBalance: async (data) => {
         try {
-            const id = account_id ?? "";
-            const fromDate = from_date ? "?from=" + from_date : "";
+            const queryString = queryBuilder(data);
             const response = await axios.get(
-                `${API_BASE_URL}/balance/expenses/${id}${fromDate}`,
+                `${API_BASE_URL}/balance/expenses?${queryString}`,
                 HEADERS
             );
             return response.data;
@@ -417,12 +421,25 @@ const Endpoints = {
         }
     },
 
-    getTimelineBalance: async (account_id, from_date) => {
+    getAllBalance: async (data) => {
         try {
-            const id = account_id ?? "";
-            const fromDate = from_date ? "?from=" + from_date : "";
+            const queryString = queryBuilder(data);
             const response = await axios.get(
-                `${API_BASE_URL}/balance/timeline/${id}${fromDate}`,
+                `${API_BASE_URL}/balance/all?${queryString}`,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            return null;
+        }
+    },
+
+    getTimelineBalance: async (data) => {
+        try {
+            const queryString = queryBuilder(data);
+            const response = await axios.get(
+                `${API_BASE_URL}/balance/timeline?${queryString}`,
                 HEADERS
             );
             return response.data;
@@ -433,18 +450,44 @@ const Endpoints = {
         }
     },
 
-    getCategoriesBalance: async (account_id, from_date) => {
+    getIncomeCategoriesBalance: async (data) => {
         try {
-            const id = account_id ?? "";
-            const fromDate = from_date ? "from=" + from_date : "";
+            const queryString = queryBuilder(data);
             const response = await axios.get(
-                `${API_BASE_URL}/balance/categories/${id}?${fromDate}`,
+                `${API_BASE_URL}/balance/categories/income?${queryString}`,
                 HEADERS
             );
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
+            return null;
+        }
+    },
+
+    getExpenseCategoriesBalance: async (data) => {
+        try {
+            const queryString = queryBuilder(data);
+            const response = await axios.get(
+                `${API_BASE_URL}/balance/categories/expense?${queryString}`,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            return null;
+        }
+    },
+
+    getTopExpenses: async (data) => {
+        try {
+            const queryString = queryBuilder(data);
+            const response = await axios.get(
+                `${API_BASE_URL}/balance/categories/top?${queryString}`,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
             return null;
         }
     },
@@ -465,12 +508,11 @@ const Endpoints = {
         }
     },
 
-    getBalanceByCategory: async (account_id, from_date) => {
+    getBalanceByCategory: async (data) => {
         try {
-            const id = account_id ? "account/" + account_id : "";
-            const fromDate = from_date ? "?from=" + from_date : "";
+            const queryString = queryBuilder(data);
             const response = await axios.get(
-                `${API_BASE_URL}/balance/category/${id}${fromDate}`,
+                `${API_BASE_URL}/balance/category?${queryString}`,
                 HEADERS
             );
             return response.data;

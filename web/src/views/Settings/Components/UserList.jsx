@@ -38,7 +38,7 @@ export default function UserList() {
                         <Link to={"/settings/user/" + user.id}>
                             <button
                                 type="button"
-                                class="text-white bg-gray-700 hover:bg-gray-800 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 text-center mr-2 mb-2"
+                                className="text-white bg-gray-700 hover:bg-gray-800 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 text-center mr-2 mb-2"
                             >
                                 Edit
                             </button>
@@ -62,7 +62,7 @@ export default function UserList() {
                                 <Link to={"/settings/user/"}>
                                     <button
                                         type="button"
-                                        class="text-gray-900 bg-[#F2F2DA] hover:bg-[#F2F2DA] focus:outline-none focus:ring-4 focus:ring-[#F2F2DA] font-medium rounded-full text-sm px-5 py-2.5 text-center mr-2 mb-2"
+                                        className="text-gray-900 bg-[#F2F2DA] hover:bg-[#F2F2DA] focus:outline-none focus:ring-4 focus:ring-[#F2F2DA] font-medium rounded-full text-sm px-5 py-2.5 text-center mr-2 mb-2"
                                     >
                                         Add
                                     </button>

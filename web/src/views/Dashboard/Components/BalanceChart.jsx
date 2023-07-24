@@ -17,8 +17,8 @@ export default function BalanceChart({ activeAccount }) {
 
     useEffect(() => {
         async function getTimelineBalance() {
-            const data = await Api.getTimelineBalance(activeAccount, fromDate);
-            const balance = await Api.getBalance(activeAccount);
+            const data = await Api.getTimelineBalance({account_id: activeAccount, from_date: fromDate});
+            const balance = await Api.getBalance({accout_id: activeAccount});
             setData(data);
             setBalance(balance);
             setIsLoading(false);

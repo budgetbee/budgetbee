@@ -31,7 +31,7 @@ class RecordFactory extends Factory
 
         $randomUser = User::inRandomOrder()->first();
         $randomAccount = Account::inRandomOrder()->first();
-        $randomCategory = Category::inRandomOrder()->first();
+        $randomCategory = Category::inRandomOrder()->first()->id;
 
         $startDate = '-1 year';
         $endDate = 'now';
@@ -44,12 +44,14 @@ class RecordFactory extends Factory
         
         switch ($recordType) {
             case 'income':
-                $amount = $faker->randomFloat(2, 0, 500);
+                $randomCategory = Category::where('parent_category_id', 10)->inRandomOrder()->first()->id;
+                $amount = $faker->randomFloat(2, 0, 777);
                 break;
             case 'expense':
                 $amount = $faker->randomFloat(2, -300, 10);
                 break;
             case 'transfer':
+                $randomCategory = 1;
                 $amount = $faker->randomFloat(2, -300, 100);
                 $toAccountId = Account::inRandomOrder()->first()->id;
         }
@@ -60,7 +62,7 @@ class RecordFactory extends Factory
             'from_account_id' => $randomAccount->id,
             'to_account_id' => $toAccountId,
             'type' => $recordType,
-            'category_id' => $randomCategory->id,
+            'category_id' => $randomCategory,
             'name' => $faker->text(),
             'amount' => $amount
         ];
