@@ -10,12 +10,17 @@ use App\Models\Account;
 class CreateRecordTest extends TestCase
 {
     private $user;
+    private $account1;
+    private $account2;
 
     public function setUp(): void
     {
         parent::setUp();
 
         $this->user = User::factory()->create(['password' => 'UserTest123']);
+        
+        $this->account1 = Account::factory()->create();
+        $this->account2 = Account::factory()->create();
 
         $this->actingAs($this->user);
     }
@@ -23,6 +28,8 @@ class CreateRecordTest extends TestCase
     public function tearDown(): void
     {
         $this->user->delete();
+        $this->account1->delete();
+        $this->account2->delete();
 
         parent::tearDown();
     }
