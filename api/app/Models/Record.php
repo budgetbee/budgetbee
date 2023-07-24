@@ -29,6 +29,29 @@ class Record extends Model
     {
         parent::boot();
 
+        static::created(function ($record) {
+            if ($record->type === 'transfer') {
+                static::withoutEvents(function () use ($record) {
+                    $recordAssoc = ($record->link_record_id) ? Record::find($record->link_record_id) : new Record();
+                    $recordAssoc->fill([
+                        'user_id' => $record->user_id,
+                        'link_record_id' => $record->id,
+                        'amount' => -$record->amount,
+                        'date' => $record->date,
+                        'from_account_id' => $record->to_account_id,
+                        'to_account_id' => $record->from_account_id,
+                        'type' => $record->type,
+                        'name' => $record->name,
+                        'category_id' => $record->category_id
+                    ]);
+                    $recordAssoc->save();
+
+                    $record->fill(['link_record_id' => $recordAssoc->id]);
+                    $record->save();
+                });
+            }
+        });
+
         static::deleting(function ($record) {
             if ($record->type == 'transfer') {
                 static::withoutEvents(function () use ($record) {
@@ -41,20 +64,28 @@ class Record extends Model
         });
 
         static::updating(function ($record) {
-            if ($record->type == 'transfer') {
+            if ($record->type == 'transfer' || $record->original['type'] === 'transfer') {
                 static::withoutEvents(function () use ($record) {
-                    $recordAssoc = Record::find($record->link_record_id);
+                    $recordAssoc = Record::withTrashed()->find($record->link_record_id);
                     if ($recordAssoc) {
-                        $recordAssoc->fill([
-                            'amount' => -$record->amount,
-                            'date' => $record->date,
-                            'from_account_id' => $record->to_account_id,
-                            'to_account_id' => $record->from_account_id,
-                            'type' => $record->type,
-                            'name' => $record->name,
-                            'category_id' => $record->category_id
-                        ]);
-                        $recordAssoc->save();
+                        if ($record->original['type'] === 'transfer' && $record->type !== 'transfer') {
+                            $recordAssoc->delete();
+                        } else {
+                            $transfercategory = 1;
+                            $recordAssoc->restore();
+                            $recordAssoc->fill([
+                                'amount' => -$record->amount,
+                                'date' => $record->date,
+                                'from_account_id' => $record->to_account_id,
+                                'to_account_id' => $record->from_account_id,
+                                'type' => $record->type,
+                                'name' => $record->name,
+                                'category_id' => $transfercategory
+                            ]);
+                            $recordAssoc->save();
+                            $record->fill(['category_id' => $transfercategory])
+                                ->save();
+                        }
                     }
                 });
             }
@@ -124,25 +155,5 @@ class Record extends Model
     public function getIconAttribute()
     {
         return $this->category->icon;
-    }
-
-    public function createUpdateTransferRecord()
-    {
-        $linkRecord = ($this->link_record_id) ? Record::find($this->link_record_id) : new Record();
-        $linkRecord->fill([
-            'user_id' => $this->user_id,
-            'link_record_id' => $this->id,
-            'amount' => -$this->amount,
-            'date' => $this->date,
-            'from_account_id' => $this->to_account_id,
-            'to_account_id' => $this->from_account_id,
-            'type' => $this->type,
-            'name' => $this->name,
-            'category_id' => $this->category_id
-        ]);
-        $linkRecord->save();
-
-        $this->fill(['link_record_id' => $linkRecord->id]);
-        $this->save();
     }
 }
