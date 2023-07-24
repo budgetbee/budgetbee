@@ -55,7 +55,7 @@ export default function View() {
                 name="color"
                 id="color"
                 onChange={handleNewAccountChange}
-                class="appearance-none w-12 h-12"
+                className="appearance-none w-12 h-12"
             ></input>
             <input
                 type="text"

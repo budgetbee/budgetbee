@@ -26,7 +26,7 @@ export default function Login() {
     let button = (
         <button
             type="submit"
-            class="w-full text-gray-900 bg-gradient-to-r from-teal-200 to-lime-200 hover:bg-gradient-to-l hover:from-teal-200 hover:to-lime-200 focus:ring-4 focus:outline-none focus:ring-lime-200 dark:focus:ring-teal-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2"
+            className="w-full text-gray-900 bg-gradient-to-r from-teal-200 to-lime-200 hover:bg-gradient-to-l hover:from-teal-200 hover:to-lime-200 focus:ring-4 focus:outline-none focus:ring-lime-200 dark:focus:ring-teal-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2"
         >
             Sign in
         </button>
@@ -36,12 +36,12 @@ export default function Login() {
         button = (
             <button
                 type="button"
-                class="w-full text-gray-900 bg-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2"
+                className="w-full text-gray-900 bg-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2"
             >
                 <svg
                     aria-hidden="true"
                     role="status"
-                    class="inline w-4 h-4 mr-3 text-gray-100 animate-spin"
+                    className="inline w-4 h-4 mr-3 text-gray-100 animate-spin"
                     viewBox="0 0 100 101"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -77,10 +77,10 @@ export default function Login() {
                             </h1>
                             {formError && (
                                 <div
-                                    class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50"
+                                    className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50"
                                     role="alert"
                                 >
-                                    <span class="font-medium">Error</span>{" "}
+                                    <span className="font-medium">Error</span>{" "}
                                     {formError}
                                 </div>
                             )}

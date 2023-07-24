@@ -71,14 +71,14 @@ export default function Form() {
                 <div className="flex px-10 mt-14">
                     <div className="bg-gray-700 rounded-3xl p-5">
                         <div className="flex flex-col gap-y-5">
-                            <ul class="grid w-full gap-6 md:grid-cols-3">
+                            <ul className="grid w-full gap-6 md:grid-cols-3">
                                 <li>
                                     <input
                                         type="radio"
                                         id="income"
                                         name="type"
                                         value="income"
-                                        class="hidden peer"
+                                        className="hidden peer"
                                         onChange={handleInputChange}
                                         defaultChecked={
                                             record && record.type === "income"
@@ -87,10 +87,10 @@ export default function Form() {
                                     ></input>
                                     <label
                                         for="income"
-                                        class="inline-flex items-center justify-center w-full p-5 text-gray-400 bg-gray-800 border border-gray-200 rounded-lg cursor-pointer hover:text-gray-300 border-gray-700 peer-checked:text-green-400 peer-checked:border-green-400 peer-checked:text-green-400 hover:text-gray-600 hover:bg-gray-100 hover:bg-gray-700"
+                                        className="inline-flex items-center justify-center w-full p-5 text-gray-400 bg-gray-800 border border-gray-200 rounded-lg cursor-pointer hover:text-gray-300 border-gray-700 peer-checked:text-green-400 peer-checked:border-green-400 peer-checked:text-green-400 hover:text-gray-600 hover:bg-gray-100 hover:bg-gray-700"
                                     >
-                                        <div class="block">
-                                            <div class="w-full text-lg font-semibold">
+                                        <div className="block">
+                                            <div className="w-full text-lg font-semibold">
                                                 Income
                                             </div>
                                         </div>
@@ -102,7 +102,7 @@ export default function Form() {
                                         id="expense"
                                         name="type"
                                         value="expense"
-                                        class="hidden peer"
+                                        className="hidden peer"
                                         onChange={handleInputChange}
                                         defaultChecked={
                                             record && record.type === "expense"
@@ -111,10 +111,10 @@ export default function Form() {
                                     ></input>
                                     <label
                                         for="expense"
-                                        class="inline-flex items-center justify-center w-full p-5 text-gray-400 bg-gray-800 border border-gray-200 rounded-lg cursor-pointer hover:text-gray-300 border-gray-700 peer-checked:text-green-400 peer-checked:border-green-400 peer-checked:text-green-400 hover:text-gray-600 hover:bg-gray-100 hover:bg-gray-700"
+                                        className="inline-flex items-center justify-center w-full p-5 text-gray-400 bg-gray-800 border border-gray-200 rounded-lg cursor-pointer hover:text-gray-300 border-gray-700 peer-checked:text-green-400 peer-checked:border-green-400 peer-checked:text-green-400 hover:text-gray-600 hover:bg-gray-100 hover:bg-gray-700"
                                     >
-                                        <div class="block">
-                                            <div class="w-full text-lg font-semibold">
+                                        <div className="block">
+                                            <div className="w-full text-lg font-semibold">
                                                 Expense
                                             </div>
                                         </div>
@@ -126,7 +126,7 @@ export default function Form() {
                                         id="transfer"
                                         name="type"
                                         value="transfer"
-                                        class="hidden peer"
+                                        className="hidden peer"
                                         onChange={handleInputChange}
                                         defaultChecked={
                                             record && record.type === "transfer"
@@ -135,10 +135,10 @@ export default function Form() {
                                     ></input>
                                     <label
                                         for="transfer"
-                                        class="inline-flex items-center justify-center w-full p-5 text-gray-400 bg-gray-800 border border-gray-200 rounded-lg cursor-pointer hover:text-gray-300 border-gray-700 peer-checked:text-green-400 peer-checked:border-green-400 peer-checked:text-green-400 hover:text-gray-600 hover:bg-gray-100 hover:bg-gray-700"
+                                        className="inline-flex items-center justify-center w-full p-5 text-gray-400 bg-gray-800 border border-gray-200 rounded-lg cursor-pointer hover:text-gray-300 border-gray-700 peer-checked:text-green-400 peer-checked:border-green-400 peer-checked:text-green-400 hover:text-gray-600 hover:bg-gray-100 hover:bg-gray-700"
                                     >
-                                        <div class="block">
-                                            <div class="w-full text-lg font-semibold">
+                                        <div className="block">
+                                            <div className="w-full text-lg font-semibold">
                                                 Transfer
                                             </div>
                                         </div>
@@ -149,7 +149,7 @@ export default function Form() {
                             <div>
                                 <label
                                     for="from_account_id"
-                                    class="block mb-2 text-sm font-medium text-gray-900 text-white"
+                                    className="block mb-2 text-sm font-medium text-gray-900 text-white"
                                 >
                                     Account
                                 </label>
@@ -180,7 +180,7 @@ export default function Form() {
                                     <>
                                         <label
                                             for="to_account_id"
-                                            class="block mb-2 text-sm font-medium text-gray-900 text-white"
+                                            className="block mb-2 text-sm font-medium text-gray-900 text-white"
                                         >
                                             To account
                                         </label>
@@ -214,7 +214,7 @@ export default function Form() {
                                     >
                                         <label
                                             for="date"
-                                            class="block mb-2 text-sm font-medium text-gray-900 text-white"
+                                            className="block mb-2 text-sm font-medium text-gray-900 text-white"
                                         >
                                             Category
                                         </label>
@@ -232,7 +232,7 @@ export default function Form() {
                             <div>
                                 <label
                                     for="date"
-                                    class="block mb-2 text-sm font-medium text-gray-900 text-white"
+                                    className="block mb-2 text-sm font-medium text-gray-900 text-white"
                                 >
                                     Date
                                 </label>
@@ -257,7 +257,7 @@ export default function Form() {
                             <div>
                                 <label
                                     for="name"
-                                    class="block mb-2 text-sm font-medium text-gray-900 text-white"
+                                    className="block mb-2 text-sm font-medium text-gray-900 text-white"
                                 >
                                     Description
                                 </label>
@@ -275,7 +275,7 @@ export default function Form() {
                             <div>
                                 <label
                                     for="amount"
-                                    class="block mb-2 text-sm font-medium text-gray-900 text-white"
+                                    className="block mb-2 text-sm font-medium text-gray-900 text-white"
                                 >
                                     Amount
                                 </label>
@@ -299,13 +299,15 @@ export default function Form() {
                                     <FontAwesomeIcon icon="fa-solid fa-check" />
                                     Save
                                 </button>
-                                <button
-                                    type="button"
-                                    onClick={handleDeleteRecord}
-                                    className="basis-1/12 flex flex-row px-5 text-xl font-bold py-3 gap-x-5 bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 focus:ring-red-800 shadow-lg shadow-red-500/50 shadow-lg shadow-red-800/80 rounded-xl justify-center cursor-pointer items-center transition"
-                                >
-                                    <FontAwesomeIcon icon="fa-solid fa-trash" />
-                                </button>
+                                {record && (
+                                    <button
+                                        type="button"
+                                        onClick={handleDeleteRecord}
+                                        className="basis-1/12 flex flex-row px-5 text-xl font-bold py-3 gap-x-5 bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 focus:ring-red-800 shadow-lg shadow-red-500/50 shadow-lg shadow-red-800/80 rounded-xl justify-center cursor-pointer items-center transition"
+                                    >
+                                        <FontAwesomeIcon icon="fa-solid fa-trash" />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
