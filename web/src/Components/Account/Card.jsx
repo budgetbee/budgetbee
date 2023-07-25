@@ -30,7 +30,7 @@ export default function Card({ account }) {
                             color: account.balance < 0 ? "red" : "",
                         }}
                     >
-                        {numeral(account.balance).format("$0,0.00")}
+                        {account.currency_symbol} {numeral(account.balance).format("0,0.00")}
                     </div>
                 </div>
             </div>

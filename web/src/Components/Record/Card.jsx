@@ -2,16 +2,12 @@ import React from "react";
 import { Link } from "react-router-dom";
 import numeral from "numeral";
 import moment from "moment";
-// import "numeral/locales/es";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export default function Card({ record, showName }) {
     const inline_style = {
         backgroundColor: record.category_color,
     };
-
-    // numeral.locale("es");
-    // moment.locale("es");
 
     const toAccountName = record.to_account_name
         ? " - " + record.to_account_name
@@ -46,7 +42,7 @@ export default function Card({ record, showName }) {
                             color: record.amount < 0 ? "red" : "",
                         }}
                     >
-                        {numeral(record.amount).format("$0,0.00")}
+                        {record.currency_symbol} {numeral(record.amount).format("0,0.00")}
                     </div>
                     <div className="text-white/20">
                         {moment(record.date).format("D MMMM")}

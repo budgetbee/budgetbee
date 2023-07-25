@@ -207,9 +207,9 @@ export default function View() {
                                             />
                                         ) : (
                                             <span>
-                                                {numeral(
+                                                {account.currency_symbol} {numeral(
                                                     account.initial_balance
-                                                ).format("$0,0.00")}
+                                                ).format("0,0.00")}
                                             </span>
                                         )}
                                     </div>
@@ -223,8 +223,8 @@ export default function View() {
                                                         : "",
                                             }}
                                         >
-                                            {numeral(account.balance).format(
-                                                "$0,0.00"
+                                            {account.currency_symbol} {numeral(account.balance).format(
+                                                "0,0.00"
                                             )}
                                         </div>
                                     </div>
