@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Events\UserCreated;
+use App\Models\Types\Currency;
 
 class AuthController extends Controller
 {
@@ -17,14 +18,18 @@ class AuthController extends Controller
             'name' => 'required|string',
             'email' => 'required|string|max:255|email|unique:users',
             'password' => 'required|string|min:4',
-            'confirm_password' => 'required|string|same:password'
+            'confirm_password' => 'required|string|same:password',
+            'currency_id' => 'integer|exists:App\Models\Types\Currency,id'
         ]);
 
+        $validatedData['currency_id'] = $validatedData['currency_id'] ?? Currency::where('code', 'USD')->first()->id;
+        
         $user = User::create(
             [
                 'name' => $validatedData['name'],
                 'email' => $validatedData['email'],
-                'password' => Hash::make($validatedData['password'])
+                'password' => Hash::make($validatedData['password']),
+                'currency_id' => $validatedData['currency_id']
             ]
         );
 
