@@ -18,27 +18,46 @@ class Account extends Model
      * @var string[]
      */
     protected $fillable = [
-        'user_id', 'name', 'type_id', 'color', 'initial_balance', 'current_balance'
+        'user_id', 'name', 'type_id', 'color', 'initial_balance', 'current_balance', 'currency_id'
     ];
 
-    protected $appends = ['type_name', 'balance', 'total_incomes', 'total_expenses'];
+    protected $appends = ['type_name', 'balance', 'total_incomes', 'total_expenses', 'currency_symbol', 'currency_name', 'currency_code'];
 
-    protected $hidden = ['type'];
+    protected $hidden = ['type', 'currency'];
 
     protected static function newFactory(): Factory
     {
         return AccountFactory::new();
     }
 
-
     public function type()
     {
         return $this->belongsTo(AccountTypes::class);
     }
 
+    public function currency()
+    {
+        return $this->belongsTo(Types\Currency::class);
+    }
+
     public function getTypeNameAttribute()
     {
         return $this->type->name;
+    }
+
+    public function getCurrencySymbolAttribute()
+    {
+        return $this->currency ? $this->currency->symbol : '';
+    }
+
+    public function getCurrencyNameAttribute()
+    {
+        return $this->currency ? $this->currency->name : '';
+    }
+
+    public function getCurrencyCodeAttribute()
+    {
+        return $this->currency ? $this->currency->code : '';
     }
 
     public function getBalanceAttribute()

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Account;
 use App\Models\User;
 use App\Models\AccountTypes;
+use App\Models\Types\Currency;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Account>
@@ -30,13 +31,15 @@ class AccountFactory extends Factory
 
         $randomUser = User::inRandomOrder()->first();
         $randomType = AccountTypes::inRandomOrder()->first();
+        $randomCurrency = Currency::inRandomOrder()->first();
 
         return [
             'user_id' => $randomUser->id,
             'name' => $faker->creditCardType(),
             'type_id' => $randomType->id,
             'color' => $faker->hexcolor(),
-            'initial_balance' => $faker->randomFloat(2, -100, 100)
+            'initial_balance' => $faker->randomFloat(2, -100, 100),
+            'currency_id' => $randomCurrency->id
         ];
     }
 }
