@@ -8,21 +8,22 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faCheck } from "@fortawesome/free-solid-svg-icons";
 
 export default function Form() {
-    const [isLoading, setIsLoading] = useState(true);
     const [account, setAccount] = useState(null);
-    const [accountTypes, setAccountTypes] = useState(null);
+    const [accountTypes, setAccountTypes] = useState([]);
+    const [currencies, setCurrencies] = useState([]);
 
     const { account_id } = useParams();
 
     useEffect(() => {
         async function getData() {
             const types = await Api.getAccountTypes();
+            const currencies = await Api.getCurrencies();
             setAccountTypes(types);
+            setCurrencies(currencies);
             if (account_id !== undefined) {
                 const account = await Api.getAccountById(account_id);
                 setAccount(account);
             }
-            setIsLoading(false);
         }
         getData();
     }, []);
@@ -34,10 +35,6 @@ export default function Form() {
         await Api.createOrUpdateAccount(formObject, account_id);
         window.location = "/accounts";
     };
-
-    if (isLoading) {
-        return <></>;
-    }
 
     return (
         <div className="min-h-screen bg-gray-800">
@@ -94,7 +91,6 @@ export default function Form() {
                             id="type_id"
                             required="required"
                             className="block w-full px-4 py-4 text-base text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-                            defaultValue={account && account.type_id}
                         >
                             {accountTypes.map((acc, index) => {
                                 return (
@@ -102,8 +98,37 @@ export default function Form() {
                                         key={index}
                                         className="text-black"
                                         value={acc.id}
+                                        selected={acc.id === account?.type_id}
                                     >
                                         {acc.name}
+                                    </option>
+                                );
+                            })}
+                        </select>
+                    </div>
+
+                    <div className="mb-6">
+                        <label
+                            htmlFor="currency_id"
+                            className="block mb-2 text-sm font-medium text-gray-900 text-white"
+                        >
+                            Currency
+                        </label>
+                        <select
+                            name="currency_id"
+                            id="currency_id"
+                            required="required"
+                            className="block w-full px-4 py-4 text-base text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                            {currencies.map((currency, index) => {
+                                return (
+                                    <option
+                                        key={index}
+                                        className="text-black"
+                                        value={currency.id}
+                                        selected={currency.id === account?.currency_id}
+                                    >
+                                        {currency.name} {currency.symbol} ({currency.code})
                                     </option>
                                 );
                             })}

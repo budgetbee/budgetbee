@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Account;
 use App\Models\AccountTypes;
 use App\Models\Record;
-use App\Models\Category;
+use App\Models\Types\Currency;
 
 class AccountController extends Controller
 {
@@ -92,6 +92,13 @@ class AccountController extends Controller
         $types = AccountTypes::all();
 
         return response()->json($types);
+    }
+
+    public function getCurrencies()
+    {
+        $currencies = Currency::orderBy('name')->get();
+
+        return response()->json($currencies);
     }
 
     public function getRecords(Request $request, $id)

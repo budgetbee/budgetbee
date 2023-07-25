@@ -36,6 +36,7 @@ Route::prefix('account')->middleware('auth:sanctum')->group(function () {
     Route::get('{id}/stocks', [AccountController::class, 'getStocks']);
     Route::get('{id}/record', [AccountController::class, 'getRecords']);
     Route::get('{id}/record/last{number}', [AccountController::class, 'getLastRecords']);
+    Route::get('currencies', [AccountController::class, 'getCurrencies']);
     Route::get('{id}', [AccountController::class, 'getById']);
     Route::post('', [AccountController::class, 'create']);
     Route::post('{id}/adjust', [AccountController::class, 'adjustBalance']);

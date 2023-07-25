@@ -193,6 +193,19 @@ const Endpoints = {
         }
     },
 
+    getCurrencies: async () => {
+        try {
+            const response = await axios.get(
+                `${API_BASE_URL}/account/currencies`,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            return null;
+        }
+    },
+
     createOrUpdateAccount: async (data, account_id) => {
         try {
             const id = account_id ?? "";

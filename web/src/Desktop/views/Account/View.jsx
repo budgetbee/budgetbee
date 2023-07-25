@@ -7,6 +7,7 @@ import Api from "../../../Api/Endpoints";
 export default function View() {
     const [accounts, setAccounts] = useState([]);
     const [accountTypes, setAccountTypes] = useState([]);
+    const [currencies, setCurrencies] = useState([]);
     const [newAccount, setNewAccount] = useState(null);
     const [accountToEdit, setAccountToEdit] = useState(null);
 
@@ -14,8 +15,10 @@ export default function View() {
         async function getData() {
             const data = await Api.getAccounts();
             const types = await Api.getAccountTypes();
+            const currencies = await Api.getCurrencies();
             setAccounts(data);
             setAccountTypes(types);
+            setCurrencies(currencies);
         }
         getData();
     }, []);
@@ -79,6 +82,20 @@ export default function View() {
                     );
                 })}
             </select>
+            <select
+                name="currency_id"
+                id="currency_id"
+                onChange={handleNewAccountChange}
+                className="basis-2/12 block w-full p-4 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+            >
+                {currencies.map((currency, index) => {
+                    return (
+                        <option key={index} value={currency.id}>
+                            {currency.name} {currency.symbol} ({currency.code})
+                        </option>
+                    );
+                })}
+            </select>
             <input
                 type="number"
                 step="any"
@@ -124,7 +141,8 @@ export default function View() {
                     <div className="flex flex-row justify-between items-center text-white font-bold px-4 py-4">
                         <div className="basis-5/12">Name</div>
                         <div className="basis-2/12">Account type</div>
-                        <div className="basis-2/12 text-right">
+                        <div className="basis-1/12 text-right">Currency</div>
+                        <div className="basis-1/12 text-right">
                             Initial balance
                         </div>
                         <div className="basis-2/12 text-right">
@@ -192,7 +210,42 @@ export default function View() {
                                             <span>{account.type_name}</span>
                                         )}
                                     </div>
-                                    <div className="basis-2/12 text-right">
+                                    <div className="basis-1/12 text-right">
+                                        {accountToEdit?.id === account.id ? (
+                                            <select
+                                                name="currency_id"
+                                                id="currency_id"
+                                                onChange={handleEditAccount}
+                                                defaultValue={
+                                                    account.currency_id
+                                                }
+                                                className="block w-full p-4 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                                            >
+                                                {currencies.map(
+                                                    (currency, index) => {
+                                                        return (
+                                                            <option
+                                                                key={index}
+                                                                value={
+                                                                    currency.id
+                                                                }
+                                                            >
+                                                                {currency.name}{" "}
+                                                                {
+                                                                    currency.symbol
+                                                                }{" "}
+                                                                ({currency.code}
+                                                                )
+                                                            </option>
+                                                        );
+                                                    }
+                                                )}
+                                            </select>
+                                        ) : (
+                                            <span>{account.currency_code}</span>
+                                        )}
+                                    </div>
+                                    <div className="basis-1/12 text-right">
                                         {accountToEdit?.id === account.id ? (
                                             <input
                                                 type="number"
@@ -207,7 +260,8 @@ export default function View() {
                                             />
                                         ) : (
                                             <span>
-                                                {account.currency_symbol} {numeral(
+                                                {account.currency_symbol}{" "}
+                                                {numeral(
                                                     account.initial_balance
                                                 ).format("0,0.00")}
                                             </span>
@@ -223,7 +277,8 @@ export default function View() {
                                                         : "",
                                             }}
                                         >
-                                            {account.currency_symbol} {numeral(account.balance).format(
+                                            {account.currency_symbol}{" "}
+                                            {numeral(account.balance).format(
                                                 "0,0.00"
                                             )}
                                         </div>
