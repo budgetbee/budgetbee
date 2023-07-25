@@ -21,7 +21,7 @@ class Record extends Model
         'user_id', 'date', 'from_account_id', 'to_account_id', 'type', 'category_id', 'name', 'description', 'amount', 'bank_code', 'link_record_id'
     ];
 
-    protected $appends = ['parent_category_icon', 'parent_category_name', 'parent_category_id', 'category_name', 'category_color', 'account_name', 'to_account_name', 'account_type_name', 'icon'];
+    protected $appends = ['parent_category_icon', 'parent_category_name', 'parent_category_id', 'category_name', 'category_color', 'account_name', 'to_account_name', 'account_type_name', 'icon', 'currency_symbol'];
 
     protected $hidden = ['category', 'account', 'toAccount'];
 
@@ -155,5 +155,10 @@ class Record extends Model
     public function getIconAttribute()
     {
         return $this->category->icon;
+    }
+
+    public function getCurrencySymbolAttribute()
+    {
+        return $this->account->currency_symbol;
     }
 }
