@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
-import Api from "../../../Api/Endpoints";
-import SettingsLayout from "../../layout/SettingsLayout";
+import Api from "../../../../Api/Endpoints";
+import SettingsLayout from "../../../layout/SettingsLayout";
 
 // Icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

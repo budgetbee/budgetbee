@@ -41,6 +41,30 @@ class UserController extends Controller
         return response()->json(['is_admin' => $user->id === 1]);
     }
 
+    public function getSettings() {
+        $user = auth()->user();
+
+        $settings = $user->getSettings();
+
+        return response()->json($settings);
+    }
+
+    public function updateSettings(Request $request) {
+        $user = auth()->user();
+
+        $this->authorize('update', $user);
+
+        $request->validate([
+            'currency_id' => 'nullable|integer|exists:App\Models\Types\Currency,id'
+        ]);
+
+        $data = $request->only('currency_id');
+
+        $user->update($data);
+
+        return response()->json();
+    }
+
     public function update(Request $request, $id)
     {
 
@@ -52,11 +76,12 @@ class UserController extends Controller
             'name' => 'required|string',
             'email' => 'required|string|max:255|email',
             'password' => 'nullable|string|min:4',
-            'confirm_password' => 'nullable|string|same:password'
+            'confirm_password' => 'nullable|string|same:password',
+            'currency_id' => 'nullable|integer|exists:App\Models\Types\Currency,id'
         ]);
 
         
-        $data = $request->only('name', 'email', 'password');
+        $data = $request->only('name', 'email', 'password', 'currency_id');
 
         if (empty($data['password'])) {
             unset($data['password']);

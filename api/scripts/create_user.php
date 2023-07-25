@@ -5,6 +5,7 @@ $app = require_once __DIR__.'/../bootstrap/app.php';
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\AuthController;
+use App\Models\Types\Currency;
 
 $app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
 
@@ -19,7 +20,8 @@ $request = new Request([
     'name' => $username,
     'email' => $useremail,
     'password' => $userpassword,
-    'confirm_password' => $userpassword
+    'confirm_password' => $userpassword,
+    'currency_id' => Currency::where('code', 'USD')->first()->id
 ]);
 
 $response = $userController->register($request);

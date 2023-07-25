@@ -24,9 +24,11 @@ Route::get('version', [AppVersionController::class, 'get'])->middleware('auth:sa
 Route::prefix('user')->middleware('auth:sanctum')->group(function () {
     Route::get('all', [UserController::class, 'getAll']);
     Route::get('isAdmin', [UserController::class, 'checkIfAdmin']);
-    Route::get('/{id?}', [UserController::class, 'get']);
-    Route::post('/register', [AuthController::class, 'register']);
+    Route::get('settings', [UserController::class, 'getSettings']);
+    Route::get('{id?}', [UserController::class, 'get']);
+    Route::post('register', [AuthController::class, 'register']);
     Route::post('logout', [AuthController::class, 'logout']);
+    Route::post('settings', [UserController::class, 'updateSettings']);
     Route::post('{id}', [UserController::class, 'update']);
 });
 

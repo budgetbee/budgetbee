@@ -151,6 +151,33 @@ const Endpoints = {
         }
     },
 
+    getUserSettings: async () => {
+        try {
+            const response = await axios.get(
+                `${API_BASE_URL}/user/settings`,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            return null;
+        }
+    },
+
+    updateUserSettings: async (data) => {
+        try {
+            const response = await axios.post(
+                `${API_BASE_URL}/user/settings`,
+                data,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            return null;
+        }
+    },
+
     getAccounts: async () => {
         try {
             const response = await axios.get(

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -22,7 +21,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'currency_id'
     ];
+
+    protected $appends = ['currency_symbol'];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -32,6 +34,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'currency'
     ];
 
     /**
@@ -43,4 +46,24 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function currency()
+    {
+        return $this->belongsTo(Types\Currency::class);
+    }
+
+    public function getCurrencySymbolAttribute()
+    {
+        return $this->currency ? $this->currency->symbol : '';
+    }
+
+    public function getSettings()
+    {
+        return [
+            'currency' => [
+                'id' => $this->currency ? $this->currency->id : '',
+                'symbol' => $this->currency_symbol
+            ]
+        ];
+    }
 }
