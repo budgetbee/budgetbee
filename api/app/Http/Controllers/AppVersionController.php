@@ -31,8 +31,10 @@ class AppVersionController extends Controller
             } else {
                 // Handle error response from the GitHub API
                 return response()->json([
-                    'error' => 'Failed to retrieve the latest version information.'
-                ], 500);
+                    'version' => $version,
+                    'new_version' => 'false',
+                    'latest_version' => $version
+                ]);
             }
         }
 
