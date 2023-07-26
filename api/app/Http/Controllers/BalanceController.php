@@ -9,6 +9,7 @@ use DateTime;
 use DateInterval;
 use Illuminate\Support\Facades\DB;
 use App\Models\Category;
+use App\Services\CurrencyConverter;
 
 class BalanceController extends Controller
 {
@@ -20,9 +21,20 @@ class BalanceController extends Controller
             $query->where('id', $request->query('account_id'));
         }
         $accounts = $query->get();
-        $balance = round($accounts->sum('balance'), 2);
 
-        return response()->json($balance);
+        // $balance = round($accounts->sum('balance'), 2);
+
+        $totalBalance = 0;
+        foreach ($accounts as $account) {
+            $balance = $account->balance;
+            $currency = $account->currency;
+            $user = $request->user();
+
+            $totalBalance += CurrencyConverter::convert($balance, $currency->code, $user->currency->code);
+            
+        }
+
+        return response()->json($totalBalance);
     }
 
     public function getAll(Request $request)
