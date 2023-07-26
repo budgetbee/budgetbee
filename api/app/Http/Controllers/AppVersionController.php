@@ -27,7 +27,7 @@ class AppVersionController extends Controller
                 $latestVersion = $response->json()['tag_name'];
 
                 // Cache the latest version for future use
-                Cache::put($cacheKey, $latestVersion, 60);
+                Cache::put($cacheKey, $latestVersion, now()->addHours(4));
             } else {
                 // Handle error response from the GitHub API
                 return response()->json([
