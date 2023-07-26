@@ -32,7 +32,7 @@ class AppVersionController extends Controller
                 // Handle error response from the GitHub API
                 return response()->json([
                     'version' => $version,
-                    'new_version' => 'false',
+                    'new_version' => false,
                     'latest_version' => $version
                 ]);
             }
