@@ -17,6 +17,10 @@ const SettingsLayout = ({ children }) => {
             name: "Users",
             href: "/settings/users",
         },
+        currency: {
+            name: "Currency",
+            href: "/settings/currency",
+        },
     };
 
     const linkArray = Object.entries(links);

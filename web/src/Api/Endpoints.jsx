@@ -233,6 +233,47 @@ const Endpoints = {
         }
     },
 
+    getUserCurrencies: async () => {
+        try {
+            const response = await axios.get(
+                `${API_BASE_URL}/user/currencies`,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            return null;
+        }
+    },
+
+    createUserCurrency: async (data) => {
+        try {
+            const response = await axios.post(
+                `${API_BASE_URL}/user/currencies`,
+                data,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            return null;
+        }
+    },
+
+    updateUserCurrency: async (data, id) => {
+        try {
+            const response = await axios.post(
+                `${API_BASE_URL}/user/currencies/${id}`,
+                data,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            return null;
+        }
+    },
+
     createOrUpdateAccount: async (data, account_id) => {
         try {
             const id = account_id ?? "";
@@ -441,7 +482,6 @@ const Endpoints = {
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
             return null;
         }
     },
