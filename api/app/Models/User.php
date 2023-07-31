@@ -62,6 +62,8 @@ class User extends Authenticatable
         return [
             'currency' => [
                 'id' => $this->currency ? $this->currency->id : '',
+                'name' => $this->currency->name,
+                'code' => $this->currency->code,
                 'symbol' => $this->currency_symbol
             ]
         ];
