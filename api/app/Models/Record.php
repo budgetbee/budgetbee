@@ -7,6 +7,10 @@ use Database\Factories\RecordFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Http\Request;
+use DateTime;
+use Illuminate\Support\Facades\Auth;
+use App\Services\CurrencyConverter;
 
 class Record extends Model
 {
@@ -21,7 +25,7 @@ class Record extends Model
         'user_id', 'date', 'from_account_id', 'to_account_id', 'type', 'category_id', 'name', 'description', 'amount', 'bank_code', 'link_record_id'
     ];
 
-    protected $appends = ['parent_category_icon', 'parent_category_name', 'parent_category_id', 'category_name', 'category_color', 'account_name', 'to_account_name', 'account_type_name', 'icon', 'currency_symbol'];
+    protected $appends = ['parent_category_icon', 'parent_category_name', 'parent_category_id', 'category_name', 'category_color', 'account_name', 'to_account_name', 'account_type_name', 'icon', 'currency_symbol', 'amount_base_currency'];
 
     protected $hidden = ['category', 'account', 'toAccount'];
 
@@ -160,5 +164,31 @@ class Record extends Model
     public function getCurrencySymbolAttribute()
     {
         return $this->account->currency_symbol;
+    }
+
+    public function getAmountBaseCurrencyAttribute()
+    {
+        $user = Auth::user();
+        return CurrencyConverter::convert($this->amount, $this->account->currency_code, $user->currency->code);
+    }
+
+    public function scopeFilterByRequest($query, Request $request, array $excludes = [])
+    {
+        $query->where('user_id', $request->user()->id);
+
+        if ($request->has('account_id') && !in_array('account_id', $excludes)) {
+            $query->where('from_account_id', $request->query('account_id'));
+        }
+        if ($request->has('from_date') && !in_array('from_date', $excludes)) {
+            $query->where('date', '>=', (new DateTime($request->query('from_date')))->format('Y-m-d'));
+        }
+        if ($request->has('to_date') && !in_array('to_date', $excludes)) {
+            $query->where('date', '<=', (new DateTime($request->query('to_date')))->format('Y-m-d'));
+        }
+        if ($request->has('search_term') && !in_array('search_term', $excludes)) {
+            $query->where('name', 'like', '%' . $request->query('search_term') . '%');
+        }
+        
+        return $query;
     }
 }
