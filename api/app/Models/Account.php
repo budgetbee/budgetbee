@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Database\Factories\AccountFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Services\CurrencyConverter;
+use Illuminate\Support\Facades\Auth;
 
 class Account extends Model
 {
@@ -21,7 +23,7 @@ class Account extends Model
         'user_id', 'name', 'type_id', 'color', 'initial_balance', 'current_balance', 'currency_id'
     ];
 
-    protected $appends = ['type_name', 'balance', 'total_incomes', 'total_expenses', 'currency_symbol', 'currency_name', 'currency_code'];
+    protected $appends = ['type_name', 'balance', 'balance_base_currency', 'total_incomes', 'total_incomes_base_currency', 'total_expenses', 'total_expenses_base_currency', 'currency_symbol', 'currency_name', 'currency_code', 'initial_balance_base_currency'];
 
     protected $hidden = ['type', 'currency'];
 
@@ -96,5 +98,29 @@ class Account extends Model
             ->reduce(function ($balance, $amount) {
                 return $balance + $amount;
             }, $initialBalance);
+    }
+
+    public function getBalanceBaseCurrencyAttribute()
+    {
+        $user = Auth::user();
+        return CurrencyConverter::convert($this->balance, $this->currency_code, $user->currency->code);
+    }
+
+    public function getTotalIncomesBaseCurrencyAttribute()
+    {
+        $user = Auth::user();
+        return CurrencyConverter::convert($this->total_incomes, $this->currency_code, $user->currency->code);
+    }
+
+    public function getTotalExpensesBaseCurrencyAttribute()
+    {
+        $user = Auth::user();
+        return CurrencyConverter::convert($this->total_expenses, $this->currency_code, $user->currency->code);
+    }
+
+    public function getInitialBalanceBaseCurrencyAttribute()
+    {
+        $user = Auth::user();
+        return CurrencyConverter::convert($this->initial_balance, $this->currency_code, $user->currency->code);
     }
 }
