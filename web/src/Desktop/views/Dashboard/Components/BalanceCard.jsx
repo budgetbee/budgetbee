@@ -28,7 +28,7 @@ export default function BalanceCard({ searchData }) {
                 </div>
             </div>
             <div className="font-bold text-2xl text-left">
-                {numeral(balance).format("$0,0.00")}
+                {balance?.currency_symbol} {numeral(balance?.amount).format("0,0.00")}
             </div>
         </div>
     );
