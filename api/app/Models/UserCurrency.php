@@ -17,7 +17,7 @@ class UserCurrency extends Model
 
     protected $appends = ['name', 'code', 'symbol'];
 
-    protected $hidden = ['currency'];
+    protected $hidden = ['currency', 'user'];
 
     protected static function booted()
     {
@@ -39,6 +39,11 @@ class UserCurrency extends Model
     public function currency()
     {
         return $this->belongsTo(Currency::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function getNameAttribute()
