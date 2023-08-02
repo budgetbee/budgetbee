@@ -168,8 +168,7 @@ class Record extends Model
 
     public function getAmountBaseCurrencyAttribute()
     {
-        $user = Auth::user();
-        return CurrencyConverter::convert($this->amount, $this->account->currency_code, $user->currency->code);
+        return CurrencyConverter::convert($this->amount, $this->account->currency);
     }
 
     public function scopeFilterByRequest($query, Request $request, array $excludes = [])

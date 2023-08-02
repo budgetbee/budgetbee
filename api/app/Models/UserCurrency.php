@@ -10,22 +10,29 @@ use App\Models\Types\Currency;
 class UserCurrency extends Model
 {
     protected $fillable = [
+        'user_id',
         'currency_id',
         'exchange_rate_to_default_currency'
     ];
 
-    protected $appends = ['currency_name', 'currency_code', 'currency_symbol'];
+    protected $appends = ['name', 'code', 'symbol'];
 
     protected $hidden = ['currency'];
 
     protected static function booted()
     {
         static::creating(function ($userCurrency) {
-            $userCurrency->user_id = auth()->user()->id;
+            $user = Auth::user();
+            if ($user) {
+                $userCurrency->user_id = $user->id;
+            }
         });
 
         static::addGlobalScope('user_id', function (Builder $builder) {
-            $builder->where('user_id', Auth::id());
+            $user = Auth::user();
+            if ($user) {
+                // $builder->where('user_id', Auth::id());
+            }
         });
     }
 
@@ -34,17 +41,17 @@ class UserCurrency extends Model
         return $this->belongsTo(Currency::class);
     }
 
-    public function getCurrencyNameAttribute()
+    public function getNameAttribute()
     {
         return $this->currency->name;
     }
 
-    public function getCurrencyCodeAttribute()
+    public function getCodeAttribute()
     {
         return $this->currency->code;
     }
 
-    public function getCurrencySymbolAttribute()
+    public function getSymbolAttribute()
     {
         return $this->currency->symbol;
     }

@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use App\Models\UserCurrency;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Types\Currency;
 
 class UserController extends Controller
 {
@@ -37,14 +39,14 @@ class UserController extends Controller
 
     public function checkIfAdmin()
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         return response()->json(['is_admin' => $user->id === 1]);
     }
 
     public function getSettings()
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         $settings = $user->getSettings();
 
@@ -53,12 +55,17 @@ class UserController extends Controller
 
     public function getCurrencies()
     {
-        return response()->json(UserCurrency::all());
+        return response()->json(UserCurrency::where('user_id', Auth::user()->id)->get());
+    }
+
+    public function getAllCurrencies()
+    {
+        return response()->json(Currency::all());
     }
 
     public function updateSettings(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         $this->authorize('update', $user);
 
@@ -93,7 +100,7 @@ class UserController extends Controller
             'exchange_rate_to_default_currency' => 'required|numeric'
         ]);
 
-        $userCurrency = UserCurrency::find($id);
+        $userCurrency = UserCurrency::where('user_id', Auth::user()->id)->where('id', $id)->first();
 
         if ($userCurrency) {
             $data = $request->only('exchange_rate_to_default_currency');
@@ -115,7 +122,7 @@ class UserController extends Controller
             'email' => 'required|string|max:255|email',
             'password' => 'nullable|string|min:4',
             'confirm_password' => 'nullable|string|same:password',
-            'currency_id' => 'nullable|integer|exists:App\Models\Types\Currency,id'
+            'currency_id' => 'nullable|integer|exists:App\Models\UserCurrency,id'
         ]);
 
 

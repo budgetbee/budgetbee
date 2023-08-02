@@ -20,8 +20,7 @@ $request = new Request([
     'name' => $username,
     'email' => $useremail,
     'password' => $userpassword,
-    'confirm_password' => $userpassword,
-    'currency_id' => Currency::where('code', 'USD')->first()->id
+    'confirm_password' => $userpassword
 ]);
 
 $response = $userController->register($request);

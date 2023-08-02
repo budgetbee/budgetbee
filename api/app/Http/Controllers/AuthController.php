@@ -18,18 +18,14 @@ class AuthController extends Controller
             'name' => 'required|string',
             'email' => 'required|string|max:255|email|unique:users',
             'password' => 'required|string|min:4',
-            'confirm_password' => 'required|string|same:password',
-            'currency_id' => 'integer|exists:App\Models\Types\Currency,id'
+            'confirm_password' => 'required|string|same:password'
         ]);
-
-        $validatedData['currency_id'] = $validatedData['currency_id'] ?? Currency::where('code', 'USD')->first()->id;
         
         $user = User::create(
             [
                 'name' => $validatedData['name'],
                 'email' => $validatedData['email'],
-                'password' => Hash::make($validatedData['password']),
-                'currency_id' => $validatedData['currency_id']
+                'password' => Hash::make($validatedData['password'])
             ]
         );
 

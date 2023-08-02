@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Types\Currency;
 
 class User extends Authenticatable
 {
@@ -47,9 +48,26 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    public static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($user) {
+            static::withoutEvents(function () use ($user) {
+                $currency = UserCurrency::create([
+                    'user_id' => $user->id,
+                    'currency_id' => Currency::where('code', 'USD')->first()->id,
+                    'exchange_rate_to_default_currency' => 1
+                ]);
+                $user->fill(['currency_id' => $currency->id])
+                    ->save();
+            });
+        });
+    }
+
     public function currency()
     {
-        return $this->belongsTo(Types\Currency::class);
+        return $this->belongsTo(UserCurrency::class, 'currency_id', 'id');
     }
 
     public function getCurrencySymbolAttribute()
@@ -64,7 +82,7 @@ class User extends Authenticatable
                 'id' => $this->currency ? $this->currency->id : '',
                 'name' => $this->currency->name,
                 'code' => $this->currency->code,
-                'symbol' => $this->currency_symbol
+                'symbol' => $this->currency->symbol
             ]
         ];
     }

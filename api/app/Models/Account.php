@@ -39,7 +39,7 @@ class Account extends Model
 
     public function currency()
     {
-        return $this->belongsTo(Types\Currency::class);
+        return $this->belongsTo(UserCurrency::class, 'currency_id', 'id');
     }
 
     public function getTypeNameAttribute()
@@ -102,25 +102,21 @@ class Account extends Model
 
     public function getBalanceBaseCurrencyAttribute()
     {
-        $user = Auth::user();
-        return CurrencyConverter::convert($this->balance, $this->currency_code, $user->currency->code);
+        return CurrencyConverter::convert($this->balance, $this->currency);
     }
 
     public function getTotalIncomesBaseCurrencyAttribute()
     {
-        $user = Auth::user();
-        return CurrencyConverter::convert($this->total_incomes, $this->currency_code, $user->currency->code);
+        return CurrencyConverter::convert($this->total_incomes, $this->currency);
     }
 
     public function getTotalExpensesBaseCurrencyAttribute()
     {
-        $user = Auth::user();
-        return CurrencyConverter::convert($this->total_expenses, $this->currency_code, $user->currency->code);
+        return CurrencyConverter::convert($this->total_expenses, $this->currency);
     }
 
     public function getInitialBalanceBaseCurrencyAttribute()
     {
-        $user = Auth::user();
-        return CurrencyConverter::convert($this->initial_balance, $this->currency_code, $user->currency->code);
+        return CurrencyConverter::convert($this->initial_balance, $this->currency);
     }
 }

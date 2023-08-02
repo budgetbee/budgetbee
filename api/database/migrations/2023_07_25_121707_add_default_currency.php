@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->unsignedBigInteger('currency_id')->nullable();
-            $table->foreign('currency_id')->references('id')->on('currencies');
+            $table->foreign('currency_id')->references('id')->on('user_currencies');
         });
     }
 };

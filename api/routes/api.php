@@ -26,6 +26,7 @@ Route::prefix('user')->middleware('auth:sanctum')->group(function () {
     Route::get('isAdmin', [UserController::class, 'checkIfAdmin']);
     Route::get('settings', [UserController::class, 'getSettings']);
     Route::get('currencies', [UserController::class, 'getCurrencies']);
+    Route::get('currencies/all', [UserController::class, 'getAllCurrencies']);
     Route::get('{id?}', [UserController::class, 'get']);
     Route::post('register', [AuthController::class, 'register']);
     Route::post('logout', [AuthController::class, 'logout']);

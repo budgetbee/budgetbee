@@ -246,6 +246,19 @@ const Endpoints = {
         }
     },
 
+    getAllCurrencies: async () => {
+        try {
+            const response = await axios.get(
+                `${API_BASE_URL}/user/currencies/all`,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            return null;
+        }
+    },
+
     createUserCurrency: async (data) => {
         try {
             const response = await axios.post(

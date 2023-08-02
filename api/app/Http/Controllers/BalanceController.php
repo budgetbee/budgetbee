@@ -8,6 +8,7 @@ use App\Models\Account;
 use DateTime;
 use DateInterval;
 use App\Models\Category;
+use Illuminate\Support\Carbon;
 
 class BalanceController extends Controller
 {
@@ -57,8 +58,9 @@ class BalanceController extends Controller
         $records = Record::filterByRequest($request)->orderBy('date')->get();
         $balance = Account::where('user_id', $request->user()->id)->get()->sum('initial_balance_base_currency');
 
-        $startDate = new DateTime($records->first()->date);
-        $endDate = new DateTime($records->last()->date);
+        $currentYear = Carbon::now()->year;
+        $startDate = new DateTime($records->first()->date ?? Carbon::create($currentYear, 1, 1)->startOfMonth()->toDateString());
+        $endDate = new DateTime($records->last()->date ?? Carbon::now()->toDateString());
 
         $beforeRecords = Record::filterByRequest($request, ['from_date', 'to_date'])->where('date', '<', $startDate->format('Y-m-d'))->get();
         foreach ($beforeRecords as $record) {
