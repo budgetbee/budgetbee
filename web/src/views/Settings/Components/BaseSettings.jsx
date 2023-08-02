@@ -43,7 +43,7 @@ export default function BaseSettings() {
                         id="currency_id"
                         required="required"
                         onChange={handleInputChange}
-                        className="block w-full p-4 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                        className="block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
                     >
                         {currencies.map((currency, index) => {
                             return (

@@ -9,7 +9,7 @@ export default function Card({ account }) {
 
     return (
         <Link to={`/account/${account.id}`}>
-            <div className="flex flex-row justify-between items-center bg-gray-800 text-white px-4 py-4">
+            <div className="flex flex-row justify-between items-center bg-background text-white px-4 py-4">
                 <div className="flex flex-row gap-x-4 items-center">
                     <div
                         className="w-9 h-9 rounded-full bg-gray-500"

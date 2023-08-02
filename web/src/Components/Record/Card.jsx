@@ -17,7 +17,7 @@ export default function Card({ record, showName }) {
     mainName = mainName.length > 25 ? mainName.slice(0, 25) + "..." : mainName;
     return (
         <Link to={`/record/${record.id}`}>
-            <div className="flex flex-row justify-between gap-x-3 items-center bg-gray-800 text-white px-4 py-4">
+            <div className="flex flex-row justify-between gap-x-3 items-center bg-background text-white px-4 py-4">
                 <div className="basis-[15%]">
                     <div
                         className="m-auto flex items-center justify-center w-9 h-9 rounded-full bg-gray-500"

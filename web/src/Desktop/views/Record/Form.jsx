@@ -87,7 +87,7 @@ export default function Form() {
                                     ></input>
                                     <label
                                         for="income"
-                                        className="inline-flex items-center justify-center w-full p-5 text-gray-400 bg-gray-800 border border-gray-200 rounded-lg cursor-pointer hover:text-gray-300 border-gray-700 peer-checked:text-green-400 peer-checked:border-green-400 peer-checked:text-green-400 hover:text-gray-600 hover:bg-gray-100 hover:bg-gray-700"
+                                        className="inline-flex items-center justify-center w-full p-5 text-gray-400 bg-background border border-gray-200 rounded-lg cursor-pointer hover:text-gray-300 border-gray-700 peer-checked:text-green-400 peer-checked:border-green-400 peer-checked:text-green-400 hover:text-gray-600 hover:bg-gray-100 hover:bg-gray-700"
                                     >
                                         <div className="block">
                                             <div className="w-full text-lg font-semibold">
@@ -111,7 +111,7 @@ export default function Form() {
                                     ></input>
                                     <label
                                         for="expense"
-                                        className="inline-flex items-center justify-center w-full p-5 text-gray-400 bg-gray-800 border border-gray-200 rounded-lg cursor-pointer hover:text-gray-300 border-gray-700 peer-checked:text-green-400 peer-checked:border-green-400 peer-checked:text-green-400 hover:text-gray-600 hover:bg-gray-100 hover:bg-gray-700"
+                                        className="inline-flex items-center justify-center w-full p-5 text-gray-400 bg-background border border-gray-200 rounded-lg cursor-pointer hover:text-gray-300 border-gray-700 peer-checked:text-green-400 peer-checked:border-green-400 peer-checked:text-green-400 hover:text-gray-600 hover:bg-gray-100 hover:bg-gray-700"
                                     >
                                         <div className="block">
                                             <div className="w-full text-lg font-semibold">
@@ -135,7 +135,7 @@ export default function Form() {
                                     ></input>
                                     <label
                                         for="transfer"
-                                        className="inline-flex items-center justify-center w-full p-5 text-gray-400 bg-gray-800 border border-gray-200 rounded-lg cursor-pointer hover:text-gray-300 border-gray-700 peer-checked:text-green-400 peer-checked:border-green-400 peer-checked:text-green-400 hover:text-gray-600 hover:bg-gray-100 hover:bg-gray-700"
+                                        className="inline-flex items-center justify-center w-full p-5 text-gray-400 bg-background border border-gray-200 rounded-lg cursor-pointer hover:text-gray-300 border-gray-700 peer-checked:text-green-400 peer-checked:border-green-400 peer-checked:text-green-400 hover:text-gray-600 hover:bg-gray-100 hover:bg-gray-700"
                                     >
                                         <div className="block">
                                             <div className="w-full text-lg font-semibold">
@@ -157,7 +157,7 @@ export default function Form() {
                                     name="from_account_id"
                                     id="from_account_id"
                                     onChange={handleInputChange}
-                                    className="basis-4/12 block w-full p-4 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                                    className="basis-4/12 block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
                                     required
                                 >
                                     <option value="">Select account...</option>
@@ -187,7 +187,7 @@ export default function Form() {
                                         <select
                                             name="to_account_id"
                                             id="to_account_id"
-                                            className="basis-4/12 block w-full p-4 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                                            className="basis-4/12 block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
                                             required
                                         >
                                             <option value="">
@@ -209,7 +209,7 @@ export default function Form() {
                                     </>
                                 ) : (
                                     <div
-                                        className="basis-4/12 block w-full p-4 cursor-pointer border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                                        className="basis-4/12 block w-full p-4 cursor-pointer border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
                                         onClick={handleOpenCategory}
                                     >
                                         <label
@@ -239,7 +239,7 @@ export default function Form() {
                                 <input
                                     type="date"
                                     name="date"
-                                    className="basis-4/12 block w-full p-4 cursor-pointer border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                                    className="basis-4/12 block w-full p-4 cursor-pointer border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
                                     onChange={handleInputChange}
                                     defaultValue={record?.date}
                                     value={
@@ -267,7 +267,7 @@ export default function Form() {
                                     id="name"
                                     onChange={handleInputChange}
                                     defaultValue={record?.name}
-                                    className="basis-4/12 block w-full p-4 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                                    className="basis-4/12 block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
                                     required
                                 ></input>
                             </div>
@@ -286,7 +286,7 @@ export default function Form() {
                                     id="amount"
                                     onChange={handleInputChange}
                                     defaultValue={record?.amount}
-                                    className="basis-4/12 block w-full p-4 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                                    className="basis-4/12 block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
                                     required
                                 ></input>
                             </div>

@@ -66,13 +66,13 @@ export default function View() {
                 id="name"
                 onChange={handleNewAccountChange}
                 placeholder="Account name"
-                className="basis-4/12 block w-full p-4 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                className="basis-4/12 block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
             />
             <select
                 name="type_id"
                 id="type_id"
                 onChange={handleNewAccountChange}
-                className="basis-2/12 block w-full p-4 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                className="basis-2/12 block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
             >
                 {accountTypes.map((type, index) => {
                     return (
@@ -86,7 +86,7 @@ export default function View() {
                 name="currency_id"
                 id="currency_id"
                 onChange={handleNewAccountChange}
-                className="basis-2/12 block w-full p-4 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                className="basis-2/12 block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
             >
                 {currencies.map((currency, index) => {
                     return (
@@ -103,7 +103,7 @@ export default function View() {
                 id="initial_balance"
                 placeholder="Initial balance"
                 onChange={handleNewAccountChange}
-                className="basis-2/12 block w-full p-4 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500 appearance-none"
+                className="basis-2/12 block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500 appearance-none"
             />
             <div className="flex flex-row gap-x-10">
                 <button type="button" onClick={() => handleSaveNewAccount()}>
@@ -124,7 +124,7 @@ export default function View() {
 
     return (
         <Layout>
-            <div className="flex flex-col gap-y-10 bg-gray-800 top-0 left-0 w-full px-10 mt-14">
+            <div className="flex flex-col gap-y-10 bg-background top-0 left-0 w-full px-10 mt-14">
                 <div className="">
                     <div>
                         <button
@@ -176,7 +176,7 @@ export default function View() {
                                                         onChange={
                                                             handleEditAccount
                                                         }
-                                                        className="block w-full p-4 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                                                        className="block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
                                                     />
                                                 ) : (
                                                     <span>{account.name}</span>
@@ -191,7 +191,7 @@ export default function View() {
                                                 id="type_id"
                                                 onChange={handleEditAccount}
                                                 defaultValue={account.type_id}
-                                                className="block w-full p-4 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                                                className="block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
                                             >
                                                 {accountTypes.map(
                                                     (type, index) => {
@@ -219,7 +219,7 @@ export default function View() {
                                                 defaultValue={
                                                     account.currency_id
                                                 }
-                                                className="block w-full p-4 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                                                className="block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
                                             >
                                                 {currencies.map(
                                                     (currency, index) => {
@@ -256,7 +256,7 @@ export default function View() {
                                                 defaultValue={
                                                     account.initial_balance
                                                 }
-                                                className="block float-right p-4 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                                                className="block float-right p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
                                             />
                                         ) : (
                                             <span>

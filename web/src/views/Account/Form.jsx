@@ -37,7 +37,7 @@ export default function Form() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-800">
+        <div className="min-h-screen bg-background">
             <form onSubmit={handleSaveForm}>
                 <div className="fixed w-full top-0 basis-1/12 flex flex-row justify-between items-center bg-gray-700 mb-5 h-14">
                     <div
