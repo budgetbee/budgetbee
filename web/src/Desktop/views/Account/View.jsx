@@ -44,44 +44,51 @@ export default function View() {
         setNewAccount((prevData) => ({ ...prevData, ...data }));
     };
 
-    const handleSaveNewAccount = async () => {
-        await Api.createOrUpdateAccount(newAccount);
+    const handleSaveNewAccount = async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const formObject = Object.fromEntries(formData.entries());
+        await Api.createOrUpdateAccount(formObject);
         const data = await Api.getAccounts();
         setAccounts(data);
         setNewAccount(null);
     };
 
     const createNewForm = (
-        <div className="flex flex-row gap-x-5 items-center">
-            <input
-                type="color"
-                name="color"
-                id="color"
-                onChange={handleNewAccountChange}
-                className="appearance-none w-12 h-12"
-            ></input>
-            <input
-                type="text"
-                name="name"
-                id="name"
-                onChange={handleNewAccountChange}
-                placeholder="Account name"
-                className="basis-4/12 block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
-            />
-            <select
-                name="type_id"
-                id="type_id"
-                onChange={handleNewAccountChange}
-                className="basis-2/12 block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
-            >
-                {accountTypes.map((type, index) => {
-                    return (
-                        <option key={index} value={type.id}>
-                            {type.name}
-                        </option>
-                    );
-                })}
-            </select>
+        <form onSubmit={handleSaveNewAccount}>
+            <div className="flex flex-row gap-x-5 items-center">
+                <input
+                    type="color"
+                    name="color"
+                    id="color"
+                    onChange={handleNewAccountChange}
+                    required={true}
+                    className="appearance-none w-12 h-12"
+                ></input>
+                <input
+                    type="text"
+                    name="name"
+                    id="name"
+                    required={true}
+                    onChange={handleNewAccountChange}
+                    placeholder="Account name"
+                    className="basis-4/12 block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                />
+                <select
+                    name="type_id"
+                    id="type_id"
+                    required={true}
+                    onChange={handleNewAccountChange}
+                    className="basis-2/12 block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                >
+                    {accountTypes.map((type, index) => {
+                        return (
+                            <option key={index} value={type.id}>
+                                {type.name}
+                            </option>
+                        );
+                    })}
+                </select>
             <select
                 name="currency_id"
                 id="currency_id"
@@ -96,30 +103,34 @@ export default function View() {
                     );
                 })}
             </select>
-            <input
-                type="number"
-                step="any"
-                name="initial_balance"
-                id="initial_balance"
-                placeholder="Initial balance"
-                onChange={handleNewAccountChange}
-                className="basis-2/12 block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500 appearance-none"
-            />
-            <div className="flex flex-row gap-x-10">
-                <button type="button" onClick={() => handleSaveNewAccount()}>
-                    <FontAwesomeIcon
-                        icon="fa-solid fa-check"
-                        className="text-2xl text-green-400"
-                    />
-                </button>
-                <button type="button" onClick={() => setNewAccount(null)}>
-                    <FontAwesomeIcon
-                        icon="fa-solid fa-xmark"
-                        className="text-2xl text-gray-400"
-                    />
-                </button>
+                <input
+                    type="number"
+                    step="any"
+                    name="initial_balance"
+                    id="initial_balance"
+                    required={true}
+                    placeholder="Initial balance"
+                    onChange={handleNewAccountChange}
+                    className="basis-2/12 block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500 appearance-none"
+                />
+                <div className="flex flex-row gap-x-10">
+                    <button
+                        type="submit"
+                    >
+                        <FontAwesomeIcon
+                            icon="fa-solid fa-check"
+                            className="text-2xl text-green-400"
+                        />
+                    </button>
+                    <button type="button" onClick={() => setNewAccount(null)}>
+                        <FontAwesomeIcon
+                            icon="fa-solid fa-xmark"
+                            className="text-2xl text-gray-400"
+                        />
+                    </button>
+                </div>
             </div>
-        </div>
+        </form>
     );
 
     return (
