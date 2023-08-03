@@ -9,6 +9,7 @@ use DateTime;
 use DateInterval;
 use App\Models\Category;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class BalanceController extends Controller
 {
@@ -234,6 +235,8 @@ class BalanceController extends Controller
     public function getBalanceByCategory(Request $request)
     {
         $records = Record::filterByRequest($request)->whereNot('type', 'transfer')->get();
+        
+        $currencySymbol = Auth::user()->currency->symbol;
 
         $data = [];
         foreach ($records as $record) {
@@ -245,6 +248,7 @@ class BalanceController extends Controller
                     'icon' => $record->parent_category_icon,
                     'color' => $record->category_color,
                     'total' => 0,
+                    'currency_symbol' => $currencySymbol,
                     'childrens' => []
                 ];
             }
@@ -255,7 +259,8 @@ class BalanceController extends Controller
                     'name' => $record->category_name,
                     'icon' => $record->parent_category_icon,
                     'color' => $record->category_color,
-                    'total' => 0
+                    'total' => 0,
+                    'currency_symbol' => $currencySymbol
                 ];
             }
 
@@ -287,7 +292,7 @@ class BalanceController extends Controller
                     ->get();
                     
                 $totalAmount = $records->sum(function ($record) {
-                    return -$record->amount_base_currency;
+                    return $record->amount_base_currency;
                 });
 
                 return [
@@ -295,9 +300,10 @@ class BalanceController extends Controller
                     'amount' => $totalAmount,
                     'color' => $category->color,
                     'icon' => $category->icon,
+                    'currency_symbol' => Auth::user()->currency->symbol
                 ];
             })
-            ->sortByDesc('amount')
+            ->sortBy('amount')
             ->take(3)
             ->values();
 

@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Http\Request;
 use DateTime;
-use Illuminate\Support\Facades\Auth;
 use App\Services\CurrencyConverter;
 
 class Record extends Model
