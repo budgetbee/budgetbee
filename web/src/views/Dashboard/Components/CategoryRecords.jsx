@@ -127,9 +127,9 @@ export default function CategoryRecords({ activeAccount }) {
                                                         <div>{parent.name}</div>
                                                     </div>
                                                     <div>
-                                                        {numeral(
+                                                    {parent.currency_symbol} {numeral(
                                                             parent.total
-                                                        ).format("$0,0.00 a")}
+                                                        ).format("0,0.00 a")}
                                                     </div>
                                                 </div>
                                                 <div
@@ -170,10 +170,10 @@ export default function CategoryRecords({ activeAccount }) {
                                                                         }
                                                                     </div>
                                                                     <div>
-                                                                        {numeral(
+                                                                    {children.currency_symbol} {numeral(
                                                                             children.total
                                                                         ).format(
-                                                                            "$0,0.00 a"
+                                                                            "0,0.00 a"
                                                                         )}
                                                                     </div>
                                                                 </div>
