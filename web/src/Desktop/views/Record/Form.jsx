@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import moment from "moment";
-
 import Api from "../../../Api/Endpoints";
 import CategoryPicker from "./Components/CategoryPicker";
 import Layout from "../../layout/Layout";
@@ -177,36 +176,74 @@ export default function Form() {
                             </div>
                             <div>
                                 {record?.type === "transfer" ? (
-                                    <>
-                                        <label
-                                            for="to_account_id"
-                                            className="block mb-2 text-sm font-medium text-gray-900 text-white"
-                                        >
-                                            To account
-                                        </label>
-                                        <select
-                                            name="to_account_id"
-                                            id="to_account_id"
-                                            className="basis-4/12 block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
-                                            required
-                                        >
-                                            <option value="">
-                                                Select account...
-                                            </option>
-                                            {accounts.map((account) => (
-                                                <option
-                                                    key={account.id}
-                                                    value={account.id}
-                                                    selected={
-                                                        account.id ===
-                                                        record?.to_account_id
-                                                    }
-                                                >
-                                                    {account.name}
+                                    <div className="flex flex-col gap-y-5">
+                                        <div>
+                                            <label
+                                                for="to_account_id"
+                                                className="block mb-2 text-sm font-medium text-gray-900 text-white"
+                                            >
+                                                To account
+                                            </label>
+                                            <select
+                                                name="to_account_id"
+                                                id="to_account_id"
+                                                onChange={handleInputChange}
+                                                className="basis-4/12 block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                                                required
+                                            >
+                                                <option value="">
+                                                    Select account...
                                                 </option>
-                                            ))}
-                                        </select>
-                                    </>
+                                                {accounts.map((account) => (
+                                                    <option
+                                                        key={account.id}
+                                                        value={account.id}
+                                                        currency_code={
+                                                            account.currency_code
+                                                        }
+                                                        selected={
+                                                            account.id ===
+                                                            record?.to_account_id
+                                                        }
+                                                    >
+                                                        {account.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        {record.from_account_id &&
+                                            record?.to_account_id &&
+                                            record?.from_account_id !==
+                                                record?.to_account_id && (
+                                                <div>
+                                                    <label
+                                                        for="amount"
+                                                        className="block mb-2 text-sm font-medium text-gray-900 text-white"
+                                                    >
+                                                        Exchange rate{" "}
+                                                        {accounts.length && record.from_account_id && record.to_account_id && (
+                                                            <span>
+                                                                1.00 {accounts.find(item => item.id == record.from_account_id).currency_code} = {record?.rate ?? 1} {accounts.find(item => item.id == record.to_account_id).currency_code}
+                                                            </span>
+                                                        )}
+                                                    </label>
+                                                    <input
+                                                        type="number"
+                                                        step="any"
+                                                        name="rate"
+                                                        id="rate"
+                                                        onChange={
+                                                            handleInputChange
+                                                        }
+                                                        defaultValue={
+                                                            record?.rate ?? 1
+                                                        }
+                                                        className="basis-4/12 block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                                                        required
+                                                    ></input>
+                                                </div>
+                                            )}
+                                    </div>
                                 ) : (
                                     <div
                                         className="basis-4/12 block w-full p-4 cursor-pointer border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
