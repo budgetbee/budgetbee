@@ -8,6 +8,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Types\Currency;
+use Illuminate\Support\Facades\Log;
 
 class User extends Authenticatable
 {
@@ -53,6 +54,7 @@ class User extends Authenticatable
         parent::boot();
 
         static::created(function ($user) {
+            Log::info("Created {$user->getTable()} with ID {$user->id}");
             static::withoutEvents(function () use ($user) {
                 $currency = UserCurrency::create([
                     'user_id' => $user->id,
@@ -62,6 +64,18 @@ class User extends Authenticatable
                 $user->fill(['currency_id' => $currency->id])
                     ->save();
             });
+        });
+
+        static::creating(function ($model) {
+            Log::info("Creating a new {$model->getTable()}");
+        });
+
+        static::updating(function ($model) {
+            Log::info("Updating {$model->getTable()} with ID {$model->id}");
+        });
+
+        static::deleting(function ($model) {
+            Log::info("Deleting {$model->getTable()} with ID {$model->id}");
         });
     }
 
