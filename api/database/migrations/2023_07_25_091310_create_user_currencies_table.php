@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('user_currencies', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
+            $table->softDeletes();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('currency_id');
             $table->float('exchange_rate_to_default_currency', 19, 9)->nullable()->default(1);

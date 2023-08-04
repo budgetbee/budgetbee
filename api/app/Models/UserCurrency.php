@@ -9,10 +9,11 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Database\Factories\UserCurrencyFactory;
 use App\Models\Types\Currency;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserCurrency extends Model
 {
-    use HasFactory;
+    use SoftDeletes, HasFactory;
     protected $fillable = [
         'user_id',
         'currency_id',
