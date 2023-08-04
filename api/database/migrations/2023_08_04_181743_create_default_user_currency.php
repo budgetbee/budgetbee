@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Schema;
 use App\Models\User;
 use App\Models\UserCurrency;
 use App\Models\Types\Currency;
+use Illuminate\Support\Facades\Artisan;
 
 return new class extends Migration
 {
@@ -15,6 +16,10 @@ return new class extends Migration
     public function up(): void
     {
         $users = User::all();
+
+        Artisan::call('db:seed', [
+            '--class' => 'Database\\Seeders\\CurrencySeeder',
+        ]);
 
         foreach ($users as $user) {
             $currency = $user->currency;
