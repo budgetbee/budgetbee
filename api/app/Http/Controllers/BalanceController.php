@@ -7,11 +7,15 @@ use App\Models\Record;
 use App\Models\Account;
 use DateTime;
 use DateInterval;
-use Illuminate\Support\Facades\DB;
 use App\Models\Category;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class BalanceController extends Controller
 {
+
+    const CATEGORY_PARENT_ID_TRANSFER = 1;
+    const CATEGORY_PARENT_ID_INCOME = 10;
 
     public function getBalance(Request $request)
     {
@@ -20,159 +24,83 @@ class BalanceController extends Controller
             $query->where('id', $request->query('account_id'));
         }
         $accounts = $query->get();
-        $balance = round($accounts->sum('balance'), 2);
 
-        return response()->json($balance);
+        return response()->json([
+            'amount' => round($accounts->sum('balance_base_currency'), 2),
+            'currency_symbol' => $request->user()->currency_symbol
+        ]);
     }
 
     public function getAll(Request $request)
     {
-        $query = Record::query()
-            ->where('user_id', $request->user()->id);
+        $query = Record::filterByRequest($request);
+        $queryIncome = clone $query;
+        $queryExpense = clone $query;
 
-        if ($request->has('account_id')) {
-            $query->where('from_account_id', $request->query('account_id'));
-        }
-        if ($request->has('from_date')) {
-            $query->where('date', '>=', (new DateTime($request->query('from_date')))->format('Y-m-d'));
-        }
-        if ($request->has('to_date')) {
-            $query->where('date', '<=', (new DateTime($request->query('to_date')))->format('Y-m-d'));
-        }
-        if ($request->has('search_term')) {
-            $query->where('name', 'like', '%' . $request->query('search_term') . '%');
-        }
+        $excludedCategoryIds = Category::where('parent_category_id', self::CATEGORY_PARENT_ID_INCOME)->pluck('id');
 
-        $records = $query->get();
-
-        $data = $records->reduce(function ($carry, $record) {
-            if ($record->type !== 'expenses') {
-                if ($record->parent_category_id == 10) {
-                    $carry['incomes'] += $record->amount;
-                } else {
-                    $carry['expenses'] += $record->amount;
-                }
-            }
-            $carry['balance'] += $record->amount;
-            return $carry;
-        }, ['balance' => 0, 'incomes' => 0, 'expenses' => 0]);
-
-        return response()->json($data);
+        return response()->json([
+            'incomes' => $queryIncome->whereIn('category_id', $excludedCategoryIds)->whereNot('type', 'transfer')->get()->sum('amount_base_currency'),
+            'expenses' => $queryExpense->whereNotIn('category_id', $excludedCategoryIds)->whereNot('type', 'transfer')->get()->sum('amount_base_currency'),
+            'currency_symbol' => $request->user()->currency_symbol
+        ]);
     }
 
     public function getExpensesBalance(Request $request)
     {
-        $query = Record::query()
-            ->where('type', 'expense')
-            ->where('user_id', $request->user()->id);
-
-        if ($request->has('account_id')) {
-            $query->where('from_account_id', $request->query('account_id'));
-        }
-        if ($request->has('from_date')) {
-            $query->where('date', '>=', (new DateTime($request->query('from_date')))->format('Y-m-d'));
-        }
-        if ($request->has('to_date')) {
-            $query->where('date', '<=', (new DateTime($request->query('to_date')))->format('Y-m-d'));
-        }
-        if ($request->has('search_term')) {
-            $query->where('name', 'like', '%' . $request->query('search_term') . '%');
-        }
-
-        $records = $query->get();
-
-        $balance = $records->sum('amount');
-
-        return response()->json($balance);
+        return response()->json([
+            'amount' => Record::filterByRequest($request)->where('type', 'expense')->get()->sum('amount_base_currency'),
+            'currency_symbol' => $request->user()->currency_symbol
+        ]);
     }
 
     public function getTimeline(Request $request)
     {
-        $startDate = new DateTime(date('Y') . "-01-01");
-        $endDate = new DateTime(date('Y-m-d'));
+        $records = Record::filterByRequest($request)->orderBy('date')->get();
+        $balance = Account::where('user_id', $request->user()->id)->get()->sum('initial_balance_base_currency');
 
-        $query = Record::where('user_id', $request->user()->id);
+        $currentYear = Carbon::now()->year;
+        $startDate = new DateTime($records->first()->date ?? Carbon::create($currentYear, 1, 1)->startOfMonth()->toDateString());
+        $endDate = new DateTime($records->last()->date ?? Carbon::now()->toDateString());
 
-        if ($request->has('account_id')) {
-            $query->where('from_account_id', $request->query('account_id'));
+        $beforeRecords = Record::filterByRequest($request, ['from_date', 'to_date'])->where('date', '<', $startDate->format('Y-m-d'))->get();
+        foreach ($beforeRecords as $record) {
+            $balance += $record->amount_base_currency;
         }
-        if ($request->has('from_date')) {
-            $query->where('date', '>=', (new DateTime($request->query('from_date')))->format('Y-m-d'));
-            $startDate = new DateTime($request->query('from_date'));
-        }
-        if ($request->has('to_date')) {
-            $query->where('date', '<=', (new DateTime($request->query('to_date')))->format('Y-m-d'));
-            $endDate = new DateTime($request->query('to_date'));
-        }
-
-        $records = $query->orderBy('date')
-            ->get();
-
-        $accounts = Account::where('user_id', $request->user()->id)->get();
-        $initialBalance = $accounts->sum('initial_balance');
-        $balance = $initialBalance;
 
         $data = [];
 
-        $balanceByDate = [];
         foreach ($records as $record) {
             $date = (new DateTime($record->date))->format('Y-m-d');
-            $balance += $record->amount;
-            $balanceByDate[$date] = $balance;
+            $balance += $record->amount_base_currency;
+            $data[$date] = round($balance, 2);
         }
-
-        $closestDate = null;
-        $closestValue = null;
-
-        foreach ($balanceByDate as $arrayDate => $value) {
-            if ($arrayDate <= $startDate->format('Y-m-d') && ($closestDate === null || $arrayDate > $closestDate)) {
-                $closestDate = $arrayDate;
-                $closestValue = $value;
-            }
-        }
-
-        $balance = $closestValue ?? $initialBalance;
-        $data = [];
 
         while ($startDate <= $endDate) {
             $formattedDate = $startDate->format('Y-m-d');
-            $balance = $balanceByDate[$formattedDate] ?? $balance;
+            $balance = $data[$formattedDate] ?? $balance;
             $data[$formattedDate] = round($balance, 2);
 
             $startDate->add(new DateInterval('P1D'));
         }
+
+        ksort($data);
 
         return response()->json($data);
     }
 
     public function getByIncomeCategories(Request $request)
     {
-        $query = Record::orderBy('date')
-            ->where('user_id', $request->user()->id);
-
-        if ($request->has('account_id')) {
-            $query->where('from_account_id', $request->query('account_id'));
-        }
-        if ($request->has('from_date')) {
-            $query->where('date', '>=', (new DateTime($request->query('from_date')))->format('Y-m-d'));
-        }
-        if ($request->has('to_date')) {
-            $query->where('date', '<=', (new DateTime($request->query('to_date')))->format('Y-m-d'));
-        }
-
-        $records = $query->get();
+        $incomeCategories = Category::where('parent_category_id', self::CATEGORY_PARENT_ID_INCOME)->pluck('id');
+        $records = Record::filterByRequest($request)->whereIn('category_id', $incomeCategories)->orderBy('date')->get();
 
         $data = [];
 
         foreach ($records as $record) {
-            if ($record->parent_category_id != 10) {
-                continue;
-            }
-
             $childKey = $record->category_name;
             $data[$childKey]['amount'] ??= 0;
 
-            $amount = round($record->amount, 2);
+            $amount = round($record->amount_base_currency, 2);
 
             $data[$childKey]['amount'] += $amount;
         }
@@ -193,36 +121,20 @@ class BalanceController extends Controller
 
     public function getByExpenseCategories(Request $request)
     {
-        $query = Record::orderBy('date')
-            ->where('user_id', $request->user()->id);
-
-        if ($request->has('account_id')) {
-            $query->where('from_account_id', $request->query('account_id'));
-        }
-        if ($request->has('from_date')) {
-            $query->where('date', '>=', (new DateTime($request->query('from_date')))->format('Y-m-d'));
-        }
-        if ($request->has('to_date')) {
-            $query->where('date', '<=', (new DateTime($request->query('to_date')))->format('Y-m-d'));
-        }
-
-        $records = $query->get();
+        $expenseCategories = Category::whereNotIn('parent_category_id', [self::CATEGORY_PARENT_ID_TRANSFER, self::CATEGORY_PARENT_ID_INCOME])->pluck('id');
+        $records = Record::filterByRequest($request)->whereIn('category_id', $expenseCategories)->orderBy('date')->get();
 
         $data = [];
 
-        $parentCategoriesToOmmit = [1, 10];
-
         foreach ($records as $record) {
-            if (in_array($record->parent_category_id, $parentCategoriesToOmmit)) {
-                continue;
-            }
+
             $parentKey = $record->parent_category_name;
             $childKey = $record->category_name;
 
             $data[$parentKey]['amount'] ??= 0;
             $data[$parentKey]['childrens'][$childKey] ??= 0;
 
-            $amount = round(-$record->amount, 2);
+            $amount = round(-$record->amount_base_currency, 2);
 
             $data[$parentKey]['id'] = $record->parent_category_id;
             $data[$parentKey]['color'] = $record->category_color;
@@ -322,24 +234,13 @@ class BalanceController extends Controller
 
     public function getBalanceByCategory(Request $request)
     {
-        $query = Record::whereNot('type', 'transfer')
-            ->where('user_id', $request->user()->id);
-
-        if ($request->has('account_id')) {
-            $query->where('from_account_id', $request->query('account_id'));
-        }
-        if ($request->has('from_date')) {
-            $query->where('date', '>=', (new DateTime($request->query('from_date')))->format('Y-m-d'));
-        }
-        if ($request->has('to_date')) {
-            $query->where('date', '<=', (new DateTime($request->query('to_date')))->format('Y-m-d'));
-        }
-
-        $records = $query->get();
+        $records = Record::filterByRequest($request)->whereNot('type', 'transfer')->get();
+        
+        $currencySymbol = Auth::user()->currency->symbol;
 
         $data = [];
         foreach ($records as $record) {
-            $categoryType = ($record->parent_category_id == 10) ? 'income' : 'expense';
+            $categoryType = ($record->parent_category_id === self::CATEGORY_PARENT_ID_INCOME) ? 'income' : 'expense';
             if (!isset($data[$categoryType][$record->parent_category_id])) {
                 $data[$categoryType][$record->parent_category_id] = [
                     'id' => $record->parent_category_id,
@@ -347,6 +248,7 @@ class BalanceController extends Controller
                     'icon' => $record->parent_category_icon,
                     'color' => $record->category_color,
                     'total' => 0,
+                    'currency_symbol' => $currencySymbol,
                     'childrens' => []
                 ];
             }
@@ -357,53 +259,8 @@ class BalanceController extends Controller
                     'name' => $record->category_name,
                     'icon' => $record->parent_category_icon,
                     'color' => $record->category_color,
-                    'total' => 0
-                ];
-            }
-
-            if ($categoryType == "expense") {
-                asort($data[$categoryType]);
-                asort($data[$categoryType][$record->parent_category_id]['childrens']);
-            }
-
-            $data[$categoryType][$record->parent_category_id]['total'] += $record->amount;
-            $data[$categoryType][$record->parent_category_id]['childrens'][$record->category_id]['total'] += $record->amount;
-        }
-
-        asort($data);
-
-        return response()->json($data);
-    }
-
-    public function getBalanceByCategoryAndAccount(Request $request, $id)
-    {
-        $records = Record::where('from_account_id', $id)
-            ->whereNot('type', 'transfer')
-            ->where('user_id', $request->user()->id);
-        $records = $request->query->get('from') ? $records->where('date', '>=', (new DateTime($request->query->get('from')))->format('Y-m-d')) : $records;
-        $records = $records->get();
-
-        $data = [];
-        foreach ($records as $record) {
-            $categoryType = ($record->parent_category_id == 10) ? 'income' : 'expense';
-            if (!isset($data[$categoryType][$record->parent_category_id])) {
-                $data[$categoryType][$record->parent_category_id] = [
-                    'id' => $record->parent_category_id,
-                    'name' => $record->parent_category_name,
-                    'icon' => $record->parent_category_icon,
-                    'color' => $record->category_color,
                     'total' => 0,
-                    'childrens' => []
-                ];
-            }
-
-            if (!isset($data[$categoryType][$record->parent_category_id]['childrens'][$record->category_id])) {
-                $data[$categoryType][$record->parent_category_id]['childrens'][$record->category_id] = [
-                    'id' => $record->category_id,
-                    'name' => $record->category_name,
-                    'icon' => $record->parent_category_icon,
-                    'color' => $record->category_color,
-                    'total' => 0
+                    'currency_symbol' => $currencySymbol
                 ];
             }
 
@@ -412,8 +269,8 @@ class BalanceController extends Controller
                 asort($data[$categoryType][$record->parent_category_id]['childrens']);
             }
 
-            $data[$categoryType][$record->parent_category_id]['total'] += $record->amount;
-            $data[$categoryType][$record->parent_category_id]['childrens'][$record->category_id]['total'] += $record->amount;
+            $data[$categoryType][$record->parent_category_id]['total'] += $record->amount_base_currency;
+            $data[$categoryType][$record->parent_category_id]['childrens'][$record->category_id]['total'] += $record->amount_base_currency;
         }
 
         asort($data);
@@ -423,38 +280,33 @@ class BalanceController extends Controller
 
     public function getTopExpenses(Request $request)
     {
-        $query = Record::query()
-            ->where('user_id', $request->user()->id)
-            ->where('type', 'expense');
+        $query = Record::filterByRequest($request)->whereNot('type', 'transfer');
 
-        if ($request->has('account_id')) {
-            $query->where('from_account_id', $request->query('account_id'));
-        }
-        if ($request->has('from_date')) {
-            $query->where('date', '>=', (new DateTime($request->query('from_date')))->format('Y-m-d'));
-        }
-        if ($request->has('to_date')) {
-            $query->where('date', '<=', (new DateTime($request->query('to_date')))->format('Y-m-d'));
-        }
-        if ($request->has('search_term')) {
-            $query->where('name', 'like', '%' . $request->query('search_term') . '%');
-        }
-
-
-        $data = $query->select('category_id', DB::raw('SUM(ABS(amount)) as total_amount'))
+        $data = $query->select('category_id')
             ->groupBy('category_id')
-            ->orderByDesc('total_amount')
-            ->take(3)
             ->get()
             ->map(function ($item) {
                 $category = Category::find($item->category_id);
+                $records = Record::where('category_id', $item->category_id)
+                    ->where('user_id', $item->user_id)
+                    ->whereNot('type', 'transfer')
+                    ->get();
+                    
+                $totalAmount = $records->sum(function ($record) {
+                    return $record->amount_base_currency;
+                });
+
                 return [
                     'name' => $category->name,
-                    'amount' => $item->total_amount,
+                    'amount' => $totalAmount,
                     'color' => $category->color,
                     'icon' => $category->icon,
+                    'currency_symbol' => Auth::user()->currency->symbol
                 ];
-            });
+            })
+            ->sortBy('amount')
+            ->take(3)
+            ->values();
 
         return response()->json($data);
     }

@@ -74,7 +74,7 @@ export default function CategoryChart({ activeAccount }) {
             <div className="flex flex-col gap-x-2 p-4 bg-gray-700 rounded py-4">
                 <div className="flex flex-row justify-between items-center text-white text-2xl pb-4">
                     <div className="font-bold">
-                        {numeral(expensesBalance).format("$0,0.00 a")}
+                        {expensesBalance?.currency_symbol} {numeral(expensesBalance?.amount).format("0,0.00 a")}
                     </div>
                     <div>
                         <DatesSelect setDates={setFromDate} />

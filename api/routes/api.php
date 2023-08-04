@@ -24,9 +24,15 @@ Route::get('version', [AppVersionController::class, 'get'])->middleware('auth:sa
 Route::prefix('user')->middleware('auth:sanctum')->group(function () {
     Route::get('all', [UserController::class, 'getAll']);
     Route::get('isAdmin', [UserController::class, 'checkIfAdmin']);
-    Route::get('/{id?}', [UserController::class, 'get']);
-    Route::post('/register', [AuthController::class, 'register']);
+    Route::get('settings', [UserController::class, 'getSettings']);
+    Route::get('currencies', [UserController::class, 'getCurrencies']);
+    Route::get('currencies/all', [UserController::class, 'getAllCurrencies']);
+    Route::get('{id?}', [UserController::class, 'get']);
+    Route::post('register', [AuthController::class, 'register']);
     Route::post('logout', [AuthController::class, 'logout']);
+    Route::post('settings', [UserController::class, 'updateSettings']);
+    Route::post('currencies', [UserController::class, 'createCurrency']);
+    Route::post('currencies/{id}', [UserController::class, 'updateCurrency']);
     Route::post('{id}', [UserController::class, 'update']);
 });
 
@@ -36,6 +42,7 @@ Route::prefix('account')->middleware('auth:sanctum')->group(function () {
     Route::get('{id}/stocks', [AccountController::class, 'getStocks']);
     Route::get('{id}/record', [AccountController::class, 'getRecords']);
     Route::get('{id}/record/last{number}', [AccountController::class, 'getLastRecords']);
+    Route::get('currencies', [AccountController::class, 'getCurrencies']);
     Route::get('{id}', [AccountController::class, 'getById']);
     Route::post('', [AccountController::class, 'create']);
     Route::post('{id}/adjust', [AccountController::class, 'adjustBalance']);
@@ -69,7 +76,6 @@ Route::prefix('balance')->middleware('auth:sanctum')->group(function () {
     Route::get('expenses', [BalanceController::class, 'getExpensesBalance']);
     Route::get('timeline', [BalanceController::class, 'getTimeline']);
     Route::get('category', [BalanceController::class, 'getBalanceByCategory']);
-    Route::get('category/account/{id}', [BalanceController::class, 'getBalanceByCategoryAndAccount']);
     Route::get('categories/income', [BalanceController::class, 'getByIncomeCategories']);
     Route::get('categories/expense', [BalanceController::class, 'getByExpenseCategories']);
     Route::get('categories/top', [BalanceController::class, 'getTopExpenses']);

@@ -39,7 +39,7 @@ export default function List() {
     };
 
     return (
-        <div className="absolute bg-gray-800 top-0 left-0 w-full min-h-screen">
+        <div className="absolute bg-background top-0 left-0 w-full min-h-screen">
             <TopNav menu={true} rightFunction={handleAddNewClick} rightIcon={faPlus} />
             <div className="flex flex-col divide-y divide-gray-600/50 rounded p-px mt-14">
                 {view}

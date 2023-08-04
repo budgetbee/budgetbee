@@ -151,6 +151,33 @@ const Endpoints = {
         }
     },
 
+    getUserSettings: async () => {
+        try {
+            const response = await axios.get(
+                `${API_BASE_URL}/user/settings`,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            return null;
+        }
+    },
+
+    updateUserSettings: async (data) => {
+        try {
+            const response = await axios.post(
+                `${API_BASE_URL}/user/settings`,
+                data,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            return null;
+        }
+    },
+
     getAccounts: async () => {
         try {
             const response = await axios.get(
@@ -189,6 +216,73 @@ const Endpoints = {
         } catch (error) {
             handleErrors(error);
             console.error(error);
+            return null;
+        }
+    },
+
+    getCurrencies: async () => {
+        try {
+            const response = await axios.get(
+                `${API_BASE_URL}/account/currencies`,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            return null;
+        }
+    },
+
+    getUserCurrencies: async () => {
+        try {
+            const response = await axios.get(
+                `${API_BASE_URL}/user/currencies`,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            return null;
+        }
+    },
+
+    getAllCurrencies: async () => {
+        try {
+            const response = await axios.get(
+                `${API_BASE_URL}/user/currencies/all`,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            return null;
+        }
+    },
+
+    createUserCurrency: async (data) => {
+        try {
+            const response = await axios.post(
+                `${API_BASE_URL}/user/currencies`,
+                data,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
+            return null;
+        }
+    },
+
+    updateUserCurrency: async (data, id) => {
+        try {
+            const response = await axios.post(
+                `${API_BASE_URL}/user/currencies/${id}`,
+                data,
+                HEADERS
+            );
+            return response.data;
+        } catch (error) {
+            handleErrors(error);
             return null;
         }
     },
@@ -401,7 +495,6 @@ const Endpoints = {
             return response.data;
         } catch (error) {
             handleErrors(error);
-            console.error(error);
             return null;
         }
     },

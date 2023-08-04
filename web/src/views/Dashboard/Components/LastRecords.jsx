@@ -26,7 +26,7 @@ export default function LastRecords({ activeAccount }) {
 
     return (
         <div>
-            <div className="flex flex-col divide-y divide-gray-600/50 bg-gray-800 rounded p-px">
+            <div className="flex flex-col divide-y divide-gray-600/50 bg-background rounded p-px">
                 {data.map((record, index) => {
                     return (
                         <div key={index}>

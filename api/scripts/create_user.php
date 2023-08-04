@@ -5,6 +5,7 @@ $app = require_once __DIR__.'/../bootstrap/app.php';
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\AuthController;
+use App\Models\Types\Currency;
 
 $app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
 

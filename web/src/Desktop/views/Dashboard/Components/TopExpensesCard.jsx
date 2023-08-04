@@ -23,7 +23,10 @@ export default function TopExpensesCard({ searchData }) {
                     const inline_style = {
                         backgroundColor: category.color,
                     };
-                    const name = category.name.length > 15 ? category.name.slice(0, 15) + "..." : category.name;
+                    const name =
+                        category.name.length > 15
+                            ? category.name.slice(0, 15) + "..."
+                            : category.name;
                     return (
                         <div
                             key={index}
@@ -34,13 +37,17 @@ export default function TopExpensesCard({ searchData }) {
                                     className="m-auto flex items-center justify-center w-7 h-7 rounded-full bg-gray-500"
                                     style={inline_style}
                                 >
-                                    <FontAwesomeIcon icon={category.icon} className="text-sm"/>
+                                    <FontAwesomeIcon
+                                        icon={category.icon}
+                                        className="text-sm"
+                                    />
                                 </div>
                                 <span>{name}</span>
                             </div>
                             <div>
                                 <span className="font-bold">
-                                    {numeral(category.amount).format("$0,0.00")}
+                                    {category.currency_symbol}{" "}
+                                    {numeral(category.amount).format("0,0.00")}
                                 </span>
                             </div>
                         </div>

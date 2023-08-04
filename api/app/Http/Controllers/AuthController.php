@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Events\UserCreated;
+use App\Models\Types\Currency;
 
 class AuthController extends Controller
 {
@@ -19,7 +20,7 @@ class AuthController extends Controller
             'password' => 'required|string|min:4',
             'confirm_password' => 'required|string|same:password'
         ]);
-
+        
         $user = User::create(
             [
                 'name' => $validatedData['name'],

@@ -56,6 +56,13 @@ class GetUserTest extends TestCase
         $response->assertJson([
             'is_admin' => false
         ]);
+    }
 
+    public function testGetUserSettings(): void
+    {
+        $response = $this->get('/api/user/settings');
+
+        $response->assertStatus(200);
+        $this->assertNotEmpty($response->getContent());
     }
 }

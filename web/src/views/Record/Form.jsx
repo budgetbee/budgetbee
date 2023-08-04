@@ -12,6 +12,7 @@ import { faCheck, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 export default function Form() {
     const [isLoading, setIsLoading] = useState(true);
+    const [record, setRecord] = useState(null);
     const [amount, setAmount] = useState(0);
     const [type, setType] = useState("expense");
     const [account, setAccount] = useState(null);
@@ -38,6 +39,7 @@ export default function Form() {
                 setAmount(Math.abs(record.amount));
                 setAccount(record.from_account_id);
                 setToAccount(record.to_account_id);
+                setRecord(record);
                 setDate(record.date);
                 setName(record.name);
             }
@@ -66,6 +68,15 @@ export default function Form() {
 
     const handleBackFunction = async () => {
         window.location.href = "/";
+    };
+
+    const handleInputChange = (event) => {
+        const target = event.target;
+        const value =
+            target.type === "checkbox" ? target.checked : target.value;
+        const name = target.name;
+
+        setRecord({ ...record, [name]: value });
     };
 
     const handleSaveForm = async () => {
@@ -175,8 +186,12 @@ export default function Form() {
                                         name="from_account_id"
                                         id="from_account_id"
                                         required="required"
+                                        onChange={handleInputChange}
                                         className="text-center cursor-pointer appearance-none bg-transparent"
                                     >
+                                        <option value="">
+                                            Select account...
+                                        </option>
                                         {accounts.map((acc, index) => {
                                             return (
                                                 <option
@@ -203,8 +218,12 @@ export default function Form() {
                                             name="to_account_id"
                                             id="to_account_id"
                                             required="required"
+                                            onChange={handleInputChange}
                                             className="text-center cursor-pointer appearance-none bg-transparent"
                                         >
+                                            <option value="">
+                                                Select account...
+                                            </option>
                                             {accounts.map((acc, index) => {
                                                 return (
                                                     <option
@@ -233,6 +252,7 @@ export default function Form() {
                                     <input
                                         type="hidden"
                                         name="category_id"
+                                        onChange={handleInputChange}
                                         value={category.id}
                                     />
                                 </div>
@@ -261,6 +281,53 @@ export default function Form() {
                                     />
                                 </div>
                             </div>
+                            {record?.from_account_id &&
+                                record?.to_account_id &&
+                                record?.from_account_id !==
+                                    record?.to_account_id && (
+                                    <div className="basis-1/2">
+                                        <label
+                                            for="rate"
+                                            className="text-sm text-gray-300"
+                                        >
+                                            Exchange rate
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type="number"
+                                                step="any"
+                                                name="rate"
+                                                id="rate"
+                                                onChange={handleInputChange}
+                                                defaultValue={record?.rate ?? 1}
+                                                className="w-3/4 text-center cursor-pointer appearance-none bg-transparent"
+                                                required
+                                            ></input>
+                                            {accounts.length &&
+                                                record.from_account_id &&
+                                                record.to_account_id && (
+                                                    <div class="w-full mt-2 absolute left-1/2 transform -translate-x-1/2 text-xs">
+                                                        1.00{" "}
+                                                        {
+                                                            accounts.find(
+                                                                (item) =>
+                                                                    item.id ==
+                                                                    record.from_account_id
+                                                            ).currency_code
+                                                        }{" "}
+                                                        = {record?.rate ?? 1}{" "}
+                                                        {
+                                                            accounts.find(
+                                                                (item) =>
+                                                                    item.id ==
+                                                                    record.to_account_id
+                                                            ).currency_code
+                                                        }
+                                                    </div>
+                                                )}
+                                        </div>
+                                    </div>
+                                )}
                         </div>
                     </div>
                     <div className="basis-1/12">

@@ -26,7 +26,7 @@ export default function UserList() {
             return (
                 <tr
                     key={index}
-                    className="border-b bg-gray-800 border-gray-700"
+                    className="border-b bg-background border-gray-700"
                 >
                     <th
                         scope="row"
@@ -35,10 +35,10 @@ export default function UserList() {
                         {user.name}
                     </th>
                     <td className="px-6 py-4 text-right">
-                        <Link to={"/settings/user/" + user.id}>
+                        <Link to={"/settings/users/" + user.id}>
                             <button
                                 type="button"
-                                className="text-white bg-gray-700 hover:bg-gray-800 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 text-center mr-2 mb-2"
+                                className="text-white bg-gray-700 hover:bg-background focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 text-center mr-2 mb-2"
                             >
                                 Edit
                             </button>
@@ -59,10 +59,10 @@ export default function UserList() {
                         </th>
                         <th scope="col" className="px-6 py-3 text-right">
                             {isAdmin && (
-                                <Link to={"/settings/user/"}>
+                                <Link to={"/settings/users/new"}>
                                     <button
                                         type="button"
-                                        className="text-gray-900 bg-[#F2F2DA] hover:bg-[#F2F2DA] focus:outline-none focus:ring-4 focus:ring-[#F2F2DA] font-medium rounded-full text-sm px-5 py-2.5 text-center mr-2 mb-2"
+                                        className="text-gray-900 bg-primary hover:bg-primary focus:outline-none focus:ring-4 focus:ring-[#F2F2DA] font-medium rounded-full text-sm px-5 py-2.5 text-center mr-2 mb-2"
                                     >
                                         Add
                                     </button>

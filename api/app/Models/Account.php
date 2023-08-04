@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Database\Factories\AccountFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Services\CurrencyConverter;
+use Illuminate\Support\Facades\Auth;
 
 class Account extends Model
 {
@@ -18,27 +20,46 @@ class Account extends Model
      * @var string[]
      */
     protected $fillable = [
-        'user_id', 'name', 'type_id', 'color', 'initial_balance', 'current_balance'
+        'user_id', 'name', 'type_id', 'color', 'initial_balance', 'current_balance', 'currency_id'
     ];
 
-    protected $appends = ['type_name', 'balance', 'total_incomes', 'total_expenses'];
+    protected $appends = ['type_name', 'balance', 'balance_base_currency', 'total_incomes', 'total_incomes_base_currency', 'total_expenses', 'total_expenses_base_currency', 'currency_symbol', 'currency_name', 'currency_code', 'initial_balance_base_currency'];
 
-    protected $hidden = ['type'];
+    protected $hidden = ['type', 'currency'];
 
     protected static function newFactory(): Factory
     {
         return AccountFactory::new();
     }
 
-
     public function type()
     {
         return $this->belongsTo(AccountTypes::class);
     }
 
+    public function currency()
+    {
+        return $this->belongsTo(UserCurrency::class, 'currency_id', 'id');
+    }
+
     public function getTypeNameAttribute()
     {
         return $this->type->name;
+    }
+
+    public function getCurrencySymbolAttribute()
+    {
+        return $this->currency ? $this->currency->symbol : '';
+    }
+
+    public function getCurrencyNameAttribute()
+    {
+        return $this->currency ? $this->currency->name : '';
+    }
+
+    public function getCurrencyCodeAttribute()
+    {
+        return $this->currency ? $this->currency->code : '';
     }
 
     public function getBalanceAttribute()
@@ -77,5 +98,25 @@ class Account extends Model
             ->reduce(function ($balance, $amount) {
                 return $balance + $amount;
             }, $initialBalance);
+    }
+
+    public function getBalanceBaseCurrencyAttribute()
+    {
+        return CurrencyConverter::convert($this->balance, $this->currency);
+    }
+
+    public function getTotalIncomesBaseCurrencyAttribute()
+    {
+        return CurrencyConverter::convert($this->total_incomes, $this->currency);
+    }
+
+    public function getTotalExpensesBaseCurrencyAttribute()
+    {
+        return CurrencyConverter::convert($this->total_expenses, $this->currency);
+    }
+
+    public function getInitialBalanceBaseCurrencyAttribute()
+    {
+        return CurrencyConverter::convert($this->initial_balance, $this->currency);
     }
 }

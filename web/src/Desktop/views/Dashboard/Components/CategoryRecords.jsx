@@ -124,9 +124,10 @@ export default function CategoryRecords({ searchData }) {
                                                         <div>{parent.name}</div>
                                                     </div>
                                                     <div>
+                                                        {parent.currency_symbol}{" "}
                                                         {numeral(
                                                             parent.total
-                                                        ).format("$0,0.00 a")}
+                                                        ).format("0,0.00 a")}
                                                     </div>
                                                 </div>
                                                 <div
@@ -167,10 +168,13 @@ export default function CategoryRecords({ searchData }) {
                                                                         }
                                                                     </div>
                                                                     <div>
+                                                                        {
+                                                                            children.currency_symbol
+                                                                        }{" "}
                                                                         {numeral(
                                                                             children.total
                                                                         ).format(
-                                                                            "$0,0.00 a"
+                                                                            "0,0.00 a"
                                                                         )}
                                                                     </div>
                                                                 </div>

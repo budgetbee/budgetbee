@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from "react";
 import numeral from "numeral";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
 import Api from "../../../../Api/Endpoints";
 
 export default function IncomeExpensesBalanceCard({ searchData }) {
-    const [totalIncome, setTotalIncome] = useState(null);
-    const [totalExpenses, setTotalExpenses] = useState(null);
+    const [totalIncome, setTotalIncome] = useState(0);
+    const [totalExpenses, setTotalExpenses] = useState(0);
+    const [currency, setCurrency] = useState("");
 
     useEffect(() => {
         async function getAllBalance() {
             const balance = await Api.getAllBalance(searchData);
             setTotalIncome(balance.incomes);
             setTotalExpenses(balance.expenses);
+            setCurrency(balance.currency_symbol);
         }
         getAllBalance();
     }, [searchData]);
@@ -31,7 +31,7 @@ export default function IncomeExpensesBalanceCard({ searchData }) {
                     </div>
                 </div>
                 <div className="font-bold text-2xl">
-                    {numeral(totalIncome).format("$0,0.00")}
+                    {currency} {numeral(totalIncome).format("0,0.00")}
                 </div>
             </div>
             <div className="flex flex-col items-center text-center">
@@ -45,7 +45,7 @@ export default function IncomeExpensesBalanceCard({ searchData }) {
                     </div>
                 </div>
                 <div className="font-bold text-2xl">
-                    {numeral(totalExpenses).format("$0,0.00")}
+                    {currency} {numeral(totalExpenses).format("0,0.00")}
                 </div>
             </div>
         </div>

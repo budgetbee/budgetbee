@@ -94,7 +94,7 @@ export default function List() {
             <input
               type="text"
               onChange={handleNewCategoryName}
-              className="block w-full p-4 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+              className="block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
           <div className="pl-5">
@@ -114,7 +114,7 @@ export default function List() {
 
   return (
     <Layout>
-      <div className="flex flex-row gap-x-10 bg-gray-800 top-0 left-0 w-full px-10 mt-14">
+      <div className="flex flex-row gap-x-10 bg-background top-0 left-0 w-full px-10 mt-14">
         <div className="flex flex-col divide-y divide-gray-600/50 rounded-3xl bg-gray-700 py-10 basis-6/12">
           {parentCategories.map((pCat, index) => (
             <div
@@ -148,7 +148,7 @@ export default function List() {
                       type="text"
                       onChange={handleEditCategoryName}
                       defaultValue={category.name}
-                      className="block w-full p-3 border border-gray-700 rounded-lg bg-gray-800 sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                      className="block w-full p-3 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
                     />
                   )}
                 </div>

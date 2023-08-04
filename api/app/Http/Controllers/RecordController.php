@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Record;
 use DateTime;
-use Illuminate\Support\Facades\Log;
 
 class RecordController extends Controller
 {
@@ -46,9 +45,10 @@ class RecordController extends Controller
             'name' => 'nullable|string',
             'type' => 'required|string',
             'amount' => 'required|numeric',
+            'rate' => 'nullable|numeric'
         ]);
 
-        $data = $request->only('date', 'from_account_id', 'to_account_id', 'type', 'category_id', 'name', 'amount', 'description');
+        $data = $request->only('date', 'from_account_id', 'to_account_id', 'type', 'category_id', 'name', 'amount', 'description', 'rate');
         
         $data['amount'] = abs($data['amount']);
         if ($data['type'] == "expense" || $data['type'] == "transfer") {
@@ -76,9 +76,10 @@ class RecordController extends Controller
             'from_account_id' => 'required',
             'type' => 'required',
             'amount' => 'required',
+            'rate' => 'nullable|numeric'
         ]);
         
-        $data = $request->only('date', 'from_account_id', 'to_account_id', 'type', 'category_id', 'name', 'amount', 'description');
+        $data = $request->only('date', 'from_account_id', 'to_account_id', 'type', 'category_id', 'name', 'amount', 'description', 'rate');
         
         $data['amount'] = abs($data['amount']);
         if ($data['type'] == "expense" || $data['type'] == "transfer") {
@@ -98,7 +99,6 @@ class RecordController extends Controller
         $this->authorize('delete', $record);
         
         $record->delete();
-        Log::info('Delete record', $record->toArray());
 
         return response()->json([]);
     }
