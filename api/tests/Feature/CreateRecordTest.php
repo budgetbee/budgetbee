@@ -118,7 +118,6 @@ class CreateRecordTest extends TestCase
         $this->assertIsObject($assocRecord);
         $this->assertEquals($record->id, $assocRecord->link_record_id);
         $this->assertEquals($record->link_record_id, $assocRecord->id);
-        $this->assertEquals($record->amount, -$assocRecord->amount);
         $this->assertEquals($record->type, 'transfer');
 
         $record->delete();

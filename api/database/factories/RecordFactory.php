@@ -5,8 +5,8 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Account;
 use App\Models\Record;
-use App\Models\User;
 use App\Models\Category;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Record>
@@ -29,7 +29,7 @@ class RecordFactory extends Factory
     {
         $faker = \Faker\Factory::create();
 
-        $randomUser = User::inRandomOrder()->first();
+        $user = Auth::user();
         $randomAccount = Account::inRandomOrder()->first();
         $randomCategory = Category::inRandomOrder()->first()->id;
 
@@ -57,7 +57,7 @@ class RecordFactory extends Factory
         }
 
         return [
-            'user_id' => $randomUser->id,
+            'user_id' => $user->id,
             'date' => $randomDate,
             'from_account_id' => $randomAccount->id,
             'to_account_id' => $toAccountId,
