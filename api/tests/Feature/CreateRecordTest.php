@@ -13,6 +13,8 @@ class CreateRecordTest extends TestCase
     private $user;
     private $account1;
     private $account2;
+    private $userCurrency1;
+    private $userCurrency2;
 
     public function setUp(): void
     {
@@ -22,11 +24,12 @@ class CreateRecordTest extends TestCase
         
         $this->actingAs($this->user);
 
-        $this->account1 = Account::factory()->create();
-        $this->account2 = Account::factory()->create();
+        
+        $this->userCurrency1 = UserCurrency::factory()->create(['user_id' => $this->user->id]);
+        $this->userCurrency2 = UserCurrency::factory()->create(['user_id' => $this->user->id]);
 
-        UserCurrency::factory()->create();
-        UserCurrency::factory()->create();
+        $this->account1 = Account::factory()->create(['user_id' => $this->user->id, 'currency_id' => $this->userCurrency1]);
+        $this->account2 = Account::factory()->create(['user_id' => $this->user->id, 'currency_id' => $this->userCurrency2]);
 
     }
 
@@ -35,6 +38,8 @@ class CreateRecordTest extends TestCase
         $this->user->delete();
         $this->account1->delete();
         $this->account2->delete();
+        $this->userCurrency1->delete();
+        $this->userCurrency2->delete();
 
         parent::tearDown();
     }
