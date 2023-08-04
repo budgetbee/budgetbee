@@ -3,12 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Database\Factories\UserCurrencyFactory;
 use App\Models\Types\Currency;
 
 class UserCurrency extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'user_id',
         'currency_id',
@@ -34,6 +38,11 @@ class UserCurrency extends Model
                 // $builder->where('user_id', Auth::id());
             }
         });
+    }
+
+    public static function newFactory(): Factory
+    {
+        return UserCurrencyFactory::new();
     }
 
     public function currency()
