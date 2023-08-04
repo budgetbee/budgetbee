@@ -6,6 +6,7 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Record;
 use App\Models\Account;
+use App\Models\UserCurrency;
 
 class CreateRecordTest extends TestCase
 {
@@ -19,10 +20,14 @@ class CreateRecordTest extends TestCase
 
         $this->user = User::factory()->create(['password' => 'UserTest123']);
         
+        $this->actingAs($this->user);
+
         $this->account1 = Account::factory()->create();
         $this->account2 = Account::factory()->create();
 
-        $this->actingAs($this->user);
+        UserCurrency::factory()->create();
+        UserCurrency::factory()->create();
+
     }
 
     public function tearDown(): void
