@@ -288,6 +288,7 @@ class BalanceController extends Controller
             ->map(function ($item) {
                 $category = Category::find($item->category_id);
                 $records = Record::where('category_id', $item->category_id)
+                    ->where('user_id', $item->user_id)
                     ->whereNot('type', 'transfer')
                     ->get();
                     
