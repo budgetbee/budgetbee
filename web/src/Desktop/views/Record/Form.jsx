@@ -217,7 +217,7 @@ export default function Form() {
                                                 record?.to_account_id && (
                                                 <div>
                                                     <label
-                                                        for="amount"
+                                                        for="rate"
                                                         className="block mb-2 text-sm font-medium text-gray-900 text-white"
                                                     >
                                                         Exchange rate{" "}
