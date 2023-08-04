@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Record;
 use DateTime;
-use Illuminate\Support\Facades\Log;
 
 class RecordController extends Controller
 {
@@ -100,7 +99,6 @@ class RecordController extends Controller
         $this->authorize('delete', $record);
         
         $record->delete();
-        Log::info('Delete record', $record->toArray());
 
         return response()->json([]);
     }
