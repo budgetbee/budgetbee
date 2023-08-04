@@ -7,9 +7,9 @@ use App\Models\Record;
 
 class CurrencyConverter
 {
-    public static function convert(float $amount, UserCurrency $userCurrency)
+    public static function convert(float $amount, $userCurrency)
     {
-        if ($userCurrency->currency->code === $userCurrency->user->currency->code) {
+        if (is_null($userCurrency) || $userCurrency->currency->code === $userCurrency->user->currency->code) {
             return $amount;
         }
         return $amount / $userCurrency->exchange_rate_to_default_currency;
