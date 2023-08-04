@@ -7,6 +7,7 @@ use App\Models\Account;
 use App\Models\Record;
 use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Record>
@@ -30,7 +31,10 @@ class RecordFactory extends Factory
         $faker = \Faker\Factory::create();
 
         $user = Auth::user();
-        $randomAccount = Account::inRandomOrder()->first();
+        if (is_null($user)) {
+            $user = User::inRandomOrder()->first();
+        }
+        $randomAccount = Account::where('user_id', $user->id)->first();
         $randomCategory = Category::inRandomOrder()->first()->id;
 
         $startDate = '-1 year';
@@ -53,7 +57,7 @@ class RecordFactory extends Factory
             case 'transfer':
                 $randomCategory = 1;
                 $amount = $faker->randomFloat(2, -300, 100);
-                $toAccountId = Account::inRandomOrder()->first()->id;
+                $toAccountId = Account::where('user_id', $user->id)->inRandomOrder()->first()->id;
         }
 
         return [
