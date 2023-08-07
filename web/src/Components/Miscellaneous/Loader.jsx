@@ -7,7 +7,7 @@ export default function Loader({classes}) {
             <svg
                 aria-hidden="true"
                 role="status"
-                class={"inline m-auto text-gray-500 animate-spin " + classes}
+                className={"inline m-auto text-gray-500 animate-spin " + classes}
                 viewBox="0 0 100 101"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"

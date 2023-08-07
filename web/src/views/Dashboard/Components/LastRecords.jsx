@@ -10,7 +10,8 @@ export default function LastRecords({ activeAccount }) {
 
     useEffect(() => {
         async function getLastRecords() {
-            const data = await Api.getLastRecords(5, activeAccount);
+            const searchData = {limit: 5, account_id: activeAccount};
+            const data = await Api.getLastRecords(searchData);
             setData(data);
             setIsLoading(false);
         }
@@ -25,7 +26,7 @@ export default function LastRecords({ activeAccount }) {
 
     return (
         <div>
-            <div className="flex flex-col divide-y divide-gray-600/50 bg-gray-800 rounded p-px">
+            <div className="flex flex-col divide-y divide-gray-600/50 bg-background rounded p-px">
                 {data.map((record, index) => {
                     return (
                         <div key={index}>

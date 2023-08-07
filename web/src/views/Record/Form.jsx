@@ -5,10 +5,10 @@ import moment from "moment";
 import Api from "../../Api/Endpoints";
 import Calculator from "./Components/Calculator";
 import CategoryPicker from "./Components/CategoryPicker";
+import TopNav from "../../layout/TopNav";
 
 // Icons
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faCheck } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 export default function Form() {
     const [isLoading, setIsLoading] = useState(true);
@@ -22,7 +22,6 @@ export default function Form() {
     const [accounts, setAccounts] = useState(null);
     const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
     const [category, setCategory] = useState({ id: 0, name: "" });
-    const [formValues, setFormValues] = useState({});
 
     const { record_id } = useParams();
 
@@ -32,7 +31,6 @@ export default function Form() {
             setAccounts(accounts);
             if (record_id !== undefined) {
                 const record = await Api.getRecordById(record_id);
-                setRecord(record);
                 setType(record.type);
                 setCategory({
                     id: record.category_id,
@@ -41,6 +39,7 @@ export default function Form() {
                 setAmount(Math.abs(record.amount));
                 setAccount(record.from_account_id);
                 setToAccount(record.to_account_id);
+                setRecord(record);
                 setDate(record.date);
                 setName(record.name);
             }
@@ -67,17 +66,31 @@ export default function Form() {
         setDate(event.target.value);
     };
 
-    const handleGoToDashboard = () => {
-        window.history.back();
+    const handleBackFunction = async () => {
+        window.location.href = "/";
     };
 
-    const handleSaveForm = async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
+    const handleInputChange = (event) => {
+        const target = event.target;
+        const value =
+            target.type === "checkbox" ? target.checked : target.value;
+        const name = target.name;
+
+        setRecord({ ...record, [name]: value });
+    };
+
+    const handleSaveForm = async () => {
+        const formData = new FormData(document.querySelector("form"));
         const formObject = Object.fromEntries(formData.entries());
-        setFormValues(formObject);
         await Api.createRecord(formObject, record_id);
-        window.history.back();
+        handleBackFunction();
+    };
+
+    const handleDeleteRecord = async () => {
+        if (confirm("Delete this record?") === true) {
+            await Api.deleteRecord(record_id);
+            window.location.href = "/";
+        }
     };
 
     if (isLoading) {
@@ -92,8 +105,18 @@ export default function Form() {
                     setCategory={setCategory}
                 />
             )}
-            <form onSubmit={handleSaveForm}>
+            <form>
+                <TopNav
+                    leftFunction={handleBackFunction}
+                    rightFunction={handleSaveForm}
+                    rightIcon={faCheck}
+                    {...(record_id && {
+                        right2Function: handleDeleteRecord,
+                        right2Icon: faTrash,
+                    })}
+                />
                 <div className="flex flex-col h-screen max-w-full">
+                    <div className="basis-[6%]"></div>
                     <div
                         className={`basis-6/12 flex flex-col text-white ${
                             type === "income"
@@ -103,28 +126,6 @@ export default function Form() {
                                 : "bg-[#3f45a3]"
                         }`}
                     >
-                        <div className="basis-1/12 flex flex-row justify-between items-center bg-gray-700">
-                            <div
-                                onClick={handleGoToDashboard}
-                                className="py-3 pl-5 pr-10 cursor-pointer"
-                            >
-                                <FontAwesomeIcon
-                                    icon={faArrowLeft}
-                                    className={"text-white text-2xl"}
-                                />
-                            </div>
-                            <div>
-                                <button
-                                    type="submit"
-                                    className="py-3 pl-10 pr-5 cursor-pointer"
-                                >
-                                    <FontAwesomeIcon
-                                        icon={faCheck}
-                                        className={"text-white text-2xl"}
-                                    />
-                                </button>
-                            </div>
-                        </div>
                         <div
                             className="basis-2/12 flex flex-row items-center text-center font-bold divide-x cursor-pointer"
                             onClick={handleRecordType}
@@ -185,8 +186,12 @@ export default function Form() {
                                         name="from_account_id"
                                         id="from_account_id"
                                         required="required"
+                                        onChange={handleInputChange}
                                         className="text-center cursor-pointer appearance-none bg-transparent"
                                     >
+                                        <option value="">
+                                            Select account...
+                                        </option>
                                         {accounts.map((acc, index) => {
                                             return (
                                                 <option
@@ -213,8 +218,12 @@ export default function Form() {
                                             name="to_account_id"
                                             id="to_account_id"
                                             required="required"
+                                            onChange={handleInputChange}
                                             className="text-center cursor-pointer appearance-none bg-transparent"
                                         >
+                                            <option value="">
+                                                Select account...
+                                            </option>
                                             {accounts.map((acc, index) => {
                                                 return (
                                                     <option
@@ -243,6 +252,7 @@ export default function Form() {
                                     <input
                                         type="hidden"
                                         name="category_id"
+                                        onChange={handleInputChange}
                                         value={category.id}
                                     />
                                 </div>
@@ -271,6 +281,53 @@ export default function Form() {
                                     />
                                 </div>
                             </div>
+                            {record?.from_account_id &&
+                                record?.to_account_id &&
+                                record?.from_account_id !==
+                                    record?.to_account_id && (
+                                    <div className="basis-1/2">
+                                        <label
+                                            for="rate"
+                                            className="text-sm text-gray-300"
+                                        >
+                                            Exchange rate
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type="number"
+                                                step="any"
+                                                name="rate"
+                                                id="rate"
+                                                onChange={handleInputChange}
+                                                defaultValue={record?.rate ?? 1}
+                                                className="w-3/4 text-center cursor-pointer appearance-none bg-transparent"
+                                                required
+                                            ></input>
+                                            {accounts.length &&
+                                                record.from_account_id &&
+                                                record.to_account_id && (
+                                                    <div class="w-full mt-2 absolute left-1/2 transform -translate-x-1/2 text-xs">
+                                                        1.00{" "}
+                                                        {
+                                                            accounts.find(
+                                                                (item) =>
+                                                                    item.id ==
+                                                                    record.from_account_id
+                                                            ).currency_code
+                                                        }{" "}
+                                                        = {record?.rate ?? 1}{" "}
+                                                        {
+                                                            accounts.find(
+                                                                (item) =>
+                                                                    item.id ==
+                                                                    record.to_account_id
+                                                            ).currency_code
+                                                        }
+                                                    </div>
+                                                )}
+                                        </div>
+                                    </div>
+                                )}
                         </div>
                     </div>
                     <div className="basis-1/12">

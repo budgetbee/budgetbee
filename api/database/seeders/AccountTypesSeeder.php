@@ -17,13 +17,17 @@ class AccountTypesSeeder extends Seeder
         $json = file_get_contents(__DIR__ . '/data/account_types.json');
         $data = json_decode($json, true);
 
-        
+
         foreach ($data as $accountType) {
-            $newAccountType = new AccountTypes();
-            $newAccountType->fill([
-                'name' => $accountType['name']
-            ]);
-            $newAccountType->save();
+            $existingType = AccountTypes::where('name', $accountType['name'])->first();
+
+            if (!$existingType) {
+                $newAccountType = new AccountTypes();
+                $newAccountType->fill([
+                    'name' => $accountType['name']
+                ]);
+                $newAccountType->save();
+            }
         }
     }
 }

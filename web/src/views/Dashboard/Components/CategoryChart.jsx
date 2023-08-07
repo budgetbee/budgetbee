@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import numeral from "numeral";
-// import "numeral/locales/es";
 
 import Api from "../../../Api/Endpoints";
 import DoughnutChart from "../../../Components/Chart/DoughnutChart";
@@ -15,12 +14,11 @@ export default function CategoryChart({ activeAccount }) {
     const [fromDate, setFromDate] = useState(null);
     const [parentCategory, setParentCategory] = useState(null);
 
-    // numeral.locale("es");
-
     useEffect(() => {
-        async function getCategoriesBalance() {
-            const parentCategories = await Api.getCategoriesBalance(activeAccount, fromDate);
-            const balance = await Api.getExpensesBalance(activeAccount, fromDate);
+        async function getByExpenseCategories() {
+            const searchData = {account_id: activeAccount, 'from_date': fromDate};
+            const parentCategories = await Api.getExpenseCategoriesBalance(searchData);
+            const balance = await Api.getExpensesBalance(searchData);
 
             const data = {};
             Object.keys(parentCategories).forEach((key) => {
@@ -37,7 +35,7 @@ export default function CategoryChart({ activeAccount }) {
             setIsLoading(false);
         }
         if (!parentCategory) {
-            getCategoriesBalance();
+            getByExpenseCategories();
         }
     }, [activeAccount, fromDate]);
 
@@ -76,7 +74,7 @@ export default function CategoryChart({ activeAccount }) {
             <div className="flex flex-col gap-x-2 p-4 bg-gray-700 rounded py-4">
                 <div className="flex flex-row justify-between items-center text-white text-2xl pb-4">
                     <div className="font-bold">
-                        {numeral(expensesBalance).format("$0,0.00 a")}
+                        {expensesBalance?.currency_symbol} {numeral(expensesBalance?.amount).format("0,0.00 a")}
                     </div>
                     <div>
                         <DatesSelect setDates={setFromDate} />
