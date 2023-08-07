@@ -21,6 +21,8 @@ return new class extends Migration
             '--class' => 'Database\\Seeders\\CurrencySeeder',
         ]);
 
+        sleep(5);
+
         foreach ($users as $user) {
             $currency = $user->currency;
             if (is_null($currency)) {
