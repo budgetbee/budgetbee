@@ -7,8 +7,6 @@ export default function CardMini({ account, isGray }) {
         backgroundColor: bgColor,
     };
 
-    // numeral.locale("es");
-
     return (
         <div
             className={`font-bold flex flex-col py-1 px-2 h-12 rounded-lg text-white cursor-pointer`}

@@ -133,13 +133,13 @@ class AccountController extends Controller
     public function adjustBalance(Request $request, $id)
     {
         $this->validate($request, [
-            'balance' => 'required'
+            'balance' => 'required|numeric'
         ]);
 
         $data = $request->only('balance');
 
         $account = Account::where('user_id', $request->user()->id)
-            ->where('id', $id)->get();
+            ->where('id', $id)->first();
 
         $amount = $data['balance'] - $account->balance;
         $type = ($amount > 0) ? 'income' : 'expense';
@@ -149,7 +149,7 @@ class AccountController extends Controller
             'date' => date('Y-m-d'),
             'user_id' => $request->user()->id,
             'from_account_id' => $account->id,
-            'amount' => $amount,
+            'amount' => round($amount, 2),
             'type' => $type,
             'category_id' => 44
         ]);
