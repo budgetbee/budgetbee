@@ -8,17 +8,22 @@ const HEADERS = {
 };
 
 const handleErrors = (error) => {
-
     const status = error.response.status;
 
+    let message;
     switch (status) {
         case 401:
             cookies.remove("token");
             window.location.href = "/login";
             break;
+        case 404:
+            message = "Not Found";
+            break;
         default:
             break;
     }
+
+    return message;
 };
 
 const queryBuilder = (data) => {
@@ -31,19 +36,43 @@ const queryBuilder = (data) => {
         .join("&");
 };
 
+async function call(method, endpoint, data = null) {
+    const options = {
+        method: method,
+        url: `${API_BASE_URL}/${endpoint}`,
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + cookies.get("token"),
+        }
+    };
+
+    if (method.toLowerCase() === "post" && data) {
+        options.data = data;
+    }
+
+    try {
+        const response = await axios(options);
+        return response.data;
+    } catch (error) {
+        return handleErrors(error);
+    }
+}
+
+const get = (endpoint) => {
+    return call("get", endpoint);
+};
+
+const post = (endpoint, data) => {
+    return call("post", endpoint, data);
+};
+
+const del = (endpoint) => {
+    return call("delete", endpoint);
+};
+
 const Endpoints = {
     getVersion: async () => {
-        try {
-            const response = await axios.get(
-                `${API_BASE_URL}/version`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            console.error(error);
-            return null;
-        }
+        return get('version');
     },
 
     userLogin: async (data) => {
@@ -66,531 +95,176 @@ const Endpoints = {
     },
 
     userRegister: async (data) => {
-        try {
-            const response = await axios.post(
-                `${API_BASE_URL}/user/register`,
-                data,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        return post(`user/register`, data);
     },
 
     userLogout: async () => {
-        try {
-            await axios.post(`${API_BASE_URL}/user/logout`, [], HEADERS);
-            cookies.remove("token");
-            window.location.href = "/login";
-        } catch (error) {
-            handleErrors(error);
-            console.error(error);
-            return null;
-        }
+        post(`user/logout`, []);
+        cookies.remove("token");
+        window.location.href = "/login";
     },
 
     userUpdate: async (data, id) => {
-        try {
-            const response = await axios.post(
-                `${API_BASE_URL}/user/${id}`,
-                data,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        return post(`user/${id}`, data);
     },
 
-    getUser: async (id = false) => {
-        try {
-            const param = id ? `/${id}` : "";
-            const response = await axios.get(
-                `${API_BASE_URL}/user${param}`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+    getUser: async (id = "") => {
+        const user_id = id ?? "";
+        return get(`user/${user_id}`);
     },
 
     getUsers: async () => {
-        try {
-            const response = await axios.get(
-                `${API_BASE_URL}/user/all`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            console.error(error);
-            return null;
-        }
+        return get('user/all');
     },
 
     checkIfAdmin: async () => {
-        try {
-            const response = await axios.get(
-                `${API_BASE_URL}/user/isAdmin`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            console.error(error);
-            return null;
-        }
+        return get('user/isAdmin');
     },
 
     getUserSettings: async () => {
-        try {
-            const response = await axios.get(
-                `${API_BASE_URL}/user/settings`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        return get('user/settings');
     },
 
     updateUserSettings: async (data) => {
-        try {
-            const response = await axios.post(
-                `${API_BASE_URL}/user/settings`,
-                data,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        return post(`user/settings`, data);
     },
 
     getAccounts: async () => {
-        try {
-            const response = await axios.get(
-                `${API_BASE_URL}/account`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        return get("account");
     },
 
     getAccountById: async (id) => {
-        try {
-            const response = await axios.get(
-                `${API_BASE_URL}/account/${id}`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        return get(`account/${id}`);
     },
 
     getAccountTypes: async (id) => {
-        try {
-            const response = await axios.get(
-                `${API_BASE_URL}/account/type`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        return get('account/type');
     },
 
     getCurrencies: async () => {
-        try {
-            const response = await axios.get(
-                `${API_BASE_URL}/account/currencies`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        return get('account/currencies');
     },
 
     getUserCurrencies: async () => {
-        try {
-            const response = await axios.get(
-                `${API_BASE_URL}/user/currencies`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        return get('user/currencies');
     },
 
     getAllCurrencies: async () => {
-        try {
-            const response = await axios.get(
-                `${API_BASE_URL}/user/currencies/all`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        return get('user/currencies/all');
     },
 
     createUserCurrency: async (data) => {
-        try {
-            const response = await axios.post(
-                `${API_BASE_URL}/user/currencies`,
-                data,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        return post('user/currencies', data);
     },
 
     updateUserCurrency: async (data, id) => {
-        try {
-            const response = await axios.post(
-                `${API_BASE_URL}/user/currencies/${id}`,
-                data,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        return post(`user/currencies/${id}`, data);
     },
 
     createOrUpdateAccount: async (data, account_id) => {
-        try {
-            const id = account_id ?? "";
-            const response = await axios.post(
-                `${API_BASE_URL}/account/${id}`,
-                data,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        const id = account_id ?? "";
+        return post(`account/${id}`, data);
     },
 
     accountAdjustBalance: async (data, account_id) => {
-        try {
-            const response = await axios.post(
-                `${API_BASE_URL}/account/${account_id}/adjust`,
-                data,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        return post(`account/${account_id}/adjust`, data);
     },
 
     getRecords: async (account_id) => {
-        try {
-            let param =
-                account_id > 0 ? `account/${account_id}/record` : `record`;
-
-            const response = await axios.get(
-                `${API_BASE_URL}/${param}`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        const endpoint = account_id > 0 ? `account/${account_id}/record` : `record`;
+        return get(endpoint);
     },
 
     getPaginateRecords: async (account_id, page) => {
-        try {
-            let param =
-                account_id > 0 ? `account/${account_id}/record` : `record`;
-
-            param += page > 0 ? `?page=${page}` : "";
-
-            const response = await axios.get(
-                `${API_BASE_URL}/${param}`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        let endpoint = account_id > 0 ? `account/${account_id}/record` : `record`;
+        endpoint += page > 0 ? `?page=${page}` : "";
+        return get(endpoint);
     },
 
     getRecordById: async (id) => {
-        try {
-            const response = await axios.get(
-                `${API_BASE_URL}/record/${id}`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        return get(`record/${id}`);
     },
 
     getLastRecords: async (data) => {
-        try {
-            const queryString = queryBuilder(data);
-            const response = await axios.get(
-                `${API_BASE_URL}/record/last?${queryString}`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        const queryString = queryBuilder(data);
+        return get(`record/last?${queryString}`);
     },
 
     getRecordsByCategory: async (id, from_date) => {
-        try {
-            const fromDate = from_date ? "?from=" + from_date : "";
-            const response = await axios.get(
-                `${API_BASE_URL}/record/category/${id}${fromDate}`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        const fromDate = from_date ? "?from=" + from_date : "";
+        return get(`record/category/${id}${fromDate}`);
     },
 
     getCategory: async (id) => {
-        try {
-            const response = await axios.get(
-                `${API_BASE_URL}/category/${id}`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        return get(`category/${id}`);
     },
 
     createOrUpdateCategory: async (data, category_id) => {
-        try {
-            const id = category_id ?? "";
-            const response = await axios.post(
-                `${API_BASE_URL}/category/${id}`,
-                data,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        const id = category_id ?? "";
+        return post(`category/${id}`, data);
     },
 
     getParentCategories: async () => {
-        try {
-            const response = await axios.get(
-                `${API_BASE_URL}/category/parent`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        return get(`category/parent`);
     },
 
     getCategoriesByParent: async (id) => {
-        try {
-            const response = await axios.get(
-                `${API_BASE_URL}/category/by-parent/${id}`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        return get(`category/by-parent/${id}`);
     },
 
     createRecord: async (data, record_id) => {
-        try {
-            const id = record_id ?? "";
-            const response = await axios.post(
-                `${API_BASE_URL}/record/${id}`,
-                data,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        const id = record_id ?? "";
+        return post(`record/${id}`, data);
     },
 
     deleteRecord: async (record_id) => {
-        try {
-            const response = await axios.delete(
-                `${API_BASE_URL}/record/${record_id}`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        return del(`record/${record_id}`);
     },
 
     getBalance: async (data) => {
-        try {
-            const queryString = queryBuilder(data);
-            const response = await axios.get(
-                `${API_BASE_URL}/balance?${queryString}`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        const queryString = queryBuilder(data);
+        return get(`balance?${queryString}`);
     },
 
     getExpensesBalance: async (data) => {
-        try {
-            const queryString = queryBuilder(data);
-            const response = await axios.get(
-                `${API_BASE_URL}/balance/expenses?${queryString}`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        const queryString = queryBuilder(data);
+        return get(`balance/expenses?${queryString}`);
     },
 
     getAllBalance: async (data) => {
-        try {
-            const queryString = queryBuilder(data);
-            const response = await axios.get(
-                `${API_BASE_URL}/balance/all?${queryString}`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        const queryString = queryBuilder(data);
+        return get(`balance/all?${queryString}`);
     },
 
     getTimelineBalance: async (data) => {
-        try {
-            const queryString = queryBuilder(data);
-            const response = await axios.get(
-                `${API_BASE_URL}/balance/timeline?${queryString}`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        const queryString = queryBuilder(data);
+        return get(`balance/timeline?${queryString}`);
     },
 
     getIncomeCategoriesBalance: async (data) => {
-        try {
-            const queryString = queryBuilder(data);
-            const response = await axios.get(
-                `${API_BASE_URL}/balance/categories/income?${queryString}`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        const queryString = queryBuilder(data);
+        return get(`balance/categories/income?${queryString}`);
     },
 
     getExpenseCategoriesBalance: async (data) => {
-        try {
-            const queryString = queryBuilder(data);
-            const response = await axios.get(
-                `${API_BASE_URL}/balance/categories/expense?${queryString}`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        const queryString = queryBuilder(data);
+        return get(`balance/categories/expense?${queryString}`);
     },
 
     getTopExpenses: async (data) => {
-        try {
-            const queryString = queryBuilder(data);
-            const response = await axios.get(
-                `${API_BASE_URL}/balance/categories/top?${queryString}`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        const queryString = queryBuilder(data);
+        return get(`balance/categories/top?${queryString}`);
     },
 
     getSubcategoriesBalance: async (parent_category, account_id, from_date) => {
-        try {
-            const accountId = account_id ? `account/${account_id}` : "";
-            const fromDate = from_date ? "from=" + from_date : "";
-            const response = await axios.get(
-                `${API_BASE_URL}/balance/subcategories/${parent_category}/${accountId}?${fromDate}`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        const accountId = account_id ? `account/${account_id}` : "";
+        const fromDate = from_date ? "from=" + from_date : "";
+        return get(`balance/subcategories/${parent_category}/${accountId}?${fromDate}`);
     },
 
     getBalanceByCategory: async (data) => {
-        try {
-            const queryString = queryBuilder(data);
-            const response = await axios.get(
-                `${API_BASE_URL}/balance/category?${queryString}`,
-                HEADERS
-            );
-            return response.data;
-        } catch (error) {
-            handleErrors(error);
-            return null;
-        }
+        const queryString = queryBuilder(data);
+        return get(`balance/category?${queryString}`);
     },
 };
 
