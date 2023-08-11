@@ -45,11 +45,12 @@ class RecordController extends Controller
             'name' => 'nullable|string',
             'type' => 'required|string',
             'amount' => 'required|numeric',
-            'rate' => 'nullable|numeric'
+            'rate' => 'nullable|numeric',
+            'code' => 'nullable|string',
         ]);
-
-        $data = $request->only('date', 'from_account_id', 'to_account_id', 'type', 'category_id', 'name', 'amount', 'description', 'rate');
         
+        $data = $request->only('date', 'from_account_id', 'to_account_id', 'type', 'category_id', 'name', 'amount', 'description', 'rate', 'code');
+
         $data['amount'] = abs($data['amount']);
         if ($data['type'] == "expense" || $data['type'] == "transfer") {
             $data['amount'] = "-" . $data['amount'];
