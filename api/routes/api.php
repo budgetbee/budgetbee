@@ -9,6 +9,7 @@ use App\Http\Controllers\BalanceController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ImportController;
 
 
 /*
@@ -81,4 +82,8 @@ Route::prefix('balance')->middleware('auth:sanctum')->group(function () {
     Route::get('categories/top', [BalanceController::class, 'getTopExpenses']);
     Route::get('subcategories/{id}', [BalanceController::class, 'getBySubcategories']);
     Route::get('subcategories/{id}/account/{accountId}', [BalanceController::class, 'getBySubcategoriesAndAccount']);
+});
+
+Route::prefix('import')->middleware('auth:sanctum')->group(function () {
+    Route::post('json', [ImportController::class, 'importJson']);
 });

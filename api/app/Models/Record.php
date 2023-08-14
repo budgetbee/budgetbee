@@ -21,12 +21,12 @@ class Record extends Model
      * @var string[]
      */
     protected $fillable = [
-        'user_id', 'date', 'from_account_id', 'to_account_id', 'type', 'category_id', 'name', 'description', 'amount', 'bank_code', 'link_record_id', 'rate'
+        'user_id', 'date', 'from_account_id', 'to_account_id', 'type', 'category_id', 'name', 'description', 'amount', 'bank_code', 'link_record_id', 'rate', 'code', 'import_id'
     ];
 
     protected $appends = ['parent_category_icon', 'parent_category_name', 'parent_category_id', 'category_name', 'category_color', 'account_name', 'to_account_name', 'account_type_name', 'icon', 'currency_symbol', 'amount_base_currency'];
 
-    protected $hidden = ['category', 'account', 'toAccount'];
+    protected $hidden = ['category', 'account', 'toAccount', 'import'];
 
     public static function boot()
     {
@@ -115,6 +115,11 @@ class Record extends Model
     public function toAccount()
     {
         return $this->belongsTo(Account::class, 'to_account_id', 'id');
+    }
+
+    public function import()
+    {
+        return $this->belongsTo(Import::class);
     }
 
     public function getCategoryNameAttribute()
