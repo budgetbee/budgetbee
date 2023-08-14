@@ -47,44 +47,64 @@ class ImportController extends Controller
 
             foreach ($jsonData as $row) {
 
-                $row['to_account_id'] = $row['to_account_id'] ?? null;
-                $row['type'] = $row['amount'] >= 0 ? 'income' : 'expense';
-                $row['rate'] = $row['rate'] ?? 1;
-
-                $code = base64_encode($user->id . $row['date'] . $row['from_account_id'] . $row['to_account_id'] . $row['category_id'] . $row['name'] . $row['type'] . $row['amount'] . $row['rate']);
-
-                $record = new Record([
-                    'user_id' => $user->id,
-                    'date' => $row['date'],
-                    'from_account_id' => $row['from_account_id'],
-                    'to_account_id' => $row['to_account_id'],
-                    'category_id' => $row['category_id'],
-                    'name' => $row['name'],
-                    'type' => $row['type'],
-                    'amount' => $row['amount'],
-                    'rate' => $row['rate'],
-                    'code' => $code,
-                    'import_id' => $importModel->id
-                ]);
-
-                $recordSummary = ['date' => $row['date'], 'amount' => $row['amount'], 'name' => $row['name'], 'account_id' => $row['from_account_id'], 'to_account' => $row['to_account_id'], 'category' => $row['category_id']];
-                
-                $existingRecord = Record::where('code', $code)->first();
-
-                if (!$existingRecord) {
-                    try {
-                        $record->save();
-                        $resume['successful']++;
-                        $resume['successful_records'][] = $recordSummary;
-                    } catch (Exception $e) {
-                        $recordSummary['error'] = 'Error to save record, check if accounts and category exists';
-                        $resume['failed']++;
-                        $resume['failed_records'][] = $recordSummary;
+                try {
+                    if (
+                        !array_key_exists('date', $row) ||
+                        !array_key_exists('from_account_id', $row) ||
+                        !array_key_exists('to_account_id', $row) ||
+                        !array_key_exists('category_id', $row) ||
+                        !array_key_exists('name', $row) ||
+                        !array_key_exists('type', $row) ||
+                        !array_key_exists('amount', $row) ||
+                        !array_key_exists('rate', $row)
+                    ) {
+                        throw new \InvalidArgumentException('Invalid params');
+                    }
+                    
+                    $row['rate'] = $row['rate'] ?? 1;
+    
+                    $code = $user->id . $row['date'] . $row['from_account_id'] . $row['to_account_id'] . $row['category_id'] . $row['name'] . $row['type'] . $row['amount'] . $row['rate'];
+                    $code = hash('sha256', $code);
+    
+                    
+                    $record = new Record([
+                        'user_id' => $user->id,
+                        'date' => $row['date'],
+                        'from_account_id' => $row['from_account_id'],
+                        'to_account_id' => $row['to_account_id'],
+                        'category_id' => $row['category_id'],
+                        'name' => $row['name'],
+                        'type' => $row['type'],
+                        'amount' => $row['amount'],
+                        'rate' => $row['rate'],
+                        'code' => $code,
+                        'import_id' => $importModel->id
+                    ]);
+    
+                    
+    
+                    $recordSummary = ['date' => $row['date'], 'amount' => $row['amount'], 'name' => $row['name'], 'account_id' => $row['from_account_id'], 'to_account' => $row['to_account_id'], 'category' => $row['category_id']];
+                    
+                    $existingRecord = Record::where('code', $code)->first();
+    
+                    if (!$existingRecord) {
+                        try {
+                            $record->save();
+                            $resume['successful']++;
+                            $resume['successful_records'][] = $recordSummary;
+                        } catch (Exception $e) {
+                            $recordSummary['error'] = 'Error to save record: ' . $e->getMessage();
+                            $resume['failed']++;
+                            $resume['failed_records'][] = $recordSummary;
+                        }
+                    }
+                    else {
+                        $resume['already_exists']++;
+                        $resume['already_exists_records'][] = $recordSummary;
                     }
                 }
-                else {
-                    $resume['already_exists']++;
-                    $resume['already_exists_records'][] = $recordSummary;
+                catch (Exception $e) {
+                    return response()->json(['message' => $e->getMessage()], 400);
                 }
             }
 
