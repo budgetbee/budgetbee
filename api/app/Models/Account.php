@@ -70,7 +70,7 @@ class Account extends Model
             ->orderBy('date')
             ->pluck('amount')
             ->reduce(function ($balance, $amount) {
-                return $balance + $amount;
+                return round($balance + $amount, 2);
             }, $initialBalance);
     }
 
