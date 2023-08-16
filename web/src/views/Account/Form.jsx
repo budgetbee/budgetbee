@@ -23,7 +23,7 @@ export default function Form() {
             }
         }
         getData();
-    });
+    }, [account_id]);
 
     const handleSaveForm = async (e) => {
         e.preventDefault();

@@ -16,8 +16,8 @@ export default function Form() {
 
     useEffect(() => {
         async function getData() {
-            const accounts = await Api.getAccounts();
-            setAccounts(accounts);
+            const fetchAccounts = await Api.getAccounts();
+            setAccounts(fetchAccounts);
             if (record_id !== undefined) {
                 const record = await Api.getRecordById(record_id);
                 setRecord(record);
@@ -28,7 +28,7 @@ export default function Form() {
             }
         }
         getData();
-    });
+    }, [record_id]);
 
     const handleOpenCategory = () => {
         setCategoryPickerOpen(true);
@@ -53,7 +53,7 @@ export default function Form() {
 
     const handleDeleteRecord = async () => {
         const userConfirmed = window.confirm("Delete this record?");
-        
+
         if (userConfirmed) {
             await Api.deleteRecord(record_id);
             window.location.href = "/";
@@ -223,11 +223,40 @@ export default function Form() {
                                                         className="block mb-2 text-sm font-medium text-gray-900 text-white"
                                                     >
                                                         Exchange rate{" "}
-                                                        {accounts.length && record.from_account_id && record.to_account_id && (
-                                                            <span>
-                                                                1.00 {accounts.find(item => item.id === Number(record.from_account_id)).currency_code} = {record?.rate ?? 1} {accounts.find(item => item.id === Number(record.to_account_id)).currency_code}
-                                                            </span>
-                                                        )}
+                                                        {accounts.length &&
+                                                            record.from_account_id &&
+                                                            record.to_account_id && (
+                                                                <span>
+                                                                    1.00{" "}
+                                                                    {
+                                                                        accounts.find(
+                                                                            (
+                                                                                item
+                                                                            ) =>
+                                                                                item.id ===
+                                                                                Number(
+                                                                                    record.from_account_id
+                                                                                )
+                                                                        )
+                                                                            .currency_code
+                                                                    }{" "}
+                                                                    ={" "}
+                                                                    {record?.rate ??
+                                                                        1}{" "}
+                                                                    {
+                                                                        accounts.find(
+                                                                            (
+                                                                                item
+                                                                            ) =>
+                                                                                item.id ===
+                                                                                Number(
+                                                                                    record.to_account_id
+                                                                                )
+                                                                        )
+                                                                            .currency_code
+                                                                    }
+                                                                </span>
+                                                            )}
                                                     </label>
                                                     <input
                                                         type="number"

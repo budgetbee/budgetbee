@@ -43,7 +43,7 @@ export default function Form() {
             setIsLoading(false);
         }
         getData();
-    });
+    }, [record_id]);
 
     const handleRecordType = (event) => {
         const target = event.target;

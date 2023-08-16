@@ -22,7 +22,7 @@ export default function Form() {
             setIsLoading(false);
         }
         getData();
-    });
+    }, [category_id]);
 
     const handleSaveForm = async (e) => {
         e.preventDefault();

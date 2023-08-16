@@ -40,7 +40,7 @@ export default function LeftSidebarMenu() {
             }
         }
         getUser();
-    });
+    }, []);
 
     const links = {
         dashboard: {

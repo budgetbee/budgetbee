@@ -18,7 +18,7 @@ export default function UserForm() {
         if (user_id > 0) {
             getUser();
         }
-    });
+    }, [user_id]);
 
     const handleSaveForm = async (e) => {
         e.preventDefault();
