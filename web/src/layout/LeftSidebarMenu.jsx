@@ -40,7 +40,7 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
             setUserName(data.name);
         }
         getUser();
-    }, []);
+    });
 
     const links = {
         dashboard: {

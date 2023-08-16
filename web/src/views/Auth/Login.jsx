@@ -1,9 +1,7 @@
-import { React, useState } from "react";
-
+import React, { useState } from "react";
 import Api from "../../Api/Endpoints";
 import logo from "../../assets/images/logo.png";
 
-// Icons
 export default function Login() {
     const [isLoading, setIsLoading] = useState(false);
     const [formError, setFormError] = useState("");
@@ -64,10 +62,7 @@ export default function Login() {
         <div>
             <section className="bg-[#F2F2DA] h-screen">
                 <div className="flex flex-col items-center justify-center px-6 py-8  mx-auto md:h-screen lg:py-0">
-                    <a
-                        href="#"
-                        className="flex items-center mx-5 my-10 w-64"
-                    >
+                    <a href="/login" className="flex items-center mx-5 my-10 w-64">
                         <img className="w-full" src={logo} alt="logo"></img>
                     </a>
                     <div className="w-full bg-white rounded-lg shadow md:mt-0 sm:max-w-md xl:p-0">

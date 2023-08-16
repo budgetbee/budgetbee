@@ -12,40 +12,44 @@ export default function CategoryExpenseChart({ searchData }) {
 
     useEffect(() => {
         async function getExpenseCategoriesBalance() {
-            const parentCategories = await Api.getExpenseCategoriesBalance(searchData);
-
+            const fetchedParentCategories =
+                await Api.getExpenseCategoriesBalance(searchData);
             const data = {};
-            Object.keys(parentCategories).forEach((key) => {
+
+            Object.keys(fetchedParentCategories).forEach((key) => {
                 data[key] = {
-                    id: parentCategories[key].id,
-                    amount: parentCategories[key].amount,
-                    color: parentCategories[key].color,
+                    id: fetchedParentCategories[key].id,
+                    amount: fetchedParentCategories[key].amount,
+                    color: fetchedParentCategories[key].color,
                 };
             });
 
             setData(data);
-            setParentCategories(parentCategories);
+            setParentCategories(fetchedParentCategories);
             setIsLoading(false);
         }
+
         if (!parentCategory) {
             getExpenseCategoriesBalance();
         }
-    }, [searchData]);
+    }, [searchData, parentCategory]);
 
     useEffect(() => {
-        if (parentCategory) {
-            const childrens = parentCategories[parentCategory]['childrens'];
+        if (parentCategory && parentCategories[parentCategory]) {
+            const childrens = parentCategories[parentCategory].childrens;
             const data = {};
+
             Object.keys(childrens).forEach((key) => {
                 data[key] = {
                     amount: childrens[key],
                     // color: childrens[key].color,
                 };
             });
+
             setData(data);
-        }
-        else if (data){
+        } else if (!parentCategory && parentCategories) {
             const data = {};
+
             Object.keys(parentCategories).forEach((key) => {
                 data[key] = {
                     id: parentCategories[key].id,
@@ -53,26 +57,23 @@ export default function CategoryExpenseChart({ searchData }) {
                     color: parentCategories[key].color,
                 };
             });
+
             setData(data);
         }
-    }, [parentCategory]);
+    }, [parentCategory, parentCategories]);
 
     let chart = <Loader classes="w-20 mt-10" />;
     if (!isLoading) {
-        chart = <DoughnutChart data={data} setParentKey={setParentCategory} />
+        chart = <DoughnutChart data={data} setParentKey={setParentCategory} />;
     }
 
     return (
         <div>
             <div className="flex flex-col gap-x-2 p-4 bg-gray-700 rounded-3xl py-4">
                 <div className="flex flex-row justify-between items-center text-white text-2xl pb-4">
-                    <div className="font-bold">
-                        Expense
-                    </div>
+                    <div className="font-bold">Expense</div>
                 </div>
-                <div className="h-64">
-                    {chart}
-                </div>
+                <div className="h-64">{chart}</div>
             </div>
         </div>
     );

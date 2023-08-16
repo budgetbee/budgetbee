@@ -1,17 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-
 import Api from "../../Api/Endpoints";
 import AccountCard from "../../Components/Account/Card";
 import TopNav from "../../layout/TopNav";
-
-// Icons
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBars, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
 
 export default function List() {
     const [isLoading, setIsLoading] = useState(true);
-    const [openSidebarMenu, setOpenSidebarMenu] = useState(false);
     const [data, setData] = useState(null);
 
     useEffect(() => {

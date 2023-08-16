@@ -28,7 +28,7 @@ export default function Form() {
             }
         }
         getData();
-    }, []);
+    });
 
     const handleOpenCategory = () => {
         setCategoryPickerOpen(true);
@@ -52,7 +52,9 @@ export default function Form() {
     };
 
     const handleDeleteRecord = async () => {
-        if (confirm("Delete this record?") === true) {
+        const userConfirmed = window.confirm("Delete this record?");
+        
+        if (userConfirmed) {
             await Api.deleteRecord(record_id);
             window.location.href = "/";
         }
@@ -223,7 +225,7 @@ export default function Form() {
                                                         Exchange rate{" "}
                                                         {accounts.length && record.from_account_id && record.to_account_id && (
                                                             <span>
-                                                                1.00 {accounts.find(item => item.id == record.from_account_id).currency_code} = {record?.rate ?? 1} {accounts.find(item => item.id == record.to_account_id).currency_code}
+                                                                1.00 {accounts.find(item => item.id === Number(record.from_account_id)).currency_code} = {record?.rate ?? 1} {accounts.find(item => item.id === Number(record.to_account_id)).currency_code}
                                                             </span>
                                                         )}
                                                     </label>

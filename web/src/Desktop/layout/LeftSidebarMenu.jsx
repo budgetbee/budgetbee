@@ -8,7 +8,6 @@ import {
     faBars,
     faGear,
 } from "@fortawesome/free-solid-svg-icons";
-
 import Api from "../../Api/Endpoints";
 import logo from "../../assets/images/logo_color_1.svg";
 
@@ -41,7 +40,7 @@ export default function LeftSidebarMenu() {
             }
         }
         getUser();
-    }, []);
+    });
 
     const links = {
         dashboard: {

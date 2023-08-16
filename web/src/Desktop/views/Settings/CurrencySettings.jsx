@@ -104,8 +104,7 @@ export default function CurrencySettings() {
                                             userSettings?.currency.id
                                         }
                                     >
-                                        {currency.name}{" "}
-                                        {currency.symbol} (
+                                        {currency.name} {currency.symbol} (
                                         {currency.code})
                                     </option>
                                 );
@@ -186,16 +185,18 @@ export default function CurrencySettings() {
                             )}
                         </div>
                         <div className="grid grid-cols-3 md:grid-cols-4 gap-4">
-                            {userCurrencies.map((currency) => {
-                                if (currency.id !== userSettings.currency.id) {
-                                    return (
-                                        <CurrencyCard
-                                            currency={currency}
-                                            userSettings={userSettings}
-                                        />
-                                    );
-                                }
-                            })}
+                            {userCurrencies
+                                .filter(
+                                    (currency) =>
+                                        currency.id !== userSettings.currency.id
+                                )
+                                .map((currency) => (
+                                    <CurrencyCard
+                                        key={currency.id}
+                                        currency={currency}
+                                        userSettings={userSettings}
+                                    />
+                                ))}
                         </div>
                     </div>
                 </div>

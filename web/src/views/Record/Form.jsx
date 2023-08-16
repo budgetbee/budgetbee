@@ -1,13 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import moment from "moment";
-
 import Api from "../../Api/Endpoints";
 import Calculator from "./Components/Calculator";
 import CategoryPicker from "./Components/CategoryPicker";
 import TopNav from "../../layout/TopNav";
-
-// Icons
 import { faCheck, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 export default function Form() {
@@ -46,7 +43,7 @@ export default function Form() {
             setIsLoading(false);
         }
         getData();
-    }, []);
+    });
 
     const handleRecordType = (event) => {
         const target = event.target;
@@ -87,7 +84,9 @@ export default function Form() {
     };
 
     const handleDeleteRecord = async () => {
-        if (confirm("Delete this record?") === true) {
+        const userConfirmed = window.confirm("Delete this record?");
+
+        if (userConfirmed) {
             await Api.deleteRecord(record_id);
             window.location.href = "/";
         }
@@ -311,16 +310,20 @@ export default function Form() {
                                                         {
                                                             accounts.find(
                                                                 (item) =>
-                                                                    item.id ==
-                                                                    record.from_account_id
+                                                                    item.id ===
+                                                                    Number(
+                                                                        record.from_account_id
+                                                                    )
                                                             ).currency_code
                                                         }{" "}
                                                         = {record?.rate ?? 1}{" "}
                                                         {
                                                             accounts.find(
                                                                 (item) =>
-                                                                    item.id ==
-                                                                    record.to_account_id
+                                                                    item.id ===
+                                                                    Number(
+                                                                        record.to_account_id
+                                                                    )
                                                             ).currency_code
                                                         }
                                                     </div>

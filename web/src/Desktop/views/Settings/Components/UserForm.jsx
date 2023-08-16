@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-
 import Api from "../../../../Api/Endpoints";
 import SettingsLayout from "../../../layout/SettingsLayout";
-
-// Icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faCheck } from "@fortawesome/free-solid-svg-icons";
 
@@ -21,7 +18,7 @@ export default function UserForm() {
         if (user_id > 0) {
             getUser();
         }
-    }, []);
+    }, [user_id]);
 
     const handleSaveForm = async (e) => {
         e.preventDefault();
