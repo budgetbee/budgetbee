@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-
 import Api from "../../Api/Endpoints";
 import RecordCard from "../../Components/Record/Card";
 import TopNav from "../../layout/TopNav";
@@ -24,7 +23,7 @@ export default function List() {
         if (moreData === true) {
             getRecords();
         }
-    }, [page]);
+    }, [page, account_id, moreData]);
 
     function loadMore() {
         if (

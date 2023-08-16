@@ -1,13 +1,9 @@
 import { React, useEffect, useState } from "react";
-
 import Api from "../../../../Api/Endpoints";
-
-// Icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import TopNav from "../../../../layout/TopNav";
 
 export default function Form({ setOpen, setCategory }) {
-    const [isLoading, setIsLoading] = useState(true);
     const [parentCategories, setParentCategories] = useState(null);
     const [categories, setCategories] = useState(null);
     const [parentCategory, setParentCategory] = useState(null);
@@ -16,18 +12,15 @@ export default function Form({ setOpen, setCategory }) {
         async function getParentCategories() {
             const data = await Api.getParentCategories();
             setParentCategories(data);
-            setIsLoading(false);
         }
         getParentCategories();
     }, []);
 
     useEffect(() => {
         if (parentCategory !== null) {
-            setIsLoading(true);
             async function getCategoriesByParent() {
                 const data = await Api.getCategoriesByParent(parentCategory);
                 setCategories(data);
-                setIsLoading(false);
             }
             getCategoriesByParent();
         }

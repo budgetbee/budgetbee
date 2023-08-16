@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from "react";
 import numeral from "numeral";
-// import "numeral/locales/es";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
 import Api from "../../../../Api/Endpoints";
 import RecordCard from "../../../../Components/Record/Card";
-import DatesSelect from "../../../../Components/Miscellaneous/DatesSelect";
 
 export default function CategoryRecords({ searchData }) {
     const [isLoading, setIsLoading] = useState(true);
@@ -13,9 +10,6 @@ export default function CategoryRecords({ searchData }) {
     const [data, setData] = useState(null);
     const [records, setRecords] = useState([]);
     const [expandedItems, setExpandedItems] = useState([]);
-    const [fromDate, setFromDate] = useState(null);
-
-    // numeral.locale("es");
 
     useEffect(() => {
         async function getBalanceByCategory() {
@@ -35,7 +29,7 @@ export default function CategoryRecords({ searchData }) {
     };
 
     const getRecordsByCategory = async (categoryId) => {
-        const data = await Api.getRecordsByCategory(categoryId, fromDate);
+        const data = await Api.getRecordsByCategory(categoryId);
         setRecords(data);
     };
 

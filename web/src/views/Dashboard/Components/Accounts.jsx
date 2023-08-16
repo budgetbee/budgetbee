@@ -1,11 +1,9 @@
 import { React, useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-
 import "swiper/css";
 import "swiper/css/free-mode";
 import "swiper/css/pagination";
 import { FreeMode, Pagination } from "swiper";
-
 import Api from "../../../Api/Endpoints";
 import AccountCardMini from "../../../Components/Account/CardMini";
 
@@ -24,7 +22,7 @@ export default function Accounts({ activeAccount, setActiveAccount }) {
     }, [activeAccount]);
 
     const handleClick = (id) => {
-        let check = id == activeAccount ? null : id;
+        let check = id === activeAccount ? null : id;
         setActiveAccount(check);
     };
 

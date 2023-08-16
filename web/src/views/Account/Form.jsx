@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-
 import Api from "../../Api/Endpoints";
-
-// Icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faCheck } from "@fortawesome/free-solid-svg-icons";
 
@@ -26,7 +23,7 @@ export default function Form() {
             }
         }
         getData();
-    }, []);
+    }, [account_id]);
 
     const handleSaveForm = async (e) => {
         e.preventDefault();

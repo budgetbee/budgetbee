@@ -5,7 +5,6 @@ import moment from "moment";
 import "react-datepicker/dist/react-datepicker.css";
 
 export default function DateRangeSelector({ setStartDate, setEndDate }) {
-    const [dateName, setDateName] = useState("Current year");
     const [customRange, setCustomRange] = useState(false);
     const [customStartDate, setCustomStartDate] = useState(
         new Date(moment().startOf("year").format("YYYY-MM-DD"))
@@ -13,6 +12,8 @@ export default function DateRangeSelector({ setStartDate, setEndDate }) {
     const [customEndDate, setCustomEndDate] = useState(
         new Date(moment().format("YYYY-MM-DD"))
     );
+
+    const dateName = "Current year";
 
     const dates = {
         Today: moment().format("YYYY-MM-DD"),

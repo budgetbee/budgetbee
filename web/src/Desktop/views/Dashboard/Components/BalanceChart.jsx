@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import numeral from "numeral";
 
 import Api from "../../../../Api/Endpoints";
 import LineChart from "../../../../Components/Chart/LineChart";

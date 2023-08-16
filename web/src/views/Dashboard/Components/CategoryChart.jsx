@@ -16,57 +16,65 @@ export default function CategoryChart({ activeAccount }) {
 
     useEffect(() => {
         async function getByExpenseCategories() {
-            const searchData = {account_id: activeAccount, 'from_date': fromDate};
-            const parentCategories = await Api.getExpenseCategoriesBalance(searchData);
+            const searchData = {
+                account_id: activeAccount,
+                from_date: fromDate,
+            };
+            const parentCategories = await Api.getExpenseCategoriesBalance(
+                searchData
+            );
             const balance = await Api.getExpensesBalance(searchData);
 
-            const data = {};
-            Object.keys(parentCategories).forEach((key) => {
-                data[key] = {
+            const data = Object.keys(parentCategories).reduce((acc, key) => {
+                acc[key] = {
                     id: parentCategories[key].id,
                     amount: parentCategories[key].amount,
                     color: parentCategories[key].color,
                 };
-            });
+                return acc;
+            }, {});
 
             setData(data);
             setParentCategories(parentCategories);
             setExpensesBalance(balance);
             setIsLoading(false);
         }
+
         if (!parentCategory) {
             getByExpenseCategories();
         }
-    }, [activeAccount, fromDate]);
+    }, [activeAccount, fromDate, parentCategory]);
 
     useEffect(() => {
-        if (parentCategory) {
-            const childrens = parentCategories[parentCategory]['childrens'];
-            const data = {};
-            Object.keys(childrens).forEach((key) => {
-                data[key] = {
-                    amount: childrens[key],
-                    // color: childrens[key].color,
-                };
-            });
-            setData(data);
+        if (parentCategory && parentCategories) {
+            if (parentCategories[parentCategory]) {
+                const childrens = parentCategories[parentCategory].childrens;
+                const data = Object.keys(childrens).reduce((acc, key) => {
+                    acc[key] = {
+                        amount: childrens[key],
+                        // color: childrens[key].color,
+                    };
+                    return acc;
+                }, {});
+                setData(data);
+            } else {
+                const data = Object.keys(parentCategories).reduce((acc, key) => {
+                    acc[key] = {
+                        id: parentCategories[key].id,
+                        amount: parentCategories[key].amount,
+                        color: parentCategories[key].color,
+                    };
+                    return acc;
+                }, {});
+                setData(data);
+            }
         }
-        else if (data){
-            const data = {};
-            Object.keys(parentCategories).forEach((key) => {
-                data[key] = {
-                    id: parentCategories[key].id,
-                    amount: parentCategories[key].amount,
-                    color: parentCategories[key].color,
-                };
-            });
-            setData(data);
-        }
-    }, [parentCategory]);
+    }, [parentCategory, parentCategories]);
+    
 
     let chart = <Loader classes="w-20 mt-10" />;
     if (!isLoading) {
-        chart = <DoughnutChart data={data} setParentKey={setParentCategory} />
+        chart = <DoughnutChart data={data} setParentKey={setParentCategory} />;
     }
 
     return (
@@ -74,15 +82,14 @@ export default function CategoryChart({ activeAccount }) {
             <div className="flex flex-col gap-x-2 p-4 bg-gray-700 rounded py-4">
                 <div className="flex flex-row justify-between items-center text-white text-2xl pb-4">
                     <div className="font-bold">
-                        {expensesBalance?.currency_symbol} {numeral(expensesBalance?.amount).format("0,0.00 a")}
+                        {expensesBalance?.currency_symbol}{" "}
+                        {numeral(expensesBalance?.amount).format("0,0.00 a")}
                     </div>
                     <div>
                         <DatesSelect setDates={setFromDate} />
                     </div>
                 </div>
-                <div className="h-64">
-                    {chart}
-                </div>
+                <div className="h-64">{chart}</div>
             </div>
         </div>
     );
