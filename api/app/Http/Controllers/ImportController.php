@@ -55,7 +55,7 @@ class ImportController extends Controller
                 return response()->json(['message' => 'File uploaded successfully']);
             }
         }
-        return response()->json(['error' => 'Error, there is no records to upload']);
+        return response()->json(['error' => 'Error, there is no records to upload'], 400);
     }
 
     private function extractFromJson($file): ?array
