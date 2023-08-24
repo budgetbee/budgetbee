@@ -137,6 +137,7 @@ export default function List() {
           {categories.map((category, index) => (
             <div key={index} className="flex flex-row justify-between hover:bg-gray-400/10 transition px-10">
               <div className="flex flex-row gap-x-5 py-3 items-center text-white" index={index}>
+              <div className="text-gray-500">#{category.id}</div>
                 <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: category.color }}>
                   <FontAwesomeIcon icon={category.icon} />
                 </div>
