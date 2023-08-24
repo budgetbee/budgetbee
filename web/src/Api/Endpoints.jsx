@@ -24,7 +24,7 @@ const handleErrors = (error) => {
             break;
     }
 
-    return {"error": message};
+    return { error: message };
 };
 
 const queryBuilder = (data) => {
@@ -43,16 +43,17 @@ async function call(method, endpoint, data = null) {
         url: `${API_BASE_URL}/${endpoint}`,
         headers: {
             Authorization: "Bearer " + cookies.get("token"),
-        }
+        },
     };
 
     if (method.toLowerCase() === "post" && data) {
         options.data = data;
-        options.headers["Content-Type"] = "multipart/form-data";
-        // if (data instanceof FormData) {
-        // } else {
-        //     options.headers["Content-Type"] = "application/json";
-        // }
+
+        if (data.file) {
+            options.headers["Content-Type"] = "multipart/form-data";
+        } else {
+            options.headers["Content-Type"] = "application/json";
+        }
     }
 
     try {
@@ -77,7 +78,7 @@ const del = (endpoint) => {
 
 const Endpoints = {
     getVersion: async () => {
-        return get('version');
+        return get("version");
     },
 
     userLogin: async (data) => {
@@ -119,15 +120,15 @@ const Endpoints = {
     },
 
     getUsers: async () => {
-        return get('user/all');
+        return get("user/all");
     },
 
     checkIfAdmin: async () => {
-        return get('user/isAdmin');
+        return get("user/isAdmin");
     },
 
     getUserSettings: async () => {
-        return get('user/settings');
+        return get("user/settings");
     },
 
     updateUserSettings: async (data) => {
@@ -143,23 +144,23 @@ const Endpoints = {
     },
 
     getAccountTypes: async (id) => {
-        return get('account/type');
+        return get("account/type");
     },
 
     getCurrencies: async () => {
-        return get('account/currencies');
+        return get("account/currencies");
     },
 
     getUserCurrencies: async () => {
-        return get('user/currencies');
+        return get("user/currencies");
     },
 
     getAllCurrencies: async () => {
-        return get('user/currencies/all');
+        return get("user/currencies/all");
     },
 
     createUserCurrency: async (data) => {
-        return post('user/currencies', data);
+        return post("user/currencies", data);
     },
 
     updateUserCurrency: async (data, id) => {
@@ -176,12 +177,14 @@ const Endpoints = {
     },
 
     getRecords: async (account_id) => {
-        const endpoint = account_id > 0 ? `account/${account_id}/record` : `record`;
+        const endpoint =
+            account_id > 0 ? `account/${account_id}/record` : `record`;
         return get(endpoint);
     },
 
     getPaginateRecords: async (account_id, page) => {
-        let endpoint = account_id > 0 ? `account/${account_id}/record` : `record`;
+        let endpoint =
+            account_id > 0 ? `account/${account_id}/record` : `record`;
         endpoint += page > 0 ? `?page=${page}` : "";
         return get(endpoint);
     },
@@ -264,7 +267,9 @@ const Endpoints = {
     getSubcategoriesBalance: async (parent_category, account_id, from_date) => {
         const accountId = account_id ? `account/${account_id}` : "";
         const fromDate = from_date ? "from=" + from_date : "";
-        return get(`balance/subcategories/${parent_category}/${accountId}?${fromDate}`);
+        return get(
+            `balance/subcategories/${parent_category}/${accountId}?${fromDate}`
+        );
     },
 
     getBalanceByCategory: async (data) => {
