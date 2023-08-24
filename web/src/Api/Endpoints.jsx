@@ -20,10 +20,11 @@ const handleErrors = (error) => {
             message = "Not Found";
             break;
         default:
+            message = error.response.data.error;
             break;
     }
 
-    return message;
+    return {"error": message};
 };
 
 const queryBuilder = (data) => {
@@ -41,13 +42,17 @@ async function call(method, endpoint, data = null) {
         method: method,
         url: `${API_BASE_URL}/${endpoint}`,
         headers: {
-            "Content-Type": "application/json",
             Authorization: "Bearer " + cookies.get("token"),
         }
     };
 
     if (method.toLowerCase() === "post" && data) {
         options.data = data;
+        options.headers["Content-Type"] = "multipart/form-data";
+        // if (data instanceof FormData) {
+        // } else {
+        //     options.headers["Content-Type"] = "application/json";
+        // }
     }
 
     try {
@@ -265,6 +270,10 @@ const Endpoints = {
     getBalanceByCategory: async (data) => {
         const queryString = queryBuilder(data);
         return get(`balance/category?${queryString}`);
+    },
+
+    importRecords: async (data) => {
+        return post(`import`, data);
     },
 };
 

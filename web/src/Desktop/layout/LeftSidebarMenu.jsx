@@ -9,6 +9,7 @@ import {
     faGear,
 } from "@fortawesome/free-solid-svg-icons";
 import Api from "../../Api/Endpoints";
+import ImportModal from "../Components/Import/ImportModal";
 import logo from "../../assets/images/logo_color_1.svg";
 
 export default function LeftSidebarMenu() {
@@ -126,7 +127,7 @@ export default function LeftSidebarMenu() {
                 <div className="px-4 pt-10 pb-5">
                     <img className="px-5" src={logo} alt="logo" />
                 </div>
-                
+
                 {/* Menu Options */}
                 <nav className="py-4 text-white text-md">
                     <Link to="/record" className="block px-14 py-5">
@@ -138,6 +139,9 @@ export default function LeftSidebarMenu() {
                             <span className="font-semibold">New record</span>
                         </div>
                     </Link>
+                    <div className="w-full px-14 py-5">
+                        <ImportModal />
+                    </div>
                     <ul>
                         {linkArray.map(([key, link]) => {
                             const activeClass =

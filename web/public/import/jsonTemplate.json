@@ -1,0 +1,32 @@
+[
+    {
+        "date": "2023-07-13",
+        "from_account_id": 1,
+        "to_account_id": null,
+        "type": "expense",
+        "category_id": 2,
+        "name": "Buy a coffe to BudgetBee creator",
+        "amount": 2.34,
+        "rate": 1
+    },
+    {
+        "date": "2023-08-03",
+        "from_account_id": 1,
+        "to_account_id": 2,
+        "type": "transfer",
+        "category_id": 44,
+        "name": "Transfer to BudgetBee creator",
+        "amount": 1089.23,
+        "rate": 1.3
+    },
+    {
+        "date": "2023-07-12",
+        "from_account_id": 1,
+        "to_account_id": null,
+        "type": "income",
+        "category_id": 23,
+        "name": "I win the lottery!",
+        "amount": 666,
+        "rate": 1
+    }
+]
