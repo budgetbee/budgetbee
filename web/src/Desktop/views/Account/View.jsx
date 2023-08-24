@@ -169,6 +169,7 @@ export default function View() {
                             <div key={index}>
                                 <div className="flex flex-row justify-between items-center text-white px-4 py-4">
                                     <div className="flex flex-row gap-x-4 items-center basis-5/12">
+                                        <div className="text-gray-500">#{account.id}</div>
                                         <div
                                             className="w-9 h-9 rounded-full bg-gray-500"
                                             style={inline_style}
