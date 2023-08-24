@@ -235,7 +235,7 @@ class BalanceController extends Controller
     public function getBalanceByCategory(Request $request)
     {
         $records = Record::filterByRequest($request)->whereNot('type', 'transfer')->get();
-        
+
         $currencySymbol = Auth::user()->currency->symbol;
 
         $data = [];
@@ -280,34 +280,31 @@ class BalanceController extends Controller
 
     public function getTopExpenses(Request $request)
     {
-        $query = Record::filterByRequest($request)->whereNot('type', 'transfer');
+        $records = Record::filterByRequest($request)
+            ->whereNot('type', 'transfer')
+            ->get();
 
-        $data = $query->select('category_id')
-            ->groupBy('category_id')
-            ->get()
-            ->map(function ($item) {
-                $category = Category::find($item->category_id);
-                $records = Record::where('category_id', $item->category_id)
-                    ->where('user_id', $item->user_id)
-                    ->whereNot('type', 'transfer')
-                    ->get();
-                    
-                $totalAmount = $records->sum(function ($record) {
-                    return $record->amount_base_currency;
-                });
-
-                return [
-                    'name' => $category->name,
-                    'amount' => $totalAmount,
-                    'color' => $category->color,
-                    'icon' => $category->icon,
+        $topExpenses = [];
+        foreach ($records as $record) {
+            if (!isset($topExpenses[$record->category->id])) {
+                $topExpenses[$record->category->id] = [
+                    'name' => $record->category->name,
+                    'color' => $record->category->color,
+                    'amount' => 0,
+                    'icon' => $record->category->icon,
                     'currency_symbol' => Auth::user()->currency->symbol
                 ];
-            })
-            ->sortBy('amount')
-            ->take(3)
-            ->values();
+            }
 
-        return response()->json($data);
+            $topExpenses[$record->category->id]['amount'] += $record->amount_base_currency;
+        }
+
+        usort($topExpenses, function ($a, $b) {
+            return $a['amount'] - $b['amount'];
+        });
+
+        $topExpenses = array_slice($topExpenses, 0, 3);
+
+        return response()->json($topExpenses);
     }
 }
