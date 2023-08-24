@@ -8,6 +8,7 @@ export default function Form() {
     const [account, setAccount] = useState(null);
     const [accountTypes, setAccountTypes] = useState([]);
     const [currencies, setCurrencies] = useState([]);
+    const [colorValue, setColorValue] = useState("");
 
     const { account_id } = useParams();
 
@@ -20,10 +21,15 @@ export default function Form() {
             if (account_id !== undefined) {
                 const account = await Api.getAccountById(account_id);
                 setAccount(account);
+                setColorValue(account.color);
             }
         }
         getData();
     }, [account_id]);
+
+    const handleColorChange = (e) => {
+        setColorValue(e.target.value);
+    };
 
     const handleSaveForm = async (e) => {
         e.preventDefault();
@@ -123,9 +129,12 @@ export default function Form() {
                                         key={index}
                                         className="text-black"
                                         value={currency.id}
-                                        selected={currency.id === account?.currency_id}
+                                        selected={
+                                            currency.id === account?.currency_id
+                                        }
                                     >
-                                        {currency.name} {currency.symbol} ({currency.code})
+                                        {currency.name} {currency.symbol} (
+                                        {currency.code})
                                     </option>
                                 );
                             })}
@@ -163,7 +172,8 @@ export default function Form() {
                             id="color"
                             required="required"
                             className="block w-full h-12"
-                            defaultValue={account && account.color}
+                            value={colorValue}
+                            onChange={handleColorChange}
                         />
                     </div>
                 </div>
