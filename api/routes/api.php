@@ -85,5 +85,5 @@ Route::prefix('balance')->middleware('auth:sanctum')->group(function () {
 });
 
 Route::prefix('import')->middleware('auth:sanctum')->group(function () {
-    Route::post('json', [ImportController::class, 'importJson']);
+    Route::post('', [ImportController::class, 'import']);
 });
