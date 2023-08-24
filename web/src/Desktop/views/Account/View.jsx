@@ -89,20 +89,21 @@ export default function View() {
                         );
                     })}
                 </select>
-            <select
-                name="currency_id"
-                id="currency_id"
-                onChange={handleNewAccountChange}
-                className="basis-2/12 block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
-            >
-                {currencies.map((currency, index) => {
-                    return (
-                        <option key={index} value={currency.id}>
-                            {currency.name} {currency.symbol} ({currency.code})
-                        </option>
-                    );
-                })}
-            </select>
+                <select
+                    name="currency_id"
+                    id="currency_id"
+                    onChange={handleNewAccountChange}
+                    className="basis-2/12 block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
+                >
+                    {currencies.map((currency, index) => {
+                        return (
+                            <option key={index} value={currency.id}>
+                                {currency.name} {currency.symbol} (
+                                {currency.code})
+                            </option>
+                        );
+                    })}
+                </select>
                 <input
                     type="number"
                     step="any"
@@ -114,9 +115,7 @@ export default function View() {
                     className="basis-2/12 block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500 appearance-none"
                 />
                 <div className="flex flex-row gap-x-10">
-                    <button
-                        type="submit"
-                    >
+                    <button type="submit">
                         <FontAwesomeIcon
                             icon="fa-solid fa-check"
                             className="text-2xl text-green-400"
@@ -169,11 +168,27 @@ export default function View() {
                             <div key={index}>
                                 <div className="flex flex-row justify-between items-center text-white px-4 py-4">
                                     <div className="flex flex-row gap-x-4 items-center basis-5/12">
-                                        <div className="text-gray-500">#{account.id}</div>
-                                        <div
-                                            className="w-9 h-9 rounded-full bg-gray-500"
-                                            style={inline_style}
-                                        ></div>
+                                        <div className="text-gray-500">
+                                            #{account.id}
+                                        </div>
+                                        {accountToEdit?.id === account.id ? (
+                                            <input
+                                                type="color"
+                                                name="color"
+                                                id="color"
+                                                onChange={
+                                                    handleEditAccount
+                                                }
+                                                defaultValue={account.color}
+                                                required={true}
+                                                className="appearance-none w-12 h-12"
+                                            ></input>
+                                        ) : (
+                                            <div
+                                                className="w-9 h-9 rounded-full bg-gray-500"
+                                                style={inline_style}
+                                            ></div>
+                                        )}
                                         <div className="flex flex-col">
                                             <div className="font-bold">
                                                 {accountToEdit?.id ===
