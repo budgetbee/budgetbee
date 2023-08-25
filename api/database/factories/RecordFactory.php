@@ -45,6 +45,7 @@ class RecordFactory extends Factory
         $recordType = $recordTypes[array_rand($recordTypes)];
 
         $toAccountId = null;
+        $rate = null;
         
         switch ($recordType) {
             case 'income':
@@ -58,6 +59,7 @@ class RecordFactory extends Factory
                 $randomCategory = 1;
                 $amount = $faker->randomFloat(2, -300, 100);
                 $toAccountId = Account::where('user_id', $user->id)->inRandomOrder()->first()->id;
+                $rate = $faker->randomFloat(2, -1, 2);
         }
 
         return [
@@ -68,7 +70,8 @@ class RecordFactory extends Factory
             'type' => $recordType,
             'category_id' => $randomCategory,
             'name' => $faker->text(),
-            'amount' => $amount
+            'amount' => $amount,
+            'rate' => $rate
         ];
     }
 }

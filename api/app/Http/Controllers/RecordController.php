@@ -19,7 +19,7 @@ class RecordController extends Controller
             $records->skip(($page - 1) * $perPage)
                 ->take($perPage);
         }
-        
+
         $data = $records->orderByDesc('date')
             ->get();
 
@@ -48,17 +48,24 @@ class RecordController extends Controller
             'rate' => 'nullable|numeric',
             'code' => 'nullable|string',
         ]);
-        
+
         $data = $request->only('date', 'from_account_id', 'to_account_id', 'type', 'category_id', 'name', 'amount', 'description', 'rate', 'code');
+
+        if ($data['type'] === 'transfer') {
+            $this->validate($request, [
+                'to_account_id' => 'required',
+                'rate' => 'required'
+            ]);
+        }
 
         $data['amount'] = abs($data['amount']);
         if ($data['type'] == "expense" || $data['type'] == "transfer") {
             $data['amount'] = "-" . $data['amount'];
         }
-        
+
         $data['category_id'] = $data['category_id'] ?? 1;
         $data['user_id'] = $request->user()->id;
-        
+
         $record = new Record();
         $record->fill($data);
         $record->save();
@@ -75,18 +82,26 @@ class RecordController extends Controller
         $this->validate($request, [
             'date' => 'required',
             'from_account_id' => 'required',
+            'to_account_id' => 'integer|exists:App\Models\Account,id',
             'type' => 'required',
             'amount' => 'required',
             'rate' => 'nullable|numeric'
         ]);
-        
+
         $data = $request->only('date', 'from_account_id', 'to_account_id', 'type', 'category_id', 'name', 'amount', 'description', 'rate');
-        
+
+        if ($data['type'] === 'transfer') {
+            $this->validate($request, [
+                'to_account_id' => 'required',
+                'rate' => 'required'
+            ]);
+        }
+
         $data['amount'] = abs($data['amount']);
         if ($data['type'] == "expense" || $data['type'] == "transfer") {
             $data['amount'] = "-" . $data['amount'];
         }
-        
+
         $record->fill($data);
         $record->save();
 
@@ -96,9 +111,9 @@ class RecordController extends Controller
     public function delete($id)
     {
         $record = Record::find($id);
-        
+
         $this->authorize('delete', $record);
-        
+
         $record->delete();
 
         return response()->json([]);

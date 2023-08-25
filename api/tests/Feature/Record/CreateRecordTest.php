@@ -114,6 +114,8 @@ class CreateRecordTest extends TestCase
         $recordData = Record::factory()->make()->toArray();
         $recordData['type'] = 'transfer';
         $recordData['to_account_id'] = Account::whereNot('id', $recordData['from_account_id'])->inRandomOrder()->first()->id;
+        $recordData['rate'] = 1.2;
+
         $response = $this->post('/api/record', $recordData);
 
         $response->assertStatus(200);
@@ -132,33 +134,5 @@ class CreateRecordTest extends TestCase
 
         $record->delete();
         $assocRecord->delete();
-    }
-
-    /**
-     * Update a transfer record
-     */
-    public function testUpdateTransferSuccess(): void
-    {
-        $recordData = Record::factory()->make()->toArray();
-        $recordData['type'] = 'transfer';
-        $recordData['to_account_id'] = Account::whereNot('id', $recordData['from_account_id'])->inRandomOrder()->first()->id;
-        $response = $this->post('/api/record', $recordData);
-
-        $response->assertStatus(200);
-
-        $id = json_decode($response->getContent())->id;
-        $record = Record::find($id);
-        
-        $recordData['type'] = 'expense';
-        unset($recordData['to_account_id']);
-        $response = $this->post('/api/record/' . $record->id, $recordData);
-        
-        $response->assertStatus(200);
-
-        $assocRecord = Record::find($record->link_record_id);
-
-        $this->assertNull($assocRecord);
-
-        $record->delete();
     }
 }

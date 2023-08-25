@@ -35,6 +35,7 @@ class Record extends Model
         static::created(function ($record) {
             if ($record->type === 'transfer') {
                 static::withoutEvents(function () use ($record) {
+                    $transfercategory = 1;
                     $recordAssoc = ($record->link_record_id) ? Record::find($record->link_record_id) : new Record();
                     $recordAssoc->fill([
                         'user_id' => $record->user_id,
@@ -45,13 +46,14 @@ class Record extends Model
                         'to_account_id' => $record->from_account_id,
                         'type' => $record->type,
                         'name' => $record->name,
-                        'category_id' => $record->category_id,
-                        'rate' => $record->rate
+                        'category_id' => $transfercategory,
+                        'rate' => round(1 / $record->rate, 9)
                     ]);
                     $recordAssoc->save();
-
-                    $record->fill(['link_record_id' => $recordAssoc->id]);
-                    $record->save();
+                    $record->fill([
+                        'category_id' => $transfercategory,
+                        'link_record_id' => $recordAssoc->id
+                    ])->save();
                 });
             }
         });
@@ -68,16 +70,20 @@ class Record extends Model
         });
 
         static::updating(function ($record) {
-            if ($record->type == 'transfer' || $record->original['type'] === 'transfer') {
+            if ($record->type === 'transfer' || $record->original['type'] === 'transfer') {
                 static::withoutEvents(function () use ($record) {
-                    $recordAssoc = Record::withTrashed()->find($record->link_record_id);
+                    $recordAssoc = ($record->link_record_id) ? Record::withTrashed()->find($record->link_record_id) : new Record();
                     if ($recordAssoc) {
                         if ($record->original['type'] === 'transfer' && $record->type !== 'transfer') {
                             $recordAssoc->delete();
                         } else {
                             $transfercategory = 1;
-                            $recordAssoc->restore();
+                            if ($recordAssoc->id) {
+                                $recordAssoc->restore();
+                            }
                             $recordAssoc->fill([
+                                'user_id' => $record->user_id,
+                                'link_record_id' => $record->id,
                                 'amount' => -CurrencyConverter::convertTransfer($record),
                                 'date' => $record->date,
                                 'from_account_id' => $record->to_account_id,
@@ -88,8 +94,10 @@ class Record extends Model
                                 'rate' => round(1 / $record->rate, 9)
                             ]);
                             $recordAssoc->save();
-                            $record->fill(['category_id' => $transfercategory])
-                                ->save();
+                            $record->fill([
+                                'category_id' => $transfercategory,
+                                'link_record_id' => $recordAssoc->id
+                            ])->save();
                         }
                     }
                 });
@@ -193,7 +201,7 @@ class Record extends Model
         if ($request->has('search_term') && !in_array('search_term', $excludes)) {
             $query->where('name', 'like', '%' . $request->query('search_term') . '%');
         }
-        
+
         return $query;
     }
 }
