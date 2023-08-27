@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Api from "../../../Api/Endpoints";
-import RecordCard from "../../../Components/Record/Card";
+import RecordCard from "../../Components/Record/Card";
 import TopNav from "../../../layout/TopNav";
 import Loader from "../../../Components/Miscellaneous/Loader";
 
