@@ -1,21 +1,24 @@
-version: '3'
+version: '3.8'
 services:
-
   nginx:
-    build: ./docker/nginx
+    build: ../docker/nginx
     command: nginx -g "daemon off;"
     ports:
       - "${APP_PORT}:80"
+    depends_on:
+      - webserver
+      - web
     restart: unless-stopped
     networks:
       - skynet
-
   webserver:
-    build: ./api
+    build: 
+      context: ../api
+      dockerfile: ../api/Dockerfile.dev
     volumes:
-      - ./api:/var/www/html
+      - ../api:/var/www/html
     working_dir: /var/www/html
-    command: php-fpm
+    command: /bin/sh -c "chown www-data:www-data entrypoint.sh && chmod +x entrypoint.sh && sh entrypoint.sh"
     environment:
       APP_ENV: ${APP_ENV}
       APP_DEBUG: ${APP_DEBUG}
@@ -23,40 +26,42 @@ services:
       DB_DATABASE: ${DB_DATABASE}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - skynet
       - skynet_back
-
   web:
     build:
-      context: ./web
+      context: ../web
       dockerfile: Dockerfile.dev
     volumes:
-      - ./web:/var/www/html
+      - ../web:/var/www/html
     restart: unless-stopped
     networks:
       - skynet
-
   db:
     image: mysql:8
-    command: --default-authentication-plugin=mysql_native_password
     ports:
       - "${DB_PORT}:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD", "/usr/bin/mysql", "--user=${DB_USERNAME}",  "--password=${DB_PASSWORD}", "--execute", "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${DB_DATABASE}';"]
+      timeout: 20s
+      retries: 100
     restart: unless-stopped
     volumes:
       - db_data:/var/lib/mysql
     networks:
       - skynet_back
-
 networks:
   skynet:
   skynet_back:
-
 volumes:
   db_data:

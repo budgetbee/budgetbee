@@ -1,14 +1,16 @@
-version: '3'
+version: '3.8'
 services:
   nginx:
     image: ghcr.io/budgetbee/budgetbee/proxy:latest
     command: nginx -g "daemon off;"
     ports:
       - "8201:80"
+    depends_on:
+      - webserver
+      - web
     restart: unless-stopped
     networks:
       - skynet
-
   webserver:
     image: ghcr.io/budgetbee/budgetbee/api:latest
     working_dir: /var/www/html
@@ -18,32 +20,35 @@ services:
       DB_DATABASE: "budgetbee"
       DB_USERNAME: "budgetbee_user"
       DB_PASSWORD: "budgetbee_password"
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - skynet
-
   web:
     image: ghcr.io/budgetbee/budgetbee/web:latest
     restart: unless-stopped
     networks:
       - skynet
-
   db:
     image: mysql:8
     command: --default-authentication-plugin=mysql_native_password
     environment:
-      MYSQL_ROOT_PASSWORD: "budgetbee_password_root"
-      MYSQL_DATABASE: "budgetbee"
-      MYSQL_USER: "budgetbee_user"
-      MYSQL_PASSWORD: "budgetbee_password"
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 100
     restart: unless-stopped
     volumes:
       - db_data:/var/lib/mysql
     networks:
       - skynet
-
 networks:
   skynet:
-
 volumes:
   db_data:
