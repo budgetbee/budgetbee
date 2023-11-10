@@ -35,41 +35,44 @@ export default function Card({ record, showName }) {
     );
 
     return (
-        <div
-            className="flex flex-row justify-between gap-x-3 items-center bg-background text-white px-4 py-4"
-            onClick={() => handleOpenModal(record)}
-        >
+        <>
             {isOpen && modal}
-            <div className="basis-[15%]">
-                <div
-                    className="m-auto flex items-center justify-center w-9 h-9 rounded-full bg-gray-500"
-                    style={inline_style}
-                >
-                    <FontAwesomeIcon icon={record.icon} />
+            <div
+                className="flex flex-row justify-between gap-x-3 items-center bg-background text-white px-4 py-4 cursor-pointer hover:bg-gray-700 transition"
+                onClick={() => handleOpenModal(record)}
+            >
+                <div className="basis-[15%]">
+                    <div
+                        className="m-auto flex items-center justify-center w-9 h-9 rounded-full bg-gray-500"
+                        style={inline_style}
+                    >
+                        <FontAwesomeIcon icon={record.icon} />
+                    </div>
                 </div>
-            </div>
-            <div className="basis-[59%] flex flex-row gap-x-4 items-center">
-                <div className="flex flex-col">
-                    <div className={"font-bold"}>{mainName}</div>
-                    <div className="text-white/40">
-                        <strong>{record.account_name}</strong> {toAccountName}
+                <div className="basis-[59%] flex flex-row gap-x-4 items-center">
+                    <div className="flex flex-col">
+                        <div className={"font-bold"}>{mainName}</div>
+                        <div className="text-white/40">
+                            <strong>{record.account_name}</strong>{" "}
+                            {toAccountName}
+                        </div>
+                    </div>
+                </div>
+                <div className="basis-[26%] flex flex-col text-right">
+                    <div
+                        className="text-green-400"
+                        style={{
+                            color: record.amount < 0 ? "red" : "",
+                        }}
+                    >
+                        {record.currency_symbol}{" "}
+                        {numeral(record.amount).format("0,0.00")}
+                    </div>
+                    <div className="text-white/20">
+                        {moment(record.date).format("D MMMM")}
                     </div>
                 </div>
             </div>
-            <div className="basis-[26%] flex flex-col text-right">
-                <div
-                    className="text-green-400"
-                    style={{
-                        color: record.amount < 0 ? "red" : "",
-                    }}
-                >
-                    {record.currency_symbol}{" "}
-                    {numeral(record.amount).format("0,0.00")}
-                </div>
-                <div className="text-white/20">
-                    {moment(record.date).format("D MMMM")}
-                </div>
-            </div>
-        </div>
+        </>
     );
 }

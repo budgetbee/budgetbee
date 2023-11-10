@@ -207,6 +207,10 @@ const Endpoints = {
         return get(`category/${id}`);
     },
 
+    getCategories: async () => {
+        return get(`category`);
+    },
+
     createOrUpdateCategory: async (data, category_id) => {
         const id = category_id ?? "";
         return post(`category/${id}`, data);

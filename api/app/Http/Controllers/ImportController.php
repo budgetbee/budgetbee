@@ -49,6 +49,8 @@ class ImportController extends Controller
                             $record->forceDelete();
                         }
                         $importModel->forceDelete();
+                        print_r($e->getMessage());
+                        exit;
                         return response()->json(['error' => 'Error to save records, check file and try again'], 500);
                     }
                 }
