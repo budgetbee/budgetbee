@@ -11,7 +11,7 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
-    "axios": "^1.4.0",
+    "axios": "^1.6.0",
     "chart.js": "^4.3.0",
     "font-awesome": "^4.7.0",
     "framer-motion": "^10.15.0",
