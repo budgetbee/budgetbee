@@ -1,12 +1,5 @@
 #!/bin/bash
 
-# Set permissions
-chmod -R 775 storage bootstrap/cache 
-chown -R www-data:www-data storage bootstrap/cache
-
-chown www-data:www-data ./entrypoint.sh 
-chmod +x ./entrypoint.sh
-
 # Install dependencies
 composer install --no-dev --optimize-autoloader
 
