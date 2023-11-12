@@ -1,15 +1,17 @@
 # pull official base image
-FROM node:20.3-slim
+FROM node:21-slim
 
 # set working directory
 WORKDIR /var/www/html
 
-# install app dependencies
-COPY package.json package-lock.json ./
-RUN npm install
-
 # add app
 COPY . .
+
+# install app dependencies
+RUN rm -rf node_modules
+# COPY package.json package-lock.json ./
+RUN npm ci
+
 
 # port
 EXPOSE 3000

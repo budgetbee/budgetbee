@@ -9,7 +9,7 @@ import DatesSelect from "../../../Components/Miscellaneous/DatesSelect";
 export default function CategoryRecords({ activeAccount }) {
     const [isLoading, setIsLoading] = useState(true);
     const [showRecords, setShowRecords] = useState(false);
-    const [data, setData] = useState(null);
+    const [data, setData] = useState([]);
     const [records, setRecords] = useState([]);
     const [expandedItems, setExpandedItems] = useState([]);
     const [fromDate, setFromDate] = useState(null);
@@ -20,7 +20,9 @@ export default function CategoryRecords({ activeAccount }) {
                 account_id: activeAccount,
                 from_date: fromDate,
             });
-            setData(Object.entries(data));
+            if (data && Object.entries(data)){
+                setData(Object.entries(data));
+            }
             setIsLoading(false);
         }
         getBalanceByCategory();
@@ -36,7 +38,9 @@ export default function CategoryRecords({ activeAccount }) {
 
     const getRecordsByCategory = async (categoryId) => {
         const data = await Api.getRecordsByCategory(categoryId, fromDate);
-        setRecords(data);
+        if (data){
+            setRecords(data);
+        }
     };
 
     const handleHideRecords = () => {

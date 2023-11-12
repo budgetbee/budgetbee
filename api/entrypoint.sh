@@ -1,11 +1,5 @@
 #!/bin/bash
 
-# Install dependencies
-composer install --no-dev --optimize-autoloader
-
-# Sleep for wait to db container
-sleep 20;
-
 # Run key:generate
 # php artisan key:generate
 

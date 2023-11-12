@@ -43,7 +43,7 @@ services:
     networks:
       - skynet
   db:
-    image: mysql:8
+    image: mysql:8.2.0
     ports:
       - "${DB_PORT}:3306"
     environment:
