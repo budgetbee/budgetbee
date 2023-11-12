@@ -1,5 +1,5 @@
 # pull official base image
-FROM node:20.3-slim
+FROM node:21-slim
 
 # set working directory
 WORKDIR /var/www/html

@@ -28,5 +28,5 @@ RUN set -xe \
 # Set working directory
 WORKDIR /var/www/html
 
-# Change the user to www-data
-USER www-data
+# Install dependencies
+RUN composer install --no-dev --optimize-autoloader

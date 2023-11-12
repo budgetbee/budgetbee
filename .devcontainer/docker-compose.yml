@@ -18,7 +18,7 @@ services:
     volumes:
       - ../api:/var/www/html
     working_dir: /var/www/html
-    command: /bin/sh -c "chown www-data:www-data entrypoint.sh && chmod +x entrypoint.sh && sh entrypoint.sh"
+    command: /bin/sh -c "sh entrypoint.sh"
     environment:
       APP_ENV: ${APP_ENV}
       APP_DEBUG: ${APP_DEBUG}
@@ -43,7 +43,7 @@ services:
     networks:
       - skynet
   db:
-    image: mysql:8
+    image: mysql:8.2.0
     ports:
       - "${DB_PORT}:3306"
     environment:

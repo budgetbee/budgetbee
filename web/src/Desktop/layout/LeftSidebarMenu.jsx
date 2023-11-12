@@ -17,13 +17,13 @@ export default function LeftSidebarMenu() {
     const [appLatestVersion, setAppLatestVersion] = useState("");
     const [showVersionModal, setShowVersionModal] = useState(false);
 
-    const cookies = new Cookies("checkVersionCheck");
-
+    
     const currentPath = window.location.pathname;
     const pathParts = currentPath.split("/");
     const activePage = pathParts[1];
-
+    
     useEffect(() => {
+        const cookies = new Cookies("checkVersionCheck");
         async function getUser() {
             const appVersion = await Api.getVersion();
             setAppVersion(appVersion.version);
