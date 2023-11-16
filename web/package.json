@@ -1,6 +1,6 @@
 {
   "name": "budgetbee",
-  "version": "0.4.1",
+  "version": "0.4.3",
   "private": true,
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "6.4.2",
