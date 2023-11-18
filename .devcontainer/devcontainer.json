@@ -1,0 +1,7 @@
+{
+    "name": "budgetbee",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "webserver",
+    "workspaceFolder": "/var/www/html",
+    "shutdownAction": "stopCompose"
+}
