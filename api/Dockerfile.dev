@@ -27,6 +27,3 @@ RUN set -xe \
 
 # Set working directory
 WORKDIR /var/www/html
-
-# Install dependencies
-RUN composer install --no-dev --optimize-autoloader
