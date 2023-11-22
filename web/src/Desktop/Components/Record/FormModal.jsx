@@ -40,6 +40,8 @@ export default function FormModal({ isOpen, onOpen, onOpenChange, record_id }) {
                     id: record.category_id,
                     name: record.category_name,
                 });
+                setParentCategorySelect(record.parent_category_id);
+                setRecordType(record.type);
             }
         }
         getData();
@@ -107,137 +109,145 @@ export default function FormModal({ isOpen, onOpen, onOpenChange, record_id }) {
                 <form onSubmit={handleSaveForm} className="block">
                     <ModalHeader className="flex flex-col gap-1"></ModalHeader>
                     <ModalBody>
-                        <SelectType onChange={handleChangeType} />
-                        <div className="flex flex-row gap-x-3">
-                            <Select
-                                isRequired
-                                label="Account"
-                                placeholder="Select account"
-                                name="from_account_id"
-                                className="max-w-xs"
-                                defaultValue={record?.from_account_id}
-                            >
-                                {accounts.map((account) => (
-                                    <SelectItem
-                                        key={account.id}
-                                        value={account.id}
+                        {record && (
+                            <>
+                                <SelectType onChange={handleChangeType} defaultValue={record.type} />
+                                <div className="flex flex-row gap-x-3">
+                                    <Select
+                                        isRequired
+                                        label="Account"
+                                        placeholder="Select account"
+                                        name="from_account_id"
+                                        className="max-w-xs"
+                                        items={accounts}
+                                        selectionMode="single"
+                                        defaultSelectedKeys={[record.from_account_id.toString()]}
                                     >
-                                        {account.name}
-                                    </SelectItem>
-                                ))}
-                            </Select>
-                            {recordType === "transfer" && (
-                                <Select
-                                    isRequired
-                                    label="To account"
-                                    placeholder="Select account"
-                                    name="to_account_id"
-                                    className="max-w-xs"
-                                >
-                                    {accounts.map((account) => (
-                                        <SelectItem
-                                            key={account.id}
-                                            value={account.id}
+                                        {(item) => (
+                                            <SelectItem key={item.id} value={item.id}>
+                                                {item.name}
+                                            </SelectItem>
+                                        )}
+                                    </Select>
+
+                                    {recordType === "transfer" && (
+                                        <Select
+                                            isRequired
+                                            label="To account"
+                                            placeholder="Select account"
+                                            name="to_account_id"
+                                            className="max-w-xs"
+                                            selectionMode="single"
+                                            defaultSelectedKeys={record.to_account_id ? [record.to_account_id.toString()] : []}
                                         >
-                                            {account.name}
-                                        </SelectItem>
-                                    ))}
-                                </Select>
-                            )}
-                        </div>
-                        {recordType !== "transfer" && (
-                            <div className="flex flex-row gap-x-3">
-                                <Select
-                                    className="max-w-xs"
-                                    label="Category"
-                                    isRequired
-                                    onChange={
-                                        handleParentCategorySelectionChange
+                                            {accounts.map((account) => (
+                                                <SelectItem
+                                                    key={account.id}
+                                                    value={account.id}
+                                                >
+                                                    {account.name}
+                                                </SelectItem>
+                                            ))}
+                                        </Select>
+                                    )}
+                                </div>
+                                {recordType !== "transfer" && (
+                                    <div className="flex flex-row gap-x-3">
+                                        <Select
+                                            className="max-w-xs"
+                                            label="Category"
+                                            isRequired
+                                            onChange={
+                                                handleParentCategorySelectionChange
+                                            }
+                                            defaultSelectedKeys={[record?.parent_category_id.toString()]}
+                                        >
+                                            {parentCategories.map((parent_category) => (
+                                                <SelectItem
+                                                    key={parent_category.id}
+                                                    value={parent_category.id}
+                                                    startContent={
+                                                        <FontAwesomeIcon
+                                                            icon={parent_category.icon}
+                                                            className="text-white rounded-full p-3 flex items-center justify-center"
+                                                            style={{
+                                                                background:
+                                                                    parent_category.color,
+                                                            }}
+                                                        />
+                                                    }
+                                                >
+                                                    {parent_category.name}
+                                                </SelectItem>
+                                            ))}
+                                        </Select>
+                                        <Select
+                                            className="max-w-xs"
+                                            label="Sub category"
+                                            isRequired
+                                            defaultSelectedKeys={[record?.category_id.toString()]}
+                                        >
+                                            {categories.map((category) => (
+                                                <SelectItem
+                                                    key={category.id}
+                                                    value={category.id}
+                                                    startContent={
+                                                        <FontAwesomeIcon
+                                                            icon={category.icon}
+                                                            className="text-white rounded-full p-3 flex items-center justify-center"
+                                                            style={{
+                                                                background:
+                                                                    category.color,
+                                                            }}
+                                                        />
+                                                    }
+                                                >
+                                                    {category.name}
+                                                </SelectItem>
+                                            ))}
+                                        </Select>
+                                    </div>
+                                )}
+                                <Textarea
+                                    label="Description"
+                                    name="name"
+                                    labelPlacement="outside"
+                                    placeholder="Enter your description"
+                                    className="w-full"
+                                    defaultValue={record?.name}
+                                />
+                                <div className="flex flex-row gap-x-3">
+                                    <Input
+                                        isRequired
+                                        name="date"
+                                        type="date"
+                                        label="Date"
+                                        placeholder=""
+                                        className="max-w-xs"
+                                        defaultValue={moment(record.date).format("YYYY-MM-DD")}
+                                    />
+                                    <Input
+                                        isRequired
+                                        name="amount"
+                                        type="number"
+                                        label="Amount"
+                                        placeholder=""
+                                        className="max-w-xs"
+                                        step="any"
+                                        defaultValue={record?.amount}
+                                    />
+                                </div>
+                                <Button
+                                    type="submit"
+                                    color="success"
+                                    endContent={
+                                        <FontAwesomeIcon icon="fa-solid fa-check" />
                                     }
-                                    defaultSelectedKeys={[2]}
                                 >
-                                    {parentCategories.map((parent_category) => (
-                                        <SelectItem
-                                            key={parent_category.id}
-                                            value={parent_category.id}
-                                            startContent={
-                                                <FontAwesomeIcon
-                                                    icon={parent_category.icon}
-                                                    className="text-white rounded-full p-3 flex items-center justify-center"
-                                                    style={{
-                                                        background:
-                                                            parent_category.color,
-                                                    }}
-                                                />
-                                            }
-                                        >
-                                            {parent_category.name}
-                                        </SelectItem>
-                                    ))}
-                                </Select>
-                                <Select
-                                    className="max-w-xs"
-                                    label="Category"
-                                    isRequired
-                                >
-                                    {categories.map((category) => (
-                                        <SelectItem
-                                            key={category.id}
-                                            startContent={
-                                                <FontAwesomeIcon
-                                                    icon={category.icon}
-                                                    className="text-white rounded-full p-3 flex items-center justify-center"
-                                                    style={{
-                                                        background:
-                                                            category.color,
-                                                    }}
-                                                />
-                                            }
-                                        >
-                                            {category.name}
-                                        </SelectItem>
-                                    ))}
-                                </Select>
-                            </div>
+                                    Save
+                                </Button>
+                            </>
                         )}
-                        <Textarea
-                            label="Description"
-                            name="name"
-                            labelPlacement="outside"
-                            placeholder="Enter your description"
-                            className="w-full"
-                            defaultValue={record?.name}
-                        />
-                        <div className="flex flex-row gap-x-3">
-                            <Input
-                                isRequired
-                                name="date"
-                                type="date"
-                                label="Date"
-                                placeholder=""
-                                className="max-w-xs"
-                                defaultValue={record?.date}
-                            />
-                            <Input
-                                isRequired
-                                name="amount"
-                                type="number"
-                                label="Amount"
-                                placeholder=""
-                                className="max-w-xs"
-                                step="any"
-                                defaultValue={record?.amount}
-                            />
-                        </div>
-                        <Button
-                            type="submit"
-                            color="success"
-                            endContent={
-                                <FontAwesomeIcon icon="fa-solid fa-check" />
-                            }
-                        >
-                            Save
-                        </Button>
                     </ModalBody>
                     <ModalFooter className="items-center"></ModalFooter>
                 </form>
