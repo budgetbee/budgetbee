@@ -35,7 +35,7 @@ export default function DoughnutChart({ data, setParentKey }) {
 
     const chartRef = useRef(null);
 
-    const onClick = (event: MouseEvent<HTMLCanvasElement>) => {
+    const onClick = (event) => {
 
         if (!setParentKey) {
             return;
