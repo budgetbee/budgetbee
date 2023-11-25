@@ -3,6 +3,8 @@
 if [[ ! -z $APP_ENV ]]; then 
     echo "App env: " "$APP_ENV"
     if [[ "$APP_ENV" == "local" ]]; then
+        chmod -R 775 storage bootstrap/cache 
+        chown -R www-data storage bootstrap/cache
         composer install --no-dev --optimize-autoloader
     fi
 fi
