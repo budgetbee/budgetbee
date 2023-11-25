@@ -1,4 +1,4 @@
-import React, { MouseEvent, useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { Chart as ChartJS, registerables } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
 
