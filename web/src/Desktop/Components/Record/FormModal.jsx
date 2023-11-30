@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import moment from "moment";
 import Api from "../../../Api/Endpoints";
 import SelectType from "./SelectType";
-// import CategoryPicker from "../..//Components/CategoryPicker";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     Modal,
@@ -20,6 +18,7 @@ import {
 
 export default function FormModal({ isOpen, onOpen, onOpenChange, record_id }) {
     const [accounts, setAccounts] = useState([]);
+    const [loading, setLoading] = useState(false);
     const [parentCategories, setParentCategories] = useState([]);
     const [categories, setCategories] = useState([]);
     const [parentCategorySelect, setParentCategorySelect] = useState(null);
@@ -74,11 +73,17 @@ export default function FormModal({ isOpen, onOpen, onOpenChange, record_id }) {
 
     const handleSaveForm = async (e) => {
         e.preventDefault();
+        setLoading(true);
         const formData = new FormData(document.querySelector("form"));
         const formObject = Object.fromEntries(formData.entries());
-        console.log(formObject);
-        // await Api.createRecord(formObject, record_id);
-        // window.location.href = "/";
+        const response = await Api.createRecord(formObject, record_id);
+
+        if (response.error) {
+            setErrorMsg(response.error);
+        }
+
+        setLoading(false);
+        onOpenChange();
     };
 
     const handleDeleteRecord = async () => {
@@ -156,6 +161,7 @@ export default function FormModal({ isOpen, onOpen, onOpenChange, record_id }) {
                                         <Select
                                             className="max-w-xs"
                                             label="Category"
+                                            name="parent_category_id"
                                             isRequired
                                             onChange={
                                                 handleParentCategorySelectionChange
@@ -184,6 +190,7 @@ export default function FormModal({ isOpen, onOpen, onOpenChange, record_id }) {
                                         <Select
                                             className="max-w-xs"
                                             label="Sub category"
+                                            name="category_id"
                                             isRequired
                                             defaultSelectedKeys={[record?.category_id.toString()]}
                                         >
@@ -216,6 +223,21 @@ export default function FormModal({ isOpen, onOpen, onOpenChange, record_id }) {
                                     className="w-full"
                                     defaultValue={record?.name}
                                 />
+                                {recordType === "transfer" &&
+                                    record.from_account_id &&
+                                    record.to_account_id &&
+                                    (record.from_account_id !== record.to_account_id) && (
+                                        <Input
+                                            isRequired
+                                            name="rate"
+                                            type="number"
+                                            label="Exchange rate"
+                                            placeholder=""
+                                            className="max-w-xs"
+                                            step="any"
+                                            defaultValue={record?.rate}
+                                        />
+                                    )}
                                 <div className="flex flex-row gap-x-3">
                                     <Input
                                         isRequired
@@ -237,19 +259,22 @@ export default function FormModal({ isOpen, onOpen, onOpenChange, record_id }) {
                                         defaultValue={record?.amount}
                                     />
                                 </div>
-                                <Button
-                                    type="submit"
-                                    color="success"
-                                    endContent={
-                                        <FontAwesomeIcon icon="fa-solid fa-check" />
-                                    }
-                                >
-                                    Save
-                                </Button>
                             </>
                         )}
                     </ModalBody>
-                    <ModalFooter className="items-center"></ModalFooter>
+                    <ModalFooter className="items-center">
+                        <Button
+                            type="submit"
+                            color="success"
+                            isLoading={loading}
+                            endContent={
+                                !loading && (
+                                    <FontAwesomeIcon icon="fa-solid fa-check" />
+                                )
+                            }
+                        >
+                            Save
+                        </Button></ModalFooter>
                 </form>
             </ModalContent>
         </Modal>
