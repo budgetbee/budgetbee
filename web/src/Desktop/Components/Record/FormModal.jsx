@@ -16,7 +16,7 @@ import {
     Textarea,
 } from "@nextui-org/react";
 
-export default function FormModal({ isOpen, onOpen, onOpenChange, record_id }) {
+export default function FormModal({ isOpen, onOpen, onOpenChange, record_id, fetchAgain }) {
     const [accounts, setAccounts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [parentCategories, setParentCategories] = useState([]);
@@ -79,9 +79,10 @@ export default function FormModal({ isOpen, onOpen, onOpenChange, record_id }) {
         const response = await Api.createRecord(formObject, record_id);
 
         if (response.error) {
-            setErrorMsg(response.error);
+            // setErrorMsg(response.error);
         }
 
+        fetchAgain();
         setLoading(false);
         onOpenChange();
     };
