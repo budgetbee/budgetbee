@@ -1,4 +1,4 @@
-import React, { MouseEvent, useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { Chart as ChartJS, registerables } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
 
@@ -35,7 +35,7 @@ export default function DoughnutChart({ data, setParentKey }) {
 
     const chartRef = useRef(null);
 
-    const onClick = (event: MouseEvent<HTMLCanvasElement>) => {
+    const onClick = (event) => {
 
         if (!setParentKey) {
             return;
