@@ -14,7 +14,7 @@ export default function Card({ record, showName }) {
         backgroundColor: recordData.category_color,
     };
 
-    const toAccountName = recordData.to_account_name
+    const toAccountName = (recordData.type === 'transfer' && recordData.to_account_name)
         ? " - " + recordData.to_account_name
         : "";
     let mainName =

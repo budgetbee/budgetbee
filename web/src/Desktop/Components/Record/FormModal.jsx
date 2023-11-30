@@ -224,10 +224,7 @@ export default function FormModal({ isOpen, onOpen, onOpenChange, record_id, fet
                                     className="w-full"
                                     defaultValue={record?.name}
                                 />
-                                {recordType === "transfer" &&
-                                    record.from_account_id &&
-                                    record.to_account_id &&
-                                    (record.from_account_id !== record.to_account_id) && (
+                                {recordType === "transfer" && (
                                         <Input
                                             isRequired
                                             name="rate"
