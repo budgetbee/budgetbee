@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import moment from "moment";
 import Api from "../../../Api/Endpoints";
 import SelectType from "./SelectType";
@@ -22,7 +22,6 @@ export default function FormModal({ isOpen, onOpen, onOpenChange, record_id, fet
     const [parentCategories, setParentCategories] = useState([]);
     const [categories, setCategories] = useState([]);
     const [parentCategorySelect, setParentCategorySelect] = useState(null);
-    const [category, setCategory] = useState({ id: 0, name: "" });
     const [record, setRecord] = useState(null);
     const [recordType, setRecordType] = useState("");
 
@@ -35,10 +34,6 @@ export default function FormModal({ isOpen, onOpen, onOpenChange, record_id, fet
             if (record_id !== undefined) {
                 const record = await Api.getRecordById(record_id);
                 setRecord(record);
-                setCategory({
-                    id: record.category_id,
-                    name: record.category_name,
-                });
                 setParentCategorySelect(record.parent_category_id);
                 setRecordType(record.type);
             }
@@ -193,7 +188,7 @@ export default function FormModal({ isOpen, onOpen, onOpenChange, record_id, fet
                                             label="Sub category"
                                             name="category_id"
                                             isRequired
-                                            defaultSelectedKeys={[record?.category_id.toString()]}
+                                            defaultSelectedKeys={record.category_id ? [record.category_id.toString()] : []}
                                         >
                                             {categories.map((category) => (
                                                 <SelectItem
