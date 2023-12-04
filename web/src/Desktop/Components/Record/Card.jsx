@@ -8,6 +8,7 @@ import { useDisclosure } from "@nextui-org/react";
 
 export default function Card({ record, showName }) {
     const [recordData, setRecordData] = useState(record);
+    const [isRemoved, setIsRemoved] = useState(false);
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
     const inline_style = {
@@ -39,8 +40,13 @@ export default function Card({ record, showName }) {
             onOpenChange={onOpenChange}
             record_id={record.id}
             fetchAgain={() => fetchAgain(record.id)}
+            setIsRemoved={setIsRemoved}
         />
     );
+
+    if (isRemoved) {
+        return <></>;
+    }
 
     return (
         <>

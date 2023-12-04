@@ -16,7 +16,7 @@ import {
     Textarea,
 } from "@nextui-org/react";
 
-export default function FormModal({ isOpen, onOpen, onOpenChange, record_id, fetchAgain }) {
+export default function FormModal({ isOpen, onOpen, onOpenChange, record_id, fetchAgain, setIsRemoved }) {
     const [accounts, setAccounts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [parentCategories, setParentCategories] = useState([]);
@@ -53,29 +53,12 @@ export default function FormModal({ isOpen, onOpen, onOpenChange, record_id, fet
         }
     }, [parentCategorySelect]);
 
-    const handleOpenCategory = () => {
-        setParentCategorySelect(true);
-    };
-
-    const handleInputChange = (event) => {
-        const target = event.target;
-        const value =
-            target.type === "checkbox" ? target.checked : target.value;
-        const name = target.name;
-
-        setRecord({ ...record, [name]: value });
-    };
-
     const handleSaveForm = async (e) => {
         e.preventDefault();
         setLoading(true);
         const formData = new FormData(document.querySelector("form"));
         const formObject = Object.fromEntries(formData.entries());
         const response = await Api.createRecord(formObject, record_id);
-
-        if (response.error) {
-            // setErrorMsg(response.error);
-        }
 
         fetchAgain();
         setLoading(false);
@@ -87,8 +70,10 @@ export default function FormModal({ isOpen, onOpen, onOpenChange, record_id, fet
 
         if (userConfirmed) {
             await Api.deleteRecord(record_id);
-            window.location.href = "/";
+            onOpenChange();
         }
+        setLoading(false);
+        setIsRemoved(true);
     };
 
     const handleChangeType = (e) => {
@@ -220,17 +205,17 @@ export default function FormModal({ isOpen, onOpen, onOpenChange, record_id, fet
                                     defaultValue={record?.name}
                                 />
                                 {recordType === "transfer" && (
-                                        <Input
-                                            isRequired
-                                            name="rate"
-                                            type="number"
-                                            label="Exchange rate"
-                                            placeholder=""
-                                            className="max-w-xs"
-                                            step="any"
-                                            defaultValue={record?.rate}
-                                        />
-                                    )}
+                                    <Input
+                                        isRequired
+                                        name="rate"
+                                        type="number"
+                                        label="Exchange rate"
+                                        placeholder=""
+                                        className="max-w-xs"
+                                        step="any"
+                                        defaultValue={record?.rate}
+                                    />
+                                )}
                                 <div className="flex flex-row gap-x-3">
                                     <Input
                                         isRequired
@@ -255,7 +240,20 @@ export default function FormModal({ isOpen, onOpen, onOpenChange, record_id, fet
                             </>
                         )}
                     </ModalBody>
-                    <ModalFooter className="items-center">
+                    <ModalFooter className="items-center justify-between">
+                        <Button
+                            type="button"
+                            color="danger"
+                            isLoading={loading}
+                            onClick={handleDeleteRecord}
+                            endContent={
+                                !loading && (
+                                    <FontAwesomeIcon icon="fa-solid fa-trash" />
+                                )
+                            }
+                        >
+                            Delete
+                        </Button>
                         <Button
                             type="submit"
                             color="success"
@@ -267,7 +265,8 @@ export default function FormModal({ isOpen, onOpen, onOpenChange, record_id, fet
                             }
                         >
                             Save
-                        </Button></ModalFooter>
+                        </Button>
+                    </ModalFooter>
                 </form>
             </ModalContent>
         </Modal>
