@@ -9,6 +9,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Types\Currency;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class User extends Authenticatable
 {
@@ -67,14 +68,17 @@ class User extends Authenticatable
         });
 
         static::creating(function ($model) {
+            Cache::clear();
             Log::info("Creating a new {$model->getTable()}");
         });
 
         static::updating(function ($model) {
+            Cache::clear();
             Log::info("Updating {$model->getTable()} with ID {$model->id}");
         });
 
         static::deleting(function ($model) {
+            Cache::clear();
             Log::info("Deleting {$model->getTable()} with ID {$model->id}");
         });
     }

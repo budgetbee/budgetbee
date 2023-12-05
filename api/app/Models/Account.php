@@ -9,6 +9,7 @@ use Database\Factories\AccountFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Services\CurrencyConverter;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class Account extends Model
 {
@@ -26,6 +27,23 @@ class Account extends Model
     protected $appends = ['type_name', 'balance', 'balance_base_currency', 'total_incomes', 'total_incomes_base_currency', 'total_expenses', 'total_expenses_base_currency', 'currency_symbol', 'currency_name', 'currency_code', 'initial_balance_base_currency'];
 
     protected $hidden = ['type', 'currency'];
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::creating(function () {
+            Cache::clear();
+        });
+
+        static::updating(function () {
+            Cache::clear();
+        });
+
+        static::deleting(function () {
+            Cache::clear();
+        });
+    }
 
     protected static function newFactory(): Factory
     {
