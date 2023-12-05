@@ -60,6 +60,9 @@ class RecordFactory extends Factory
                 $amount = $faker->randomFloat(2, -300, 100);
                 $toAccountId = Account::where('user_id', $user->id)->inRandomOrder()->first()->id;
                 $rate = $faker->randomFloat(2, -1, 2);
+                if ($rate === 0) {
+                    $rate = 1;
+                }
         }
 
         return [
