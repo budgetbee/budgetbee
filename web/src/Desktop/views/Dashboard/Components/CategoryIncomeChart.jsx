@@ -23,10 +23,11 @@ export default function CategoryIncomeChart({ searchData }) {
             setData(data);
             setIsLoading(false);
         }
+        setIsLoading(true);
         getIncomeCategoriesBalance();
     }, [searchData]);
 
-    let chart = <Loader classes="w-20 mt-10" />;
+    let chart = <Loader classes="w-32 mt-10" />;
     if (!isLoading) {
         chart = <DoughnutChart data={data} />;
     }
@@ -37,7 +38,7 @@ export default function CategoryIncomeChart({ searchData }) {
                 <div className="flex flex-row justify-between items-center text-white text-2xl pb-4">
                     <div className="font-bold">Income</div>
                 </div>
-                <div className="h-64">{chart}</div>
+                <div className="h-64 w-64">{chart}</div>
             </div>
         </div>
     );

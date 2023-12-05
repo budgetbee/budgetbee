@@ -14,10 +14,11 @@ export default function BalanceChart({ searchData }) {
             setData(data);
             setIsLoading(false);
         }
+        setIsLoading(true);
         getTimelineBalance();
     }, [searchData]);
 
-    let chart = <Loader classes="w-20 mt-10" />;
+    let chart = <Loader classes="w-32 mt-32" />;
     if (!isLoading) {
         chart = <LineChart data={data} />
     }
