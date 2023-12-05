@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Database\Factories\UserCurrencyFactory;
 use App\Models\Types\Currency;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 
 class UserCurrency extends Model
 {
@@ -27,10 +28,15 @@ class UserCurrency extends Model
     protected static function booted()
     {
         static::creating(function ($userCurrency) {
+            Cache::clear();
             $user = Auth::user();
             if ($user) {
                 $userCurrency->user_id = $user->id;
             }
+        });
+
+        static::updating(function () {
+            Cache::clear();
         });
 
         static::addGlobalScope('user_id', function (Builder $builder) {

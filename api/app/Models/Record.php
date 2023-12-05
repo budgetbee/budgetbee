@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Http\Request;
 use DateTime;
 use App\Services\CurrencyConverter;
+use Illuminate\Support\Facades\Cache;
 
 class Record extends Model
 {
@@ -33,6 +34,7 @@ class Record extends Model
         parent::boot();
 
         static::created(function ($record) {
+            Cache::clear();
             if ($record->type === 'transfer') {
                 static::withoutEvents(function () use ($record) {
                     $transfercategory = 1;
@@ -59,6 +61,7 @@ class Record extends Model
         });
 
         static::deleting(function ($record) {
+            Cache::clear();
             if ($record->type == 'transfer') {
                 static::withoutEvents(function () use ($record) {
                     $recordAssoc = Record::find($record->link_record_id);
@@ -70,6 +73,7 @@ class Record extends Model
         });
 
         static::updating(function ($record) {
+            Cache::clear();
             if ($record->type === 'transfer' || $record->original['type'] === 'transfer') {
                 static::withoutEvents(function () use ($record) {
                     $recordAssoc = ($record->link_record_id) ? Record::withTrashed()->find($record->link_record_id) : new Record();

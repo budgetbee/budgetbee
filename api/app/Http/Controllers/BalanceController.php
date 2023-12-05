@@ -10,6 +10,7 @@ use DateInterval;
 use App\Models\Category;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class BalanceController extends Controller
 {
@@ -34,16 +35,29 @@ class BalanceController extends Controller
     public function getAll(Request $request)
     {
         $query = Record::filterByRequest($request);
+        $sql = $query->toSql();
+        $bindings = $query->getBindings();
+        $queryKey = md5($sql . serialize($bindings));
+
+        $cacheKey = 'balance_all_data_' . $queryKey;
+        if (Cache::has($cacheKey)) {
+            return response()->json(Cache::get($cacheKey));
+        }
+
         $queryIncome = clone $query;
         $queryExpense = clone $query;
 
         $excludedCategoryIds = Category::where('parent_category_id', self::CATEGORY_PARENT_ID_INCOME)->pluck('id');
 
-        return response()->json([
+        $data = [
             'incomes' => $queryIncome->whereIn('category_id', $excludedCategoryIds)->whereNot('type', 'transfer')->get()->sum('amount_base_currency'),
             'expenses' => $queryExpense->whereNotIn('category_id', $excludedCategoryIds)->whereNot('type', 'transfer')->get()->sum('amount_base_currency'),
             'currency_symbol' => $request->user()->currency_symbol
-        ]);
+        ];
+
+        Cache::put($cacheKey, $data);
+
+        return response()->json($data);
     }
 
     public function getExpensesBalance(Request $request)
@@ -56,7 +70,17 @@ class BalanceController extends Controller
 
     public function getTimeline(Request $request)
     {
-        $records = Record::filterByRequest($request)->orderBy('date')->get();
+        $query = Record::filterByRequest($request);
+        $sql = $query->toSql();
+        $bindings = $query->getBindings();
+        $queryKey = md5($sql . serialize($bindings));
+
+        $cacheKey = 'balance_timeline_data_' . $queryKey;
+        if (Cache::has($cacheKey)) {
+            return response()->json(Cache::get($cacheKey));
+        }
+
+        $records = $query->orderBy('date')->get();
         $balance = Account::where('user_id', $request->user()->id)->get()->sum('initial_balance_base_currency');
 
         $currentYear = Carbon::now()->year;
@@ -85,6 +109,8 @@ class BalanceController extends Controller
         }
 
         ksort($data);
+
+        Cache::put($cacheKey, $data);
 
         return response()->json($data);
     }
@@ -121,8 +147,18 @@ class BalanceController extends Controller
 
     public function getByExpenseCategories(Request $request)
     {
+        $query = Record::filterByRequest($request);
+        $sql = $query->toSql();
+        $bindings = $query->getBindings();
+        $queryKey = md5($sql . serialize($bindings));
+
+        $cacheKey = 'balance_by_expense_categories_data_' . $queryKey;
+        if (Cache::has($cacheKey)) {
+            return response()->json(Cache::get($cacheKey));
+        }
+
         $expenseCategories = Category::whereNotIn('parent_category_id', [self::CATEGORY_PARENT_ID_TRANSFER, self::CATEGORY_PARENT_ID_INCOME])->pluck('id');
-        $records = Record::filterByRequest($request)->whereIn('category_id', $expenseCategories)->orderBy('date')->get();
+        $records = $query->whereIn('category_id', $expenseCategories)->orderBy('date')->get();
 
         $data = [];
 
@@ -151,6 +187,8 @@ class BalanceController extends Controller
         uasort($data, function ($a, $b) {
             return $b['amount'] - $a['amount'];
         });
+
+        Cache::put($cacheKey, $data);
 
         return response()->json($data);
     }
@@ -234,7 +272,17 @@ class BalanceController extends Controller
 
     public function getBalanceByCategory(Request $request)
     {
-        $records = Record::filterByRequest($request)->whereNot('type', 'transfer')->get();
+        $query = Record::filterByRequest($request);
+        $sql = $query->toSql();
+        $bindings = $query->getBindings();
+        $queryKey = md5($sql . serialize($bindings));
+
+        $cacheKey = 'balance_by_category_data_' . $queryKey;
+        if (Cache::has($cacheKey)) {
+            return response()->json(Cache::get($cacheKey));
+        }
+
+        $records = $query->whereNot('type', 'transfer')->get();
 
         $currencySymbol = Auth::user()->currency->symbol;
 
@@ -275,14 +323,24 @@ class BalanceController extends Controller
 
         asort($data);
 
+        Cache::put($cacheKey, $data);
+
         return response()->json($data);
     }
 
     public function getTopExpenses(Request $request)
     {
-        $records = Record::filterByRequest($request)
-            ->whereNot('type', 'transfer')
-            ->get();
+        $query = Record::filterByRequest($request);
+        $sql = $query->toSql();
+        $bindings = $query->getBindings();
+        $queryKey = md5($sql . serialize($bindings));
+
+        $cacheKey = 'balance_top_expenses_data_' . $queryKey;
+        if (Cache::has($cacheKey)) {
+            return response()->json(Cache::get($cacheKey));
+        }
+
+        $records = $query->whereNot('type', 'transfer')->get();
 
         $topExpenses = [];
         foreach ($records as $record) {
@@ -304,6 +362,8 @@ class BalanceController extends Controller
         });
 
         $topExpenses = array_slice($topExpenses, 0, 3);
+
+        Cache::put($cacheKey, $topExpenses);
 
         return response()->json($topExpenses);
     }
