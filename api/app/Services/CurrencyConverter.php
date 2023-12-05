@@ -2,17 +2,20 @@
 
 namespace App\Services;
 
-use App\Models\UserCurrency;
 use App\Models\Record;
+use Illuminate\Support\Facades\Auth;
 
 class CurrencyConverter
 {
-    public static function convert(float $amount, $userCurrency)
+    public static function convert(float $amount, $accoutCurrency)
     {
-        if (is_null($userCurrency) || $userCurrency->currency->code === $userCurrency->user->currency->code) {
+        $accountCurrencyCode = $accoutCurrency->currency->code;
+        $userCurrencyCode = Auth::user()->currency->code;
+
+        if (is_null($accoutCurrency) || $accountCurrencyCode === $userCurrencyCode) {
             return $amount;
         }
-        return $amount / $userCurrency->exchange_rate_to_default_currency;
+        return $amount / $accoutCurrency->exchange_rate_to_default_currency;
     }
 
     public static function convertTransfer(Record $record)
