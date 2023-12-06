@@ -29,7 +29,7 @@
     "serve": "14.2.1",
     "swiper": "11.0.5",
     "universal-cookie": "6.1.1",
-    "vite": "5.0.2",
+    "vite": "5.0.5",
     "vite-jsconfig-paths": "2.0.1",
     "web-vitals": "3.5.0"
   },
