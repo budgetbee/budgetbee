@@ -43,11 +43,18 @@ export default function ImportModal() {
         setSelectedFile(null);
         setIsDropped(false);
         onOpenChange();
-      };
+    };
 
     return (
         <>
-            <Button onPress={onOpen} color="primary">
+            <Button
+                onPress={onOpen} 
+                color="primary" 
+                className="w-full"
+                startContent={
+                    <FontAwesomeIcon icon="fa-solid fa-cloud-arrow-up" />
+                }
+            >
                 Import
             </Button>
             <Modal
