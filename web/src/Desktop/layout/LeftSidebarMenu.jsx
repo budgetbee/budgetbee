@@ -9,6 +9,7 @@ import {
     faGear,
 } from "@fortawesome/free-solid-svg-icons";
 import Api from "../../Api/Endpoints";
+import RecordModalButton from "../Components/Record/RecordModalButton";
 import ImportModal from "../Components/Import/ImportModal";
 import logo from "../../assets/images/logo_color_1.svg";
 
@@ -130,17 +131,13 @@ export default function LeftSidebarMenu() {
 
                 {/* Menu Options */}
                 <nav className="py-4 text-white text-md">
-                    <Link to="/record" className="block px-14 py-5">
-                        <div className="flex flex-row px-5 font-bold py-3 gap-x-5 bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 focus:ring-green-800 shadow-lg shadow-green-500/50 shadow-lg shadow-green-800/80 rounded-full justify-center cursor-pointer items-center transition">
-                            <FontAwesomeIcon
-                                icon="fa-solid fa-check"
-                                className={`basis-1/5 text-lg `}
-                            />
-                            <span className="font-semibold">New record</span>
+                    <div className="flex flex-col gap-y-3 mx-14 my-4">
+                        <div className="w-full">
+                            <RecordModalButton />
                         </div>
-                    </Link>
-                    <div className="w-full px-14 py-5">
-                        <ImportModal />
+                        <div className="w-full">
+                            <ImportModal />
+                        </div>
                     </div>
                     <ul>
                         {linkArray.map(([key, link]) => {
