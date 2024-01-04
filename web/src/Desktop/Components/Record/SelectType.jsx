@@ -35,9 +35,9 @@ export const CustomRadio = (props) => {
     );
 };
 
-export default function SelectType({ onChange, defaultValue }) {
+export default function SelectType({ onChange, value }) {
     return (
-        <RadioGroup name="type" onChange={onChange} defaultValue={defaultValue} isRequired>
+        <RadioGroup name="type" onChange={onChange} value={value} isRequired>
             <div className="flex flex-row justify-between gap-x-3">
                 <CustomRadio value="income">Income</CustomRadio>
                 <CustomRadio value="expense">Expense</CustomRadio>

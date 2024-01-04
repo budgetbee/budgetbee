@@ -1,15 +1,21 @@
 import React, { useEffect, useState } from "react";
 import numeral from "numeral";
+import {
+    Modal,
+    ModalContent,
+    ModalBody,
+    useDisclosure
+} from "@nextui-org/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Api from "../../../../Api/Endpoints";
-import RecordCard from "../../../../Components/Record/Card";
+import RecordCard from "../../../Components/Record/Card";
 
 export default function CategoryRecords({ searchData }) {
     const [isLoading, setIsLoading] = useState(true);
-    const [showRecords, setShowRecords] = useState(false);
     const [data, setData] = useState(null);
     const [records, setRecords] = useState([]);
     const [expandedItems, setExpandedItems] = useState([]);
+    const { isOpen, onOpenChange } = useDisclosure();
 
     useEffect(() => {
         async function getBalanceByCategory() {
@@ -33,34 +39,31 @@ export default function CategoryRecords({ searchData }) {
         setRecords(data);
     };
 
-    const handleHideRecords = () => {
-        setShowRecords(false);
-        setRecords([]);
-    };
-
     const handleShowRecords = (category) => {
+        setRecords([]);
         getRecordsByCategory(category);
-        setShowRecords(true);
+        onOpenChange(true);
     };
 
     if (isLoading) {
         return <></>;
     }
 
-    let recordsModal = <></>;
-    if (showRecords && records.length > 0) {
-        recordsModal = (
-            <div
-                className="fixed inset-0 flex flex-col items-center justify-center bg-black/50 z-30"
-                onClick={handleHideRecords}
-            >
-                <div className="w-5/12 bg-gray-900 text-white rounded">
-                    <div className="px-5 py-3 text-xl">Records</div>
+    let recordsModal = (
+
+        <Modal
+            isOpen={isOpen}
+            onOpenChange={onOpenChange}
+            placement="top-center"
+            size="xl"
+        >
+            <ModalContent>
+                <ModalBody className="p-0 bg-black">
                     <div className="max-h-96 overflow-auto w-full bg-black block">
                         <div className="records">
-                            {records.map((record, index) => {
+                            {records.map((record) => {
                                 return (
-                                    <div key={index}>
+                                    <div key={record.id}>
                                         <RecordCard
                                             record={record}
                                             showName={true}
@@ -70,14 +73,14 @@ export default function CategoryRecords({ searchData }) {
                             })}
                         </div>
                     </div>
-                </div>
-            </div>
-        );
-    }
+                </ModalBody>
+            </ModalContent>
+        </Modal>
+    );
 
     return (
         <div>
-            {showRecords && recordsModal}
+            {isOpen && recordsModal}
             <div className="flex flex-col gap-y-3 p-4 bg-gray-700 rounded-3xl py-4 text-white text-lg">
                 <div className="flex flex-row justify-between items-center text-white text-2xl pb-4">
                     <div className="font-bold">Expenses</div>

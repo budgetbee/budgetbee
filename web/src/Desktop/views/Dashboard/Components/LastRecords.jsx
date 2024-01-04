@@ -1,7 +1,7 @@
 import { React, useEffect, useState } from "react";
 
 import Api from "../../../../Api/Endpoints";
-import RecordCard from "../../../../Components/Record/Card";
+import RecordCard from "../../../Components/Record/Card";
 import { Link } from "react-router-dom";
 
 export default function LastRecords({ searchData }) {
