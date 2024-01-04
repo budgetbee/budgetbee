@@ -40,6 +40,7 @@ export default function CategoryRecords({ searchData }) {
     };
 
     const handleShowRecords = (category) => {
+        setRecords([]);
         getRecordsByCategory(category);
         onOpenChange(true);
     };
