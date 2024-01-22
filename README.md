@@ -39,15 +39,21 @@ To create a user, run this command from your local machine, substituting the val
 docker exec budgetbee-webserver-1 php scripts/create_user.php <your_name> <your_email> <your_password>
 ```
 
-## Star History
+## Roadmap
 
-<a href="https://star-history.com/#budgetbee/budgetbee&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=budgetbee/budgetbee&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=budgetbee/budgetbee&type=Date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=budgetbee/budgetbee&type=Date" />
-  </picture>
-</a>
+| Features                                     | Done |
+| -------------------------------------------- | ------ |
+| Import records Excel/Json                      | ✅    | 
+| Create multiple users                        | ✅    |
+| Create currencies                            | ✅    |
+| Add custom currencies                        |      |
+| Create/Edit Categories                       | ✅    |
+| Budgets by category                          |     |
+| Create rules                                 |     |
+| Connect with banks                           |     |
+| Export banckup                               |     |
+| Customize dashboard                          |     |
+
 
 ## Updates
 
