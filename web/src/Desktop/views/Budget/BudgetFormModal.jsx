@@ -36,7 +36,7 @@ export default function BudgetFormModal({ isOpen, onOpenChange, budget, setIsUpd
         }
     }, [parentCategory]);
 
-    let title = 'Create a new budget';
+    const title = budget ? 'Edit budget' : 'Create a new budget';
 
     const handleSaveForm = async (e) => {
         e.preventDefault();
