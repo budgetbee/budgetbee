@@ -18,6 +18,17 @@ class CurrencyConverter
         return $amount / $accoutCurrency->exchange_rate_to_default_currency;
     }
 
+    public static function convertToUserCurrency(Record $record): float {
+        $recordCurrency = $record->account->currency;
+        $userCurrency = Auth::user()->currency;
+
+        if ($recordCurrency->code !== $userCurrency->code) {
+            return $record->amount / $recordCurrency->exchange_rate_to_default_currency;
+        }
+
+        return $record->amount;
+    }
+
     public static function convertTransfer(Record $record)
     {
         if ($record->account->currency->code === $record->toAccount->currency->code) {
