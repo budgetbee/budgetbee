@@ -8,7 +8,7 @@ export default function BudgetDashboard() {
 
     return (
         <Layout>
-            <div className="pt-16">
+            <div className="pt-16 min-h-screen bg-background">
                 <div className="px-5 mb-4 mt-2">
                     <BudgetFormButton setIsUpdated={setIsUpdated} />
                 </div>

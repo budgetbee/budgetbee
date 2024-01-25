@@ -8,7 +8,7 @@ export default function BudgetFormButton({ budget, setIsUpdated }) {
 
     const btn_label = budget ? '' : 'Create';
     const btn_color = budget ? 'default' : 'primary';
-    const btn_classes = budget ? 'text-sm w-fit !p-4 min-w-0 min-h-0' : 'w-full py-7 text-lg';
+    const btn_classes = budget ? 'text-sm w-fit !p-4 min-w-0 min-h-0' : 'w-full py-7 text-2xl';
     const btn_icon = budget ? <FontAwesomeIcon icon="fa-solid fa-pen-to-square" /> : <FontAwesomeIcon icon="fa-solid fa-plus" />;
 
     const modal = (
