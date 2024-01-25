@@ -21,7 +21,7 @@ class AuthController extends Controller
             'confirm_password' => 'required|string|same:password'
         ]);
         
-        $user = User::create(
+        User::create(
             [
                 'name' => $validatedData['name'],
                 'email' => $validatedData['email'],
@@ -29,8 +29,7 @@ class AuthController extends Controller
             ]
         );
 
-        event(new UserCreated($user));
-
+        
         return response()->json();
     }
 

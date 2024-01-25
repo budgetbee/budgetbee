@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Events\UserCreated;
 use App\Models\Types\Currency;
+use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
@@ -57,6 +58,7 @@ class User extends Authenticatable
         static::created(function ($user) {
             Log::info("Created {$user->getTable()} with ID {$user->id}");
             static::withoutEvents(function () use ($user) {
+                event(new UserCreated($user));
                 $currency = UserCurrency::create([
                     'user_id' => $user->id,
                     'currency_id' => Currency::where('code', 'USD')->first()->id,
