@@ -4,12 +4,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AppVersionController;
-use App\Http\Controllers\RecordController;
-use App\Http\Controllers\BalanceController;
-use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\BalanceController;
+use App\Http\Controllers\BudgetController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ImportController;
+use App\Http\Controllers\RecordController;
+use App\Http\Controllers\UserController;
 
 
 /*
@@ -86,4 +87,12 @@ Route::prefix('balance')->middleware('auth:sanctum')->group(function () {
 
 Route::prefix('import')->middleware('auth:sanctum')->group(function () {
     Route::post('', [ImportController::class, 'import']);
+});
+
+Route::prefix('budget')->middleware('auth:sanctum')->group(function () {
+    Route::get('', [BudgetController::class, 'getAll']);
+    Route::get('{id}', [BudgetController::class, 'getById']);
+    Route::post('', [BudgetController::class, 'create']);
+    Route::post('{id}', [BudgetController::class, 'update']);
+    Route::delete('{id}', [BudgetController::class, 'delete']);
 });

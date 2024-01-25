@@ -39,6 +39,7 @@ services:
       dockerfile: Dockerfile.dev
     volumes:
       - ../web:/var/www/html
+      - /var/www/html/node_modules
     restart: unless-stopped
     networks:
       - skynet

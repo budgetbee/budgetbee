@@ -1,11 +1,17 @@
-# pull official base image
-FROM node:21-slim
+FROM node:21-slim 
 
-# set working directory
-WORKDIR /var/www/html
+# Set the working directory inside the container 
+WORKDIR /var/www/html 
 
-# port
-EXPOSE 3000
+# Copy package.json and package-lock.json to the container 
+COPY package*.json ./ 
 
-# start app
-CMD npm ci;npm start
+# Install dependencies 
+RUN npm ci 
+
+# Expose the port the app will run on 
+EXPOSE 3000 
+
+# Start the app in development mode 
+CMD ["npm", "run", "start"].
+
