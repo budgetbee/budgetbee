@@ -50,7 +50,7 @@ export default function BudgetList( {forceReload}) {
                         className="px-6 py-4 font-medium whitespace-nowrap text-white"
                     >
                         <Progress
-                            label={"(" + numeral(budget.spent_percent).format("0,0.00") + " %)"}
+                            label={"(" + numeral(budget.spent_percent).format("0,0.00") + " % Montly)"}
                             size="md"
                             value={budget.spent}
                             valueLabel={numeral(budget.spent).format("0,0.00") + " / " + numeral(budget.amount).format("0,0.00")}

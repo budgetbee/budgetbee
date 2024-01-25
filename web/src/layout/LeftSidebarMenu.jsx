@@ -7,6 +7,7 @@ import {
     faMoneyCheck,
     faBars,
     faGear,
+    faSackDollar
 } from "@fortawesome/free-solid-svg-icons";
 
 import Api from "../Api/Endpoints";
@@ -48,6 +49,12 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
             href: "/dashboard",
             icon: faChartBar,
             color: "text-pink-400",
+        },
+        budgets: {
+            name: "Budgets",
+            href: "/budget",
+            icon: faSackDollar,
+            color: "text-green-400",
         },
         accounts: {
             name: "Accounts",
