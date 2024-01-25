@@ -6,7 +6,8 @@ import { Button, useDisclosure } from "@nextui-org/react";
 export default function BudgetFormButton({ budget, setIsUpdated }) {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
-    let btnLabel = budget ? 'Edit' : 'Create';
+    let btn_label = budget ? 'Edit' : 'Create';
+    let btn_color = budget ? 'default' : 'primary';
 
     const modal = (
         <FormModal
@@ -21,12 +22,13 @@ export default function BudgetFormButton({ budget, setIsUpdated }) {
         <>
             {isOpen && modal}
             <Button
+                color={btn_color}
                 onPress={onOpen}
                 startContent={
                     <FontAwesomeIcon icon="fa-solid fa-plus" />
                 }
             >
-                {btnLabel}
+                {btn_label}
             </Button>
         </>
     );

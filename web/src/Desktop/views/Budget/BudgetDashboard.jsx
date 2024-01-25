@@ -8,8 +8,12 @@ export default function BudgetDashboard() {
 
     return (
         <Layout>
-            <BudgetFormButton setIsUpdated={setIsUpdated} />
-            <BudgetList forceReload={isUpdated} />
+            <div className="px-5 mt-10">
+                <div className="mb-4">
+                    <BudgetFormButton setIsUpdated={setIsUpdated} />
+                </div>
+                <BudgetList forceReload={isUpdated} />
+            </div>
         </Layout>
     )
 }
