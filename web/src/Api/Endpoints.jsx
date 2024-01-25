@@ -284,6 +284,26 @@ const Endpoints = {
     importRecords: async (data) => {
         return post(`import`, data);
     },
-};
+
+    getAllBudgets: async () => {
+        return get(`budget`);
+    },
+
+    getBudget: async (id) => {
+        return get(`budget/${id}`);
+    },
+
+    createBudget: async (data) => {
+        return post(`budget`, data);
+    },
+
+    updateBudget: async (data, id) => {
+        return post(`budget/${id}`, data);
+    },
+
+    deleteBudget: async (id) => {
+        return del(`budget/${id}`);
+    },
+}
 
 export default Endpoints;

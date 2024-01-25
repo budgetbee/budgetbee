@@ -14,6 +14,7 @@ import SettingsUserForm from "./views/User/UserForm";
 
 import DashboardDesktop from "./Desktop/views/Dashboard/View";
 import AccountsDesktop from "./Desktop/views/Account/View";
+import BudgetDashboard from "./Desktop/views/Budget/BudgetDashboard";
 import RecordFormDesktop from "./Desktop/views/Record/Form";
 import RecordListDesktop from "./Desktop/views/Record/List";
 import CategoryListDesktop from "./Desktop/views/Category/List";
@@ -32,6 +33,7 @@ function AppRoutes() {
                 <Route exact path="/" element={isMobile ? <Dashboard /> : <DashboardDesktop />} />
                 <Route exact path="/login" element={<Login />} />
                 <Route path="/dashboard" element={isMobile ? <Dashboard /> : <DashboardDesktop />} />
+                <Route path="/budget" element={<BudgetDashboard />} />
                 <Route path="/accounts/" element={isMobile ? <AccountList /> : <AccountsDesktop />} />
                 <Route path="/account" element={<AccountForm />} />
                 <Route path="/account/:account_id" element={<AccountForm />} />
