@@ -3,6 +3,14 @@
 namespace App\Providers;
 
 // use Illuminate\Support\Facades\Gate;
+use App\Models\User;
+use App\Models\Budget;
+use App\Models\Record;
+use App\Models\Account;
+use App\Policies\UserPolicy;
+use App\Policies\BudgetPolicy;
+use App\Policies\RecordPolicy;
+use App\Policies\AccountPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -16,6 +24,7 @@ class AuthServiceProvider extends ServiceProvider
         Record::class => RecordPolicy::class,
         Account::class => AccountPolicy::class,
         User::class => UserPolicy::class,
+        Budget::class => BudgetPolicy::class,
     ];
 
     /**
