@@ -9,7 +9,7 @@
 <img src="https://github.com/budgetbee/budgetbee/raw/main/web/assets/images/logo_color_2.svg#gh-dark-mode-only" width="50%" />
 </p>
 
-BudgetBee is a personal budget system
+<h3 align="center">BudgetBee is a personal finance management system.</h3>
 
 ## Disclaimer
 
