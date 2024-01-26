@@ -1,5 +1,3 @@
-# BudgetBee
-
 [![Server Tests](https://github.com/budgetbee/budgetbee/actions/workflows/server-tests.yml/badge.svg)](https://github.com/budgetbee/budgetbee/actions/workflows/server-tests.yml)
 [![Build and Push Docker Image](https://github.com/budgetbee/budgetbee/actions/workflows/docker-build.yml/badge.svg)](https://github.com/budgetbee/budgetbee/actions/workflows/docker-build.yml)
 [![CodeFactor](https://www.codefactor.io/repository/github/budgetbee/budgetbee/badge)](https://www.codefactor.io/repository/github/budgetbee/budgetbee)
