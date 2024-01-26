@@ -48,7 +48,7 @@ docker exec budgetbee-webserver-1 php scripts/create_user.php <your_name> <your_
 | Create currencies                            | ✅    |
 | Add custom currencies                        |      |
 | Create/Edit Categories                       | ✅    |
-| Budgets by category                          |     |
+| Budgets by category                          | ✅    |
 | Create rules                                 |     |
 | Connect with banks                           |     |
 | Export banckup                               |     |
