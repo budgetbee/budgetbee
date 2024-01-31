@@ -1,12 +1,13 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use App\Models\User;
 use App\Models\UserCurrency;
 use App\Models\Types\Currency;
-use Illuminate\Support\Facades\Artisan;
+use Database\Seeders\CurrencySeeder;
+use Database\Seeders\DatabaseSeeder;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -17,9 +18,7 @@ return new class extends Migration
     {
         $users = User::all();
 
-        Artisan::call('db:seed', [
-            '--class' => 'Database\\Seeders\\CurrencySeeder',
-        ]);
+        (new DatabaseSeeder())->call(CurrencySeeder::class);
 
         sleep(5);
 
