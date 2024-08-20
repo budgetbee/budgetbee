@@ -13,5 +13,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(AccountTypesSeeder::class);
         $this->call(CurrencySeeder::class);
+        $this->call(RuleConditionTypesSeeder::class);
+        $this->call(RuleActionTypesSeeder::class);
     }
 }

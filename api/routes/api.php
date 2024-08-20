@@ -12,6 +12,9 @@ use App\Http\Controllers\ImportController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AiController;
+use App\Http\Controllers\RuleController;
+use App\Http\Controllers\RuleActionTypesController;
+use App\Http\Controllers\RuleConditionTypesController;
 
 
 /*
@@ -103,3 +106,19 @@ Route::prefix('ai')->middleware('auth:sanctum')->group(function () {
     Route::post('/predict-category', [AiController::class, 'predictCategoryRequest']);
 });
 
+Route::prefix('rule')->middleware('auth:sanctum')->group(function () {
+
+    Route::prefix('action')->group(function () {
+        Route::get('', [RuleActionTypesController::class, 'list']);
+    });
+
+    Route::prefix('condition')->group(function () {
+        Route::get('', [RuleConditionTypesController::class, 'list']);
+    });
+
+    Route::get('', [RuleController::class, 'getRules']);
+    Route::get('{id}', [RuleController::class, 'get']);
+    Route::post('', [RuleController::class, 'create']);
+    Route::post('{id}', [RuleController::class, 'update']);
+    Route::delete('{id}', [RuleController::class, 'delete']);
+});

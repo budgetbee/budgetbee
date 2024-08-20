@@ -307,7 +307,35 @@ const Endpoints = {
 
     predictCategory: async (text) => {
         return post('ai/predict-category', {name: text})
-    }
+    },
+
+    getRules: async () => {
+        return get('rule')
+    },
+
+    getRule: async (id) => {
+        return get(`rule/${id}`)
+    },
+
+    getRuleActionTypes: async () => {
+        return get(`rule/action`)
+    },
+
+    getRuleConditionTypes: async () => {
+        return get(`rule/condition`)
+    },
+
+    createRule: async (data) => {
+        return post('rule', data)
+    },
+
+    updateRule: async (rule_id, data) => {
+        return post(`rule/${rule_id}`, data)
+    },
+
+    deleteRule: async (rule_id) => {
+        return del(`rule/${rule_id}`)
+    },
 }
 
 export default Endpoints;

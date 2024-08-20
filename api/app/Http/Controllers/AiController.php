@@ -57,6 +57,11 @@ class AiController extends Controller
             'name' => $name
         ]]);
 
+        $rule = (new RuleController)->checkRules($name);
+        if ($rule) {
+            return $rule->getCategory();
+        }
+
         $process = new Process(['python3', '/var/www/html/app/Ai/train_and_predict.py', 'predict', $data]);
         $process->run();
 
