@@ -1,6 +1,6 @@
 {
   "name": "budgetbee",
-  "version": "0.7.0",
+  "version": "0.9.0",
   "private": true,
   "type": "module",
   "dependencies": {
@@ -8,12 +8,12 @@
     "@fortawesome/free-regular-svg-icons": "6.5.1",
     "@fortawesome/free-solid-svg-icons": "6.5.1",
     "@fortawesome/react-fontawesome": "0.2.0",
-    "@nextui-org/react": "2.2.9",
+    "@nextui-org/react": "2.4.6",
     "@testing-library/jest-dom": "6.2.0",
     "@testing-library/react": "14.1.2",
     "@testing-library/user-event": "14.5.2",
-    "@vitejs/plugin-react": "4.2.1",
-    "axios": "1.6.4",
+    "@vitejs/plugin-react": "4.3.1",
+    "axios": "1.7.4",
     "chart.js": "4.4.1",
     "font-awesome": "4.7.0",
     "framer-motion": "10.17.6",
@@ -29,7 +29,7 @@
     "serve": "14.2.1",
     "swiper": "11.0.5",
     "universal-cookie": "7.0.0",
-    "vite": "5.0.12",
+    "vite": "5.4.1",
     "vite-jsconfig-paths": "2.0.1",
     "web-vitals": "3.5.1"
   },
