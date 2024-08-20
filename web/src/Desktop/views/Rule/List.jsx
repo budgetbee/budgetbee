@@ -5,15 +5,11 @@ import Layout from "../../layout/Layout";
 import RuleFormButton from '../../../Components/Rule/RuleFormButton';
 
 export default function List() {
-    const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState([]);
 
     async function getRules() {
-        setIsLoading(true);
         const rules = await Api.getRules();
         setData(rules);
-        setIsLoading(false);
-        setIsUpdated(false);
     }
 
     useEffect(() => {
