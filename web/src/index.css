@@ -1,16 +1,15 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "./hero.ts";
+@custom-variant dark (&:where(.dark, .dark *));
 
-:root {
+@theme {
   --color-primary: #ffc857;
   --color-secundary: #4b3f72;
   --color-success: #3edc81;
   --color-danger: #db3a34;
   --color-default: #6B7280;
   --color-background: #1F2937;
-
-  --text-color-primary: #1F2937
+  --color-primary-foreground: #1F2937;
 }
 
 body {

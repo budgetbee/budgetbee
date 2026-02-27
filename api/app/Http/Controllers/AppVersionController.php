@@ -8,9 +8,21 @@ use Illuminate\Support\Facades\Cache;
 
 class AppVersionController extends Controller
 {
+    private function normalizeVersion(string $value): string
+    {
+        $normalized = trim($value);
+        $normalized = ltrim($normalized, 'vV');
+
+        return $normalized;
+    }
+
     public function get()
     {
         $version = config('app.version');
+        if ($version === 'I dont Know' || empty($version)) {
+            $version = env('APP_VERSION', '0.9.1');
+        }
+
         $repoOwner = 'budgetbee';
         $repoName = 'budgetbee';
         $cacheKey = 'latest_version';
@@ -38,9 +50,13 @@ class AppVersionController extends Controller
             }
         }
 
+        $normalizedCurrentVersion = $this->normalizeVersion((string) $version);
+        $normalizedLatestVersion = $this->normalizeVersion((string) $latestVersion);
+        $hasNewVersion = version_compare($normalizedCurrentVersion, $normalizedLatestVersion, '<');
+
         return response()->json([
             'version' => $version,
-            'new_version' => $version != $latestVersion,
+            'new_version' => $hasNewVersion,
             'latest_version' => $latestVersion
         ]);
     }

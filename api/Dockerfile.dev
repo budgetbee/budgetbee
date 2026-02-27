@@ -1,38 +1,45 @@
-FROM php:8.2-fpm-alpine3.17
+FROM php:8.5.3-fpm
+
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 
 # Install cron
-RUN apk add --no-cache dcron
+RUN apt-get update && apt-get install -y cron && rm -rf /var/lib/apt/lists/*
 
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Install gd and zip extensions
-RUN apk add --no-cache libpng-dev zlib-dev libzip-dev \
+RUN apt-get update && apt-get install -y libpng-dev zlib1g-dev libzip-dev \
     && docker-php-ext-install gd zip
 
 # Install other extensions
 RUN docker-php-ext-install mysqli pdo_mysql
 
 # Install memcached
-ENV MEMCACHED_DEPS zlib-dev libmemcached-dev cyrus-sasl-dev
-RUN apk add --no-cache --update libmemcached-libs zlib
+ENV MEMCACHED_DEPS="zlib1g-dev libmemcached-dev libsasl2-dev"
+RUN apt-get update && apt-get install -y libmemcached11 zlib1g && rm -rf /var/lib/apt/lists/*
 RUN set -xe \
-    && apk add --no-cache --update --virtual .phpize-deps $PHPIZE_DEPS \
-    && apk add --no-cache --update --virtual .memcached-deps $MEMCACHED_DEPS \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends $PHPIZE_DEPS $MEMCACHED_DEPS \
     && pecl install memcached \
     && echo "extension=memcached.so" > /usr/local/etc/php/conf.d/20_memcached.ini \
-    && rm -rf /usr/share/php7 \
     && rm -rf /tmp/* \
-    && apk del .memcached-deps .phpize-deps
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Python, pip, and build dependencies
-RUN apk add --no-cache python3 py3-pip python3-dev build-base \
-    && apk add --no-cache gcc g++ musl-dev libffi-dev make \
-    && apk add --no-cache openblas-dev lapack-dev \
-    && apk add --no-cache gfortran
+RUN apt-get update && apt-get install -y \
+    python3 python3-pip python3-dev python3-venv build-essential \
+    gcc g++ libffi-dev make \
+    libopenblas-dev liblapack-dev \
+    gfortran \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
-RUN pip3 install --no-cache-dir scikit-learn joblib
+# Install Python dependencies in an isolated virtualenv
+RUN python3 -m venv /opt/pyenv \
+    && /opt/pyenv/bin/pip install --no-cache-dir --upgrade pip \
+    && /opt/pyenv/bin/pip install --no-cache-dir scikit-learn joblib
+
+ENV PATH="/opt/pyenv/bin:${PATH}"
 
 # Set working directory
 WORKDIR /var/www/html

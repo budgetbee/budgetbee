@@ -3,7 +3,7 @@ import Api from "../../../Api/Endpoints";
 import SettingsLayout from "../../layout/SettingsLayout";
 import CurrencyCard from "./Components/CurrencyCard";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button } from "@nextui-org/react";
+import { Button } from "@heroui/react";
 
 export default function CurrencySettings() {
     const [userSettings, setUserSettings] = useState([]);
@@ -83,7 +83,7 @@ export default function CurrencySettings() {
                     <div className="w-fit">
                         <label
                             htmlFor="name"
-                            className="block mb-2 text-sm font-medium text-gray-900 text-white"
+                            className="block mb-2 text-sm font-medium text-white"
                         >
                             Base currency
                         </label>

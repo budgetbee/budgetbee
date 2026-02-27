@@ -88,7 +88,7 @@ export default function Form() {
                                     ></input>
                                     <label
                                         for="income"
-                                        className="inline-flex items-center justify-center w-full p-5 text-gray-400 bg-background border border-gray-200 rounded-lg cursor-pointer hover:text-gray-300 border-gray-700 peer-checked:text-green-400 peer-checked:border-green-400 peer-checked:text-green-400 hover:text-gray-600 hover:bg-gray-100 hover:bg-gray-700"
+                                        className="inline-flex items-center justify-center w-full p-5 text-gray-400 bg-background border border-gray-700 rounded-lg cursor-pointer peer-checked:text-green-400 peer-checked:border-green-400 hover:text-gray-600 hover:bg-gray-700"
                                     >
                                         <div className="block">
                                             <div className="w-full text-lg font-semibold">
@@ -112,7 +112,7 @@ export default function Form() {
                                     ></input>
                                     <label
                                         for="expense"
-                                        className="inline-flex items-center justify-center w-full p-5 text-gray-400 bg-background border border-gray-200 rounded-lg cursor-pointer hover:text-gray-300 border-gray-700 peer-checked:text-green-400 peer-checked:border-green-400 peer-checked:text-green-400 hover:text-gray-600 hover:bg-gray-100 hover:bg-gray-700"
+                                        className="inline-flex items-center justify-center w-full p-5 text-gray-400 bg-background border border-gray-700 rounded-lg cursor-pointer peer-checked:text-green-400 peer-checked:border-green-400 hover:text-gray-600 hover:bg-gray-700"
                                     >
                                         <div className="block">
                                             <div className="w-full text-lg font-semibold">
@@ -136,7 +136,7 @@ export default function Form() {
                                     ></input>
                                     <label
                                         for="transfer"
-                                        className="inline-flex items-center justify-center w-full p-5 text-gray-400 bg-background border border-gray-200 rounded-lg cursor-pointer hover:text-gray-300 border-gray-700 peer-checked:text-green-400 peer-checked:border-green-400 peer-checked:text-green-400 hover:text-gray-600 hover:bg-gray-100 hover:bg-gray-700"
+                                        className="inline-flex items-center justify-center w-full p-5 text-gray-400 bg-background border border-gray-700 rounded-lg cursor-pointer peer-checked:text-green-400 peer-checked:border-green-400 hover:text-gray-600 hover:bg-gray-700"
                                     >
                                         <div className="block">
                                             <div className="w-full text-lg font-semibold">
@@ -150,7 +150,7 @@ export default function Form() {
                             <div>
                                 <label
                                     for="from_account_id"
-                                    className="block mb-2 text-sm font-medium text-gray-900 text-white"
+                                    className="block mb-2 text-sm font-medium text-white"
                                 >
                                     Account
                                 </label>
@@ -182,7 +182,7 @@ export default function Form() {
                                         <div>
                                             <label
                                                 for="to_account_id"
-                                                className="block mb-2 text-sm font-medium text-gray-900 text-white"
+                                                className="block mb-2 text-sm font-medium text-white"
                                             >
                                                 To account
                                             </label>
@@ -220,7 +220,7 @@ export default function Form() {
                                                 <div>
                                                     <label
                                                         for="rate"
-                                                        className="block mb-2 text-sm font-medium text-gray-900 text-white"
+                                                        className="block mb-2 text-sm font-medium text-white"
                                                     >
                                                         Exchange rate{" "}
                                                         {accounts.length &&
@@ -282,7 +282,7 @@ export default function Form() {
                                     >
                                         <label
                                             for="date"
-                                            className="block mb-2 text-sm font-medium text-gray-900 text-white"
+                                            className="block mb-2 text-sm font-medium text-white"
                                         >
                                             Category
                                         </label>
@@ -300,7 +300,7 @@ export default function Form() {
                             <div>
                                 <label
                                     for="date"
-                                    className="block mb-2 text-sm font-medium text-gray-900 text-white"
+                                    className="block mb-2 text-sm font-medium text-white"
                                 >
                                     Date
                                 </label>
@@ -325,7 +325,7 @@ export default function Form() {
                             <div>
                                 <label
                                     for="name"
-                                    className="block mb-2 text-sm font-medium text-gray-900 text-white"
+                                    className="block mb-2 text-sm font-medium text-white"
                                 >
                                     Description
                                 </label>
@@ -343,7 +343,7 @@ export default function Form() {
                             <div>
                                 <label
                                     for="amount"
-                                    className="block mb-2 text-sm font-medium text-gray-900 text-white"
+                                    className="block mb-2 text-sm font-medium text-white"
                                 >
                                     Amount
                                 </label>
@@ -362,7 +362,7 @@ export default function Form() {
                             <div className="flex flex-row gap-x-3">
                                 <button
                                     type="submit"
-                                    className="grow flex flex-row px-5 text-xl font-bold py-3 gap-x-5 bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 focus:ring-green-800 shadow-lg shadow-green-500/50 shadow-lg shadow-green-800/80 rounded-full justify-center cursor-pointer items-center transition"
+                                    className="grow flex flex-row px-5 text-xl font-bold py-3 gap-x-5 bg-linear-to-r from-green-400 via-green-500 to-green-600 hover:bg-linear-to-br focus:ring-4 focus:outline-none focus:ring-green-800 shadow-lg shadow-green-800/80 rounded-full justify-center cursor-pointer items-center transition"
                                 >
                                     <FontAwesomeIcon icon="fa-solid fa-check" />
                                     Save
@@ -371,7 +371,7 @@ export default function Form() {
                                     <button
                                         type="button"
                                         onClick={handleDeleteRecord}
-                                        className="basis-1/12 flex flex-row px-5 text-xl font-bold py-3 gap-x-5 bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 focus:ring-red-800 shadow-lg shadow-red-500/50 shadow-lg shadow-red-800/80 rounded-xl justify-center cursor-pointer items-center transition"
+                                        className="basis-1/12 flex flex-row px-5 text-xl font-bold py-3 gap-x-5 bg-linear-to-r from-red-400 via-red-500 to-red-600 hover:bg-linear-to-br focus:ring-4 focus:outline-none focus:ring-red-800 shadow-lg shadow-red-800/80 rounded-xl justify-center cursor-pointer items-center transition"
                                     >
                                         <FontAwesomeIcon icon="fa-solid fa-trash" />
                                     </button>

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+
 ask() {
 	while true ; do
 		if [[ -z $3 ]] ; then
@@ -79,6 +81,9 @@ if ! docker stats --no-stream &> /dev/null ; then
 fi
 
 default_time_zone=$(timedatectl show -p Timezone --value)
+if [[ -z $default_time_zone ]]; then
+	default_time_zone="UTC"
+fi
 
 set -e
 
@@ -99,13 +104,16 @@ echo ""
 
 IP=$(hostname -I | awk '{print $1}')
 ask "ip" "$IP"
-IP=$IP
+IP=$ask_result
 
 ask "Web App Port" "8895"
 APP_PORT=$ask_result
 
 ask "Api Port" "8085"
 API_PORT=$ask_result
+
+ask "MySQL Port" "3306"
+DB_PORT=$ask_result
 
 echo ""
 echo "BudgetBee requires the current time zone."
@@ -125,7 +133,7 @@ echo "You will need this folder whenever you want to start, stop, update or "
 echo "maintain your budgetbee instance."
 echo ""
 
-ask "Target folder" "$(pwd)/budgetbee"
+ask "Target folder" "$(pwd)"
 TARGET_FOLDER=$ask_result
 
 echo ""
@@ -174,6 +182,65 @@ ask "Email" "$USERNAME@localhost"
 EMAIL=$ask_result
 
 echo ""
+echo "4. Database credentials"
+echo "======================="
+echo ""
+echo "These are MySQL credentials used by the application to connect to the DB."
+echo ""
+
+ask "Database name" "budgetbee"
+DB_DATABASE=$ask_result
+
+ask "Database user" "$(whoami)"
+DB_USERNAME=$ask_result
+
+ask "Generate random DB passwords?" "y" "y n"
+GENERATE_RANDOM_DB_PASSWORDS=$ask_result
+
+if [[ "$GENERATE_RANDOM_DB_PASSWORDS" == "y" ]] ; then
+	DB_PASSWORD=$(tr --delete --complement 'a-zA-Z0-9' < /dev/urandom 2>/dev/null | head --bytes 64)
+	DB_ROOT_PASSWORD=$(tr --delete --complement 'a-zA-Z0-9' < /dev/urandom 2>/dev/null | head --bytes 64)
+else
+	while true; do
+		read -r -sp "database user password: " DB_PASSWORD
+		echo ""
+
+		if [[ -z $DB_PASSWORD ]] ; then
+			echo "Database user password cannot be empty."
+			continue
+		fi
+
+		read -r -sp "database user password (again): " DB_PASSWORD_REPEAT
+		echo ""
+
+		if [[ ! "$DB_PASSWORD" == "$DB_PASSWORD_REPEAT" ]] ; then
+			echo "Passwords did not match"
+		else
+			break
+		fi
+	done
+
+	while true; do
+		read -r -sp "database root password: " DB_ROOT_PASSWORD
+		echo ""
+
+		if [[ -z $DB_ROOT_PASSWORD ]] ; then
+			echo "Database root password cannot be empty."
+			continue
+		fi
+
+		read -r -sp "database root password (again): " DB_ROOT_PASSWORD_REPEAT
+		echo ""
+
+		if [[ ! "$DB_ROOT_PASSWORD" == "$DB_ROOT_PASSWORD_REPEAT" ]] ; then
+			echo "Passwords did not match"
+		else
+			break
+		fi
+	done
+fi
+
+echo ""
 echo "Summary"
 echo "======="
 echo ""
@@ -188,9 +255,18 @@ echo ""
 echo "Target folder: $TARGET_FOLDER"
 echo "Web port: $APP_PORT"
 echo "Api port: $API_PORT"
+echo "MySQL port: $DB_PORT"
 echo "Timezone: $TIME_ZONE"
 echo "budgetbee username: $USERNAME"
 echo "budgetbee email: $EMAIL"
+echo "Database name: $DB_DATABASE"
+echo "Database user: $DB_USERNAME"
+
+if [[ "$GENERATE_RANDOM_DB_PASSWORDS" == "y" ]] ; then
+	echo "Database passwords: generated automatically"
+else
+	echo "Database passwords: provided manually"
+fi
 
 echo ""
 read -r -p "Press any key to install."
@@ -203,22 +279,41 @@ mkdir -p "$TARGET_FOLDER"
 
 cd "$TARGET_FOLDER"
 
-wget "https://raw.githubusercontent.com/budgetbee/budgetbee/main/docker/docker-compose.yml" -O docker-compose.yml
-wget "https://raw.githubusercontent.com/budgetbee/budgetbee/main/docker/.env.example" -O .env
-wget "https://raw.githubusercontent.com/budgetbee/budgetbee/main/docker/nginx/nginx.conf" -O default.conf
+if [[ -f "$SCRIPT_DIR/docker/docker-compose.yml" && -f "$SCRIPT_DIR/docker/.env.example" && -f "$SCRIPT_DIR/docker/default.conf" ]]; then
+	cp "$SCRIPT_DIR/docker/docker-compose.yml" docker-compose.yml
+	cp "$SCRIPT_DIR/docker/.env.example" .env
+	cp "$SCRIPT_DIR/docker/default.conf" default.conf
+else
+	wget "https://raw.githubusercontent.com/TheFatPanda-Dev/budgetbee/main/docker/docker-compose.yml" -O docker-compose.yml
+	wget "https://raw.githubusercontent.com/TheFatPanda-Dev/budgetbee/main/docker/.env.example" -O .env
+	wget "https://raw.githubusercontent.com/TheFatPanda-Dev/budgetbee/main/docker/default.conf" -O default.conf
+fi
+
+if [[ -d "$SCRIPT_DIR/api" && -d "$SCRIPT_DIR/web" ]]; then
+	sed -i "s#context: ../api#context: $SCRIPT_DIR/api#g" docker-compose.yml
+	sed -i "s#context: ../web#context: $SCRIPT_DIR/web#g" docker-compose.yml
+fi
 
 SECRET_KEY=$(tr --delete --complement 'a-zA-Z0-9' < /dev/urandom 2>/dev/null | head --bytes 64)
-DB_PASSWORD=$(tr --delete --complement 'a-zA-Z0-9' < /dev/urandom 2>/dev/null | head --bytes 64)
-DB_ROOT_PASSWORD=$(tr --delete --complement 'a-zA-Z0-9' < /dev/urandom 2>/dev/null | head --bytes 64)
-
-DB_PASSWORD="password"
-DB_ROOT_PASSWORD="root_password"
 
 sed -i "s/HOST=localhost/HOST=$IP/g" .env
+if grep -q "^DB_HOST=" .env ; then
+	sed -i "s#^DB_HOST=.*#DB_HOST=mysql#g" .env
+else
+	echo "DB_HOST=mysql" >> .env
+fi
+sed -i "s/DB_DATABASE=budgetbee/DB_DATABASE=$DB_DATABASE/g" .env
+sed -i "s/DB_USERNAME=user/DB_USERNAME=$DB_USERNAME/g" .env
 sed -i "s/DB_PASSWORD=password/DB_PASSWORD=$DB_PASSWORD/g" .env
 sed -i "s/DB_ROOT_PASSWORD=root_password/DB_ROOT_PASSWORD=$DB_ROOT_PASSWORD/g" .env
 sed -i "s/APP_PORT=8895/APP_PORT=$APP_PORT/g" .env
 sed -i "s/API_PORT=8085/API_PORT=$API_PORT/g" .env
+
+if grep -q "^DB_PORT=" .env ; then
+	sed -i "s/DB_PORT=.*/DB_PORT=$DB_PORT/g" .env
+else
+	echo "DB_PORT=$DB_PORT" >> .env
+fi
 
 # If the database folder was provided (not blank), replace the pgdata/db_data volume with a bind mount# of the provided folder
 if [[ -n $DATABASE_FOLDER ]] ; then
@@ -239,7 +334,7 @@ fi
 ${DOCKER_COMPOSE_CMD} pull
 
 echo "Starting DB first for initilzation"
-${DOCKER_COMPOSE_CMD} up --detach db
+${DOCKER_COMPOSE_CMD} up --detach mysql
 # hopefully enough time for even the slower systems
 sleep 15
 
@@ -248,4 +343,61 @@ ${DOCKER_COMPOSE_CMD} stop
 
 ${DOCKER_COMPOSE_CMD} up --detach
 
-${DOCKER_COMPOSE_CMD} run --rm php php scripts/create_user.php $USERNAME $EMAIL $PASSWORD
+echo "Waiting for all services to be up before creating the user..."
+MAX_SERVICE_RETRIES=60
+SERVICE_RETRY_DELAY=3
+SERVICE_ATTEMPT=1
+
+while true ; do
+	total_services=$(${DOCKER_COMPOSE_CMD} ps --services 2>/dev/null | wc -l)
+	running_services=$(${DOCKER_COMPOSE_CMD} ps --services --filter status=running 2>/dev/null | wc -l)
+	db_healthy=$(${DOCKER_COMPOSE_CMD} ps mysql 2>/dev/null | grep -c "healthy" || true)
+
+	if [[ "$total_services" -gt 0 && "$running_services" -eq "$total_services" && "$db_healthy" -gt 0 ]] ; then
+		echo "All services are up and database is healthy."
+		break
+	fi
+
+	if [[ $SERVICE_ATTEMPT -ge $MAX_SERVICE_RETRIES ]] ; then
+		echo "ERROR: Services did not become ready in time."
+		${DOCKER_COMPOSE_CMD} ps
+		exit 1
+	fi
+
+	echo "Service readiness check ${SERVICE_ATTEMPT}/${MAX_SERVICE_RETRIES} not ready yet. Retrying in ${SERVICE_RETRY_DELAY}s..."
+	SERVICE_ATTEMPT=$((SERVICE_ATTEMPT + 1))
+	sleep $SERVICE_RETRY_DELAY
+done
+
+echo "Waiting for webserver and database initialization before creating the user..."
+MAX_RETRIES=30
+RETRY_DELAY=3
+ATTEMPT=1
+
+while true ; do
+	create_user_output=$(${DOCKER_COMPOSE_CMD} exec -T webserver php scripts/create_user.php "$USERNAME" "$EMAIL" "$PASSWORD" 2>&1)
+	create_user_exit=$?
+
+	if [[ $create_user_exit -eq 0 ]] ; then
+		echo "Initial user created successfully."
+		break
+	fi
+
+	echo "$create_user_output"
+
+	if echo "$create_user_output" | grep -qi "email has already been taken" ; then
+		echo "Initial user already exists. Continuing installation."
+		break
+	fi
+
+	if [[ $ATTEMPT -ge $MAX_RETRIES ]] ; then
+		echo "ERROR: Could not create initial user after ${MAX_RETRIES} attempts."
+		echo "You can create it manually later with:"
+		echo "${DOCKER_COMPOSE_CMD} exec -T webserver php scripts/create_user.php \"$USERNAME\" \"$EMAIL\" \"<password>\""
+		exit 1
+	fi
+
+	echo "User creation attempt ${ATTEMPT}/${MAX_RETRIES} failed. Retrying in ${RETRY_DELAY}s..."
+	ATTEMPT=$((ATTEMPT + 1))
+	sleep $RETRY_DELAY
+done

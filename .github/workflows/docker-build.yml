@@ -22,7 +22,7 @@ jobs:
 
     - name: Build the Docker image
       run: |
-        docker build -t ghcr.io/budgetbee/budgetbee/proxy:${{ github.event.release.tag_name }} ./docker/nginx
+        docker build -t ghcr.io/budgetbee/budgetbee/proxy:${{ github.event.release.tag_name }} -f ./docker/proxy.Dockerfile .
         docker build -t ghcr.io/budgetbee/budgetbee/api:${{ github.event.release.tag_name }} ./api
         docker build -t ghcr.io/budgetbee/budgetbee/web:${{ github.event.release.tag_name }} ./web
         if [[ "${{ steps.determine-tag-prefix.outputs.tag_prefix }}" == "true" ]]; then

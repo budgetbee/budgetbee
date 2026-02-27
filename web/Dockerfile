@@ -1,17 +1,17 @@
-# Use the official Node.js image as the base
-FROM node:21-slim
+# Use a minimal, frequently patched Node.js image as the base
+FROM cgr.dev/chainguard/node:latest-dev
 
 # Set the working directory inside the container
 WORKDIR /var/www/html
 
 # Copy package.json and package-lock.json to the container
-COPY package*.json ./
+COPY --chown=node:node package*.json ./
 
 # Install dependencies
 RUN npm install
 
 # Copy the rest of the application code
-COPY . .
+COPY --chown=node:node . .
 
 # Ensure all dependencies are built correctly
 RUN npm rebuild
@@ -23,4 +23,5 @@ EXPOSE 3000
 RUN npm run build
 
 # Start the app
-CMD ["npm", "run", "start"]
+ENTRYPOINT ["npm"]
+CMD ["run", "start"]

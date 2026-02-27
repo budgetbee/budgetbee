@@ -2,7 +2,7 @@ import React from "react";
 import numeral from "numeral";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import BudgetFormButton from "./BudgetFormButton";
-import { Progress } from "@nextui-org/react";
+import { Progress } from "@heroui/react";
 
 export default function BudgetCard({ budget, setReload }) {
 

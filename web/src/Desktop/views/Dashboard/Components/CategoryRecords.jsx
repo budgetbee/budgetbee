@@ -5,7 +5,7 @@ import {
     ModalContent,
     ModalBody,
     useDisclosure
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Api from "../../../../Api/Endpoints";
 import RecordCard from "../../../Components/Record/Card";

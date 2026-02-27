@@ -7,7 +7,7 @@ import {
     ModalFooter,
     Button,
     useDisclosure,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import Dropzone from "./Dropzone";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Api from "../../../Api/Endpoints";
@@ -48,8 +48,8 @@ export default function ImportModal() {
     return (
         <>
             <Button
-                onPress={onOpen} 
-                color="primary" 
+                onPress={onOpen}
+                color="primary"
                 className="w-full"
                 startContent={
                     <FontAwesomeIcon icon="fa-solid fa-cloud-arrow-up" />

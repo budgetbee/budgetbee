@@ -69,14 +69,11 @@ export default function DatesSelect({ setDates }) {
                         <select
                             className="bg-black w-full"
                             onChange={handleSetDates}
+                            value={fromDate}
                         >
                             {Object.entries(dates).map(([key, value]) => {
                                 return (
-                                    <option
-                                        key={key}
-                                        value={value}
-                                        selected={key === dateName}
-                                    >
+                                    <option key={key} value={value}>
                                         {key}
                                     </option>
                                 );

@@ -29,19 +29,35 @@ BudgetBee is installed via docker-compose, if you want to do an installation fro
 
 ## Important
 
-Wait around 30 seconds after all containers are up to execute the create user command
+If you install BudgetBee with `install.sh`, the initial user is created automatically from the credentials entered during installation.
 
-To create a user, run this command from your local machine, substituting the values with the ones you want
+If the automatic user creation fails, or if you need to create additional users manually, wait around 30 seconds after all containers are up and run:
 
 ```bash
 docker exec budgetbee-webserver-1 php scripts/create_user.php <your_name> <your_email> <your_password>
+```
+
+### Troubleshooting install
+
+If `install.sh` cannot create the initial user immediately, it retries automatically (`30` attempts, `3` seconds apart) while the API and DB finish initialization.
+
+If retries are exhausted, you will see:
+
+```text
+ERROR: Could not create initial user after 30 attempts.
+```
+
+Then run the fallback command from the target folder used by `install.sh`:
+
+```bash
+docker compose run --rm webserver php scripts/create_user.php <your_name> <your_email> <your_password>
 ```
 
 ## Roadmap
 
 | Features                                     | Done |
 | -------------------------------------------- | ------ |
-| Import records Excel/Json                      | ✅    | 
+| Import records Excel/Json                      | ✅    |
 | Create multiple users                        | ✅    |
 | Create currencies                            | ✅    |
 | Add custom currencies                        |      |

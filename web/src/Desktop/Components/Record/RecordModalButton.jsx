@@ -1,9 +1,9 @@
 import React from "react";
 import {
     Button,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useDisclosure } from "@nextui-org/react";
+import { useDisclosure } from "@heroui/react";
 import FormModal from "./FormModal";
 
 export default function RecordModalButton() {

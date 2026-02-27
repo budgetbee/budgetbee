@@ -68,7 +68,7 @@ export default function Form() {
                     <div className="mb-6">
                         <label
                             htmlFor="name"
-                            className="block mb-2 text-sm font-medium text-gray-900 text-white"
+                            className="block mb-2 text-sm font-medium text-white"
                         >
                             Account name
                         </label>
@@ -85,7 +85,7 @@ export default function Form() {
                     <div className="mb-6">
                         <label
                             htmlFor="type_id"
-                            className="block mb-2 text-sm font-medium text-gray-900 text-white"
+                            className="block mb-2 text-sm font-medium text-white"
                         >
                             Account type
                         </label>
@@ -93,6 +93,7 @@ export default function Form() {
                             name="type_id"
                             id="type_id"
                             required="required"
+                            defaultValue={account?.type_id ?? ""}
                             className="block w-full px-4 py-4 text-base text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
                         >
                             {accountTypes.map((acc, index) => {
@@ -101,7 +102,6 @@ export default function Form() {
                                         key={index}
                                         className="text-black"
                                         value={acc.id}
-                                        selected={acc.id === account?.type_id}
                                     >
                                         {acc.name}
                                     </option>
@@ -113,7 +113,7 @@ export default function Form() {
                     <div className="mb-6">
                         <label
                             htmlFor="currency_id"
-                            className="block mb-2 text-sm font-medium text-gray-900 text-white"
+                            className="block mb-2 text-sm font-medium text-white"
                         >
                             Currency
                         </label>
@@ -121,6 +121,7 @@ export default function Form() {
                             name="currency_id"
                             id="currency_id"
                             required="required"
+                            defaultValue={account?.currency_id ?? ""}
                             className="block w-full px-4 py-4 text-base text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
                         >
                             {currencies.map((currency, index) => {
@@ -129,9 +130,6 @@ export default function Form() {
                                         key={index}
                                         className="text-black"
                                         value={currency.id}
-                                        selected={
-                                            currency.id === account?.currency_id
-                                        }
                                     >
                                         {currency.name} {currency.symbol} (
                                         {currency.code})
@@ -144,7 +142,7 @@ export default function Form() {
                     <div className="mb-6">
                         <label
                             htmlFor="initial_balance"
-                            className="block mb-2 text-sm font-medium text-gray-900 text-white"
+                            className="block mb-2 text-sm font-medium text-white"
                         >
                             Initial balance
                         </label>
@@ -162,7 +160,7 @@ export default function Form() {
                     <div className="mb-6">
                         <label
                             htmlFor="color"
-                            className="block mb-2 text-sm font-medium text-gray-900 text-white"
+                            className="block mb-2 text-sm font-medium text-white"
                         >
                             Color
                         </label>

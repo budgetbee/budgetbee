@@ -14,7 +14,7 @@ import {
     Input,
     Button,
     Textarea,
-} from "@nextui-org/react";
+} from "@heroui/react";
 
 export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain, setIsRemoved }) {
     const [accounts, setAccounts] = useState([]);
@@ -69,12 +69,12 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
     const handleConceptChange = (e) => {
         const value = e.target.value;
         setName(value);
-    
+
         // Clear the previous timeout if it exists
         if (debounceTimeout.current) {
             clearTimeout(debounceTimeout.current);
         }
-    
+
         // Set a new timeout to call the API after 1 second
         debounceTimeout.current = setTimeout(async () => {
             const predict = await Api.predictCategory(value);

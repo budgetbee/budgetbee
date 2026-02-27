@@ -3,7 +3,7 @@ import numeral from "numeral";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Api from "../../../Api/Endpoints";
 import BudgetFormButton from "./BudgetFormButton";
-import { Progress } from "@nextui-org/react";
+import { Progress } from "@heroui/react";
 
 export default function BudgetList( {forceReload}) {
     const [budgets, setBudgets] = useState([]);

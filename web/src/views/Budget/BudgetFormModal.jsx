@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Api from "../../Api/Endpoints";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Input, Select, SelectItem } from "@nextui-org/react";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Input, Select, SelectItem } from "@heroui/react";
 
 export default function BudgetFormModal({ isOpen, onOpenChange, budget, setIsUpdated }) {
     const [isLoading, setIsLoading] = useState(true);
@@ -74,7 +74,7 @@ export default function BudgetFormModal({ isOpen, onOpenChange, budget, setIsUpd
     }
 
     return (
-        <Modal isOpen={isOpen} 
+        <Modal isOpen={isOpen}
             onOpenChange={onOpenChange}
             className="w-11/12"
             placement="center">
@@ -83,7 +83,7 @@ export default function BudgetFormModal({ isOpen, onOpenChange, budget, setIsUpd
                     <>
                         <ModalHeader className="flex flex-col gap-1 text-white/90">{title}</ModalHeader>
                         <ModalBody>
-                            <form onSubmit={handleSaveForm} ref={formRef} id="budgetForm" className="block flex flex-col gap-y-2">
+                            <form onSubmit={handleSaveForm} ref={formRef} id="budgetForm" className="flex flex-col gap-y-2">
                                 <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
                                     <Input name="amount" type="number" step="any" label="Amount/Month" color="secundary" value={amount} onChange={(e) => setAmount(e.target.value)} />
                                 </div>

@@ -1,29 +1,49 @@
 import * as React from "react";
 import { BrowserRouter } from "react-router-dom";
-import { NextUIProvider } from "@nextui-org/react";
+import { HeroUIProvider } from "@heroui/system";
 import "./App.css";
 
 import AppRoutes from "./AppRoutes";
 
 // Icons
 import { library } from "@fortawesome/fontawesome-svg-core";
-import * as Icons from "@fortawesome/free-solid-svg-icons";
+import {
+    faArrowRight,
+    faArrowRightFromBracket,
+    faCaretDown,
+    faCaretUp,
+    faCheck,
+    faCloudArrowUp,
+    faCoins,
+    faPenToSquare,
+    faPlus,
+    faTrash,
+    faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 
-const iconList = Object.keys(Icons)
-    .filter((key) => key !== "fas" && key !== "prefix")
-    .map((icon) => Icons[icon]);
-
-library.add(...iconList);
+library.add(
+    faArrowRight,
+    faArrowRightFromBracket,
+    faCaretDown,
+    faCaretUp,
+    faCheck,
+    faCloudArrowUp,
+    faCoins,
+    faPenToSquare,
+    faPlus,
+    faTrash,
+    faXmark,
+);
 
 function App() {
     return (
-        <NextUIProvider>
+        <HeroUIProvider>
             <div className="App select-none">
                 <BrowserRouter>
                     <AppRoutes />
                 </BrowserRouter>
             </div>
-        </NextUIProvider>
+        </HeroUIProvider>
     );
 }
 

@@ -1,7 +1,10 @@
-version: '3.8'
 services:
   nginx:
-    build: ../docker/nginx
+    build:
+      context: ..
+      dockerfile_inline: |
+        FROM nginx:1.25.1-alpine3.17-slim
+        COPY default.conf /etc/nginx/conf.d/default.conf
     command: nginx -g "daemon off;"
     ports:
       - "${APP_PORT}:80"
@@ -12,7 +15,7 @@ services:
     networks:
       - skynet
   webserver:
-    build: 
+    build:
       context: ../api
       dockerfile: ../api/Dockerfile.dev
     volumes:
@@ -35,7 +38,6 @@ services:
       - skynet_back
   web:
     build:
-      context: ../web
       dockerfile: Dockerfile.dev
     volumes:
       - ../web:/var/www/html
@@ -44,7 +46,7 @@ services:
     networks:
       - skynet
   db:
-    image: mysql:8.2.0
+    image: mysql:latest
     ports:
       - "${DB_PORT}:3306"
     environment:

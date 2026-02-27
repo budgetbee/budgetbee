@@ -4,7 +4,7 @@ import moment from "moment";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Api from "../../../Api/Endpoints";
 import FormModal from "./FormModal";
-import { useDisclosure } from "@nextui-org/react";
+import { useDisclosure } from "@heroui/react";
 
 export default function Card({ record, showName }) {
     const [recordData, setRecordData] = useState(record);

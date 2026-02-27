@@ -8,7 +8,7 @@ import {
     Button,
     useDisclosure,
     Input,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import Api from "../../../Api/Endpoints";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyCard from "./CurrencyCard";
@@ -93,7 +93,7 @@ export default function BaseSettings() {
                                     name="currency_id"
                                     id="currency_id"
                                     required={true}
-                                    className="relative w-full inline-flex shadow-sm px-3 border-medium border-default-200 data-[hover=true]:border-default-400 group-data-[focus=true]:border-foreground min-h-unit-10 rounded-medium flex-col items-start justify-center gap-0 transition-background !duration-150 transition-colors motion-reduce:transition-none h-14 py-2"
+                                    className="relative w-full inline-flex shadow-sm px-3 border-medium border-default-200 data-[hover=true]:border-default-400 group-data-[focus=true]:border-foreground min-h-unit-10 rounded-medium flex-col items-start justify-center gap-0 transition-colors duration-150! motion-reduce:transition-none h-14 py-2"
                                 >
                                     {currencies.map((currency, index) => {
                                         return (
@@ -165,7 +165,7 @@ export default function BaseSettings() {
                         <div className="w-full">
                             <label
                                 htmlFor="name"
-                                className="block mb-2 text-sm font-medium text-gray-900 text-white"
+                                className="block mb-2 text-sm font-medium text-white"
                             >
                                 Base currency
                             </label>

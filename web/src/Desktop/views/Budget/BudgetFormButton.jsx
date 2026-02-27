@@ -1,7 +1,7 @@
 import React from "react";
 import FormModal from "./BudgetFormModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, useDisclosure } from "@nextui-org/react";
+import { Button, useDisclosure } from "@heroui/react";
 
 export default function BudgetFormButton({ budget, setIsUpdated }) {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();

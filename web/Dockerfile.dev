@@ -1,17 +1,18 @@
-FROM node:21-slim 
+FROM cgr.dev/chainguard/node:latest-dev
 
-# Set the working directory inside the container 
-WORKDIR /var/www/html 
+# Set the working directory inside the container
+WORKDIR /var/www/html
 
-# Copy package.json and package-lock.json to the container 
-COPY package*.json ./ 
+# Copy package.json and package-lock.json to the container
+COPY --chown=node:node package*.json ./
 
-# Install dependencies 
-RUN npm ci 
+# Install dependencies
+RUN npm ci
 
-# Expose the port the app will run on 
-EXPOSE 3000 
+# Expose the port the app will run on
+EXPOSE 3000
 
-# Start the app in development mode 
-CMD ["npm", "run", "start"].
+# Start the app in development mode
+ENTRYPOINT ["npm"]
+CMD ["run", "start"]
 
