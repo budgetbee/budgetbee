@@ -27,6 +27,8 @@ class ExternalApiTest extends TestCase
 
         $this->user = User::factory()->create(['password' => 'UserTest123']);
 
+        $this->actingAs($this->user);
+
         $this->userCurrency = UserCurrency::factory()->create(['user_id' => $this->user->id]);
         $this->account = Account::factory()->create([
             'user_id' => $this->user->id,
@@ -315,7 +317,9 @@ class ExternalApiTest extends TestCase
     public function testCannotAccessOtherUserRecords(): void
     {
         $otherUser = User::factory()->create(['password' => 'UserTest123']);
+        $this->actingAs($otherUser);
         $otherCurrency = UserCurrency::factory()->create(['user_id' => $otherUser->id]);
+        $this->actingAs($this->user);
         $otherAccount = Account::factory()->create([
             'user_id' => $otherUser->id,
             'currency_id' => $otherCurrency->id,
