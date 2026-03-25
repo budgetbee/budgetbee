@@ -12,6 +12,8 @@ use App\Http\Controllers\ImportController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AiController;
+use App\Http\Controllers\ApiKeyController;
+use App\Http\Controllers\ExternalApiController;
 
 
 /*
@@ -101,5 +103,32 @@ Route::prefix('budget')->middleware('auth:sanctum')->group(function () {
 
 Route::prefix('ai')->middleware('auth:sanctum')->group(function () {
     Route::post('/predict-category', [AiController::class, 'predictCategoryRequest']);
+});
+
+Route::prefix('api-keys')->middleware('auth:sanctum')->group(function () {
+    Route::get('', [ApiKeyController::class, 'index']);
+    Route::post('', [ApiKeyController::class, 'store']);
+    Route::delete('{id}', [ApiKeyController::class, 'destroy']);
+});
+
+Route::prefix('v1/external')->middleware('auth.apikey')->group(function () {
+    // Records CRUD
+    Route::get('records', [ExternalApiController::class, 'getRecords']);
+    Route::get('records/{id}', [ExternalApiController::class, 'getRecord']);
+    Route::post('records', [ExternalApiController::class, 'createRecord']);
+    Route::put('records/{id}', [ExternalApiController::class, 'updateRecord']);
+    Route::delete('records/{id}', [ExternalApiController::class, 'deleteRecord']);
+
+    // Accounts (read-only)
+    Route::get('accounts', [ExternalApiController::class, 'getAccounts']);
+    Route::get('accounts/{id}', [ExternalApiController::class, 'getAccount']);
+    Route::get('account-types', [ExternalApiController::class, 'getAccountTypes']);
+
+    // Categories (read-only)
+    Route::get('categories', [ExternalApiController::class, 'getCategories']);
+    Route::get('categories/{id}', [ExternalApiController::class, 'getCategory']);
+    Route::get('parent-categories', [ExternalApiController::class, 'getParentCategories']);
+    Route::get('parent-categories/{id}', [ExternalApiController::class, 'getParentCategory']);
+    Route::get('parent-categories/{id}/categories', [ExternalApiController::class, 'getCategoriesByParent']);
 });
 
