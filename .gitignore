@@ -1,1 +1,4 @@
 .env
+web/node_modules/
+web/dist/
+api/vendor/

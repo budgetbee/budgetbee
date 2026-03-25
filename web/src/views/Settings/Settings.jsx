@@ -2,6 +2,7 @@ import React from "react";
 
 import UserList from "./Components/UserList";
 import BaseSettings from "./Components/BaseSettings";
+import ApiKeySettings from "./Components/ApiKeySettings";
 import TopNav from "../../layout/TopNav";
 
 export default function Settings() {
@@ -10,6 +11,7 @@ export default function Settings() {
             <TopNav menu={true} />
             <UserList />
             <BaseSettings />
+            <ApiKeySettings />
         </div>
     );
 }

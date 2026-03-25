@@ -307,7 +307,19 @@ const Endpoints = {
 
     predictCategory: async (text) => {
         return post('ai/predict-category', {name: text})
-    }
+    },
+
+    getApiKeys: async () => {
+        return get('api-keys');
+    },
+
+    createApiKey: async (data) => {
+        return post('api-keys', data);
+    },
+
+    deleteApiKey: async (id) => {
+        return del(`api-keys/${id}`);
+    },
 }
 
 export default Endpoints;
