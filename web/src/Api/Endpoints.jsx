@@ -320,6 +320,26 @@ const Endpoints = {
     deleteApiKey: async (id) => {
         return del(`api-keys/${id}`);
     },
+
+    getAllUpcomingExpenses: async () => {
+        return get('upcoming-expenses');
+    },
+
+    getUpcomingExpense: async (id) => {
+        return get(`upcoming-expenses/${id}`);
+    },
+
+    createUpcomingExpense: async (data) => {
+        return post('upcoming-expenses', data);
+    },
+
+    updateUpcomingExpense: async (data, id) => {
+        return post(`upcoming-expenses/${id}`, data);
+    },
+
+    deleteUpcomingExpense: async (id) => {
+        return del(`upcoming-expenses/${id}`);
+    },
 }
 
 export default Endpoints;

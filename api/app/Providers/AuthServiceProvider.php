@@ -7,10 +7,12 @@ use App\Models\User;
 use App\Models\Budget;
 use App\Models\Record;
 use App\Models\Account;
+use App\Models\UpcomingExpense;
 use App\Policies\UserPolicy;
 use App\Policies\BudgetPolicy;
 use App\Policies\RecordPolicy;
 use App\Policies\AccountPolicy;
+use App\Policies\UpcomingExpensePolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -25,6 +27,7 @@ class AuthServiceProvider extends ServiceProvider
         Account::class => AccountPolicy::class,
         User::class => UserPolicy::class,
         Budget::class => BudgetPolicy::class,
+        UpcomingExpense::class => UpcomingExpensePolicy::class,
     ];
 
     /**

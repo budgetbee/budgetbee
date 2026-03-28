@@ -14,6 +14,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\AiController;
 use App\Http\Controllers\ApiKeyController;
 use App\Http\Controllers\ExternalApiController;
+use App\Http\Controllers\UpcomingExpenseController;
 
 
 /*
@@ -109,6 +110,14 @@ Route::prefix('api-keys')->middleware('auth:sanctum')->group(function () {
     Route::get('', [ApiKeyController::class, 'index']);
     Route::post('', [ApiKeyController::class, 'store']);
     Route::delete('{id}', [ApiKeyController::class, 'destroy']);
+});
+
+Route::prefix('upcoming-expenses')->middleware('auth:sanctum')->group(function () {
+    Route::get('', [UpcomingExpenseController::class, 'getAll']);
+    Route::get('{id}', [UpcomingExpenseController::class, 'getById']);
+    Route::post('', [UpcomingExpenseController::class, 'create']);
+    Route::post('{id}', [UpcomingExpenseController::class, 'update']);
+    Route::delete('{id}', [UpcomingExpenseController::class, 'delete']);
 });
 
 Route::prefix('v1/external')->middleware('auth.apikey')->group(function () {
