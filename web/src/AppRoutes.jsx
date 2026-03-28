@@ -12,6 +12,7 @@ import CategoryForm from "./views/Category/Form";
 import CategoryList from "./views/Category/List";
 import Settings from "./views/Settings/Settings";
 import SettingsUserForm from "./views/User/UserForm";
+import UpcomingExpenseDashboard from "./views/UpcomingExpense/Dashboard";
 
 import DashboardDesktop from "./Desktop/views/Dashboard/View";
 import AccountsDesktop from "./Desktop/views/Account/View";
@@ -23,6 +24,7 @@ import BaseSettings from "./Desktop/views/Settings/BaseSettings";
 import SettingsUserList from "./Desktop/views/Settings/UserList";
 import SettingsUserFormDesktop from "./Desktop/views/Settings/Components/UserForm";
 import CurrencySettingsDesktop from "./Desktop/views/Settings/CurrencySettings";
+import UpcomingExpenseDashboardDesktop from "./Desktop/views/UpcomingExpense/Dashboard";
 
 import Login from "./views/Auth/Login";
 
@@ -35,6 +37,7 @@ function AppRoutes() {
                 <Route exact path="/login" element={<Login />} />
                 <Route path="/dashboard" element={isMobile ? <Dashboard /> : <DashboardDesktop />} />
                 <Route path="/budget" element={isMobile ? <Budget /> : <BudgetDesktop />} />
+                <Route path="/upcoming" element={isMobile ? <UpcomingExpenseDashboard /> : <UpcomingExpenseDashboardDesktop />} />
                 <Route path="/accounts/" element={isMobile ? <AccountList /> : <AccountsDesktop />} />
                 <Route path="/account" element={<AccountForm />} />
                 <Route path="/account/:account_id" element={<AccountForm />} />
