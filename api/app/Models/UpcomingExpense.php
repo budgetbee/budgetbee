@@ -59,13 +59,14 @@ class UpcomingExpense extends Model
     {
         $now = Carbon::now()->startOfMonth();
         $due = Carbon::parse($this->due_date)->startOfMonth();
-        return max(0, (int) $now->diffInMonths($due));
+        $diff = $now->diffInMonths($due, false);
+        return max(0, (int) $diff);
     }
 
     public function getMonthlyAmountAttribute()
     {
         $months = $this->months_remaining;
-        if ($months <= 0) {
+        if ($months === 0) {
             return $this->amount;
         }
         return round($this->amount / $months, 2);
