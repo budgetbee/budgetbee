@@ -6,7 +6,7 @@ import Api from "../../../Api/Endpoints";
 import FormModal from "./FormModal";
 import { useDisclosure } from "@nextui-org/react";
 
-export default function Card({ record, showName }) {
+export default function Card({ record, showName, onRecordChange }) {
     const [recordData, setRecordData] = useState(record);
     const [isRemoved, setIsRemoved] = useState(false);
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -41,6 +41,7 @@ export default function Card({ record, showName }) {
             record_id={record.id}
             fetchAgain={() => fetchAgain(record.id)}
             setIsRemoved={setIsRemoved}
+            onRecordChange={onRecordChange}
         />
     );
 

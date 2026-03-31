@@ -19,8 +19,12 @@ export default function Dashboard() {
         to_date: moment().format("YYYY-MM-DD"),
     });
 
+    const handleRecordChange = () => {
+        setSearchData((prev) => ({ ...prev, _refresh: Date.now() }));
+    };
+
     return (
-        <Layout>
+        <Layout onRecordChange={handleRecordChange}>
             <TopNav setSearchData={setSearchData} />
             <div className="flex flex-row min-h-screen">
                 <div className="flex flex-col gap-y-10 basis-9/12 px-10 py-5">
@@ -40,7 +44,7 @@ export default function Dashboard() {
                     <BalanceChart searchData={searchData} />
                     <div className="flex flex-row gap-x-10">
                         <div className="basis-10/12">
-                            <CategoryRecords searchData={searchData} />
+                            <CategoryRecords searchData={searchData} onRecordChange={handleRecordChange} />
                         </div>
                         <div className="basis-2/12 flex flex-col gap-y-10">
                             <CategoryIncomeChart searchData={searchData} />
@@ -53,7 +57,7 @@ export default function Dashboard() {
                         activeAccount={searchData.account_id}
                         setSearchData={setSearchData}
                     />
-                    <LastRecords searchData={searchData} />
+                    <LastRecords searchData={searchData} onRecordChange={handleRecordChange} />
                 </div>
             </div>
         </Layout>

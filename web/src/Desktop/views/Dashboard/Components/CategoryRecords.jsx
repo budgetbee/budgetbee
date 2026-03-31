@@ -10,7 +10,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Api from "../../../../Api/Endpoints";
 import RecordCard from "../../../Components/Record/Card";
 
-export default function CategoryRecords({ searchData }) {
+export default function CategoryRecords({ searchData, onRecordChange }) {
     const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState(null);
     const [records, setRecords] = useState([]);
@@ -67,6 +67,7 @@ export default function CategoryRecords({ searchData }) {
                                         <RecordCard
                                             record={record}
                                             showName={true}
+                                            onRecordChange={onRecordChange}
                                         />
                                     </div>
                                 );

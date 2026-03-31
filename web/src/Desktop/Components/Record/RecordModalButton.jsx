@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useDisclosure } from "@nextui-org/react";
 import FormModal from "./FormModal";
 
-export default function RecordModalButton() {
+export default function RecordModalButton({ onRecordChange }) {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
     const modal = (
@@ -14,6 +14,7 @@ export default function RecordModalButton() {
             isOpen={true}
             onOpen={onOpen}
             onOpenChange={onOpenChange}
+            onRecordChange={onRecordChange}
         />
     );
 

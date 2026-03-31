@@ -4,7 +4,7 @@ import Api from "../../../../Api/Endpoints";
 import RecordCard from "../../../Components/Record/Card";
 import { Link } from "react-router-dom";
 
-export default function LastRecords({ searchData }) {
+export default function LastRecords({ searchData, onRecordChange }) {
     const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState(null);
 
@@ -30,7 +30,7 @@ export default function LastRecords({ searchData }) {
                 {data.map((record, index) => {
                     return (
                         <div key={index}>
-                            <RecordCard record={record} />
+                            <RecordCard record={record} onRecordChange={onRecordChange} />
                         </div>
                     );
                 })}

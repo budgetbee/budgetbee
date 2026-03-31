@@ -15,7 +15,7 @@ import RecordModalButton from "../Components/Record/RecordModalButton";
 import ImportModal from "../Components/Import/ImportModal";
 import logo from "../../assets/images/logo_color_1.svg";
 
-export default function LeftSidebarMenu() {
+export default function LeftSidebarMenu({ onRecordChange }) {
     const [appVersion, setAppVersion] = useState("");
     const [appLatestVersion, setAppLatestVersion] = useState("");
     const [showVersionModal, setShowVersionModal] = useState(false);
@@ -147,7 +147,7 @@ export default function LeftSidebarMenu() {
                 <nav className="py-4 text-white text-md">
                     <div className="flex flex-col gap-y-3 mx-14 my-4">
                         <div className="w-full">
-                            <RecordModalButton />
+                            <RecordModalButton onRecordChange={onRecordChange} />
                         </div>
                         <div className="w-full">
                             <ImportModal />
