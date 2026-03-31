@@ -16,7 +16,7 @@ import {
     Textarea,
 } from "@nextui-org/react";
 
-export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain, setIsRemoved }) {
+export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain, setIsRemoved, onRecordChange }) {
     const [accounts, setAccounts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [parentCategories, setParentCategories] = useState([]);
@@ -30,6 +30,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
     const [name, setName] = useState('');
     const [date, setDate] = useState(null);
     const [amount, setAmount] = useState('');
+    const [saveAndNew, setSaveAndNew] = useState(false);
     const formRef = useRef();
 
     useEffect(() => {
@@ -85,6 +86,18 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
 
     const debounceTimeout = useRef(null);
 
+    const resetForm = () => {
+        setType("");
+        setFromAccount('');
+        setToAccount('');
+        setParentCategory(null);
+        setCategory(null);
+        setName('');
+        setDate(null);
+        setAmount('');
+        setCategories([]);
+    };
+
     const handleSaveForm = async (e) => {
         e.preventDefault();
 
@@ -104,8 +117,18 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
             fetchAgain();
         }
 
+        if (onRecordChange) {
+            onRecordChange();
+        }
+
         setLoading(false);
-        onOpenChange();
+
+        if (saveAndNew) {
+            resetForm();
+            setSaveAndNew(false);
+        } else {
+            onOpenChange();
+        }
     };
 
     const handleDeleteRecord = async () => {
@@ -113,6 +136,9 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
 
         if (userConfirmed) {
             await Api.deleteRecord(record_id);
+            if (onRecordChange) {
+                onRecordChange();
+            }
             onOpenChange();
         }
         setLoading(false);
@@ -278,19 +304,38 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                         </>
                     </ModalBody>
                     <ModalFooter className="items-center justify-between flex-row-reverse">
-                        <Button
-                            type="submit"
-                            form="recordForm"
-                            color="success"
-                            isLoading={loading}
-                            endContent={
-                                !loading && (
-                                    <FontAwesomeIcon icon="fa-solid fa-check" />
-                                )
-                            }
-                        >
-                            Save
-                        </Button>
+                        <div className="flex flex-row gap-x-2">
+                            {!record && (
+                                <Button
+                                    type="submit"
+                                    form="recordForm"
+                                    color="primary"
+                                    isLoading={loading}
+                                    onClick={() => setSaveAndNew(true)}
+                                    endContent={
+                                        !loading && (
+                                            <FontAwesomeIcon icon="fa-solid fa-plus" />
+                                        )
+                                    }
+                                >
+                                    Save &amp; New
+                                </Button>
+                            )}
+                            <Button
+                                type="submit"
+                                form="recordForm"
+                                color="success"
+                                isLoading={loading}
+                                onClick={() => setSaveAndNew(false)}
+                                endContent={
+                                    !loading && (
+                                        <FontAwesomeIcon icon="fa-solid fa-check" />
+                                    )
+                                }
+                            >
+                                Save
+                            </Button>
+                        </div>
                         {record && (
                             <Button
                                 type="button"
