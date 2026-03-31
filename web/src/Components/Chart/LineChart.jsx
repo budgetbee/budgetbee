@@ -1,11 +1,12 @@
-import React, { useRef } from "react";
+import React from "react";
 import { Chart as ChartJS, registerables } from "chart.js";
 import { Line } from "react-chartjs-2";
 
 ChartJS.register(...registerables);
 
+const parseDate = (dateStr) => new Date(dateStr + "T00:00:00");
+
 export default function LineChart({ data, currencySymbol }) {
-    const chartRef = useRef(null);
     const dataEntries = Object.entries(data);
 
     const chartData = {
@@ -45,8 +46,7 @@ export default function LineChart({ data, currencySymbol }) {
     const yMaxAligned = yMax + padding;
 
     const formatLabel = (dateStr) => {
-        const date = new Date(dateStr + "T00:00:00");
-        return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+        return parseDate(dateStr).toLocaleDateString(undefined, { month: "short", day: "numeric" });
     };
 
     const symbol = currencySymbol || "";
@@ -107,8 +107,7 @@ export default function LineChart({ data, currencySymbol }) {
                 callbacks: {
                     title: function (tooltipItems) {
                         const dateStr = dataEntries[tooltipItems[0].dataIndex]?.[0] || "";
-                        const date = new Date(dateStr + "T00:00:00");
-                        return date.toLocaleDateString(undefined, {
+                        return parseDate(dateStr).toLocaleDateString(undefined, {
                             year: "numeric",
                             month: "long",
                             day: "numeric",
@@ -126,5 +125,5 @@ export default function LineChart({ data, currencySymbol }) {
         },
     };
 
-    return <Line ref={chartRef} data={chartData} options={options} />;
+    return <Line data={chartData} options={options} />;
 }
