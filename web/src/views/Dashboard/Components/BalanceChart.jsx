@@ -24,7 +24,7 @@ export default function BalanceChart({ activeAccount }) {
 
     let chart = <Loader classes="w-20 mt-10" />;
     if (!isLoading) {
-        chart = <LineChart data={data} />
+        chart = <LineChart data={data} currencySymbol={balance?.currency_symbol} />
     }
 
     return (
