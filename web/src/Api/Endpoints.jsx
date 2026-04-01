@@ -176,6 +176,10 @@ const Endpoints = {
         return post(`account/${account_id}/adjust`, data);
     },
 
+    reorderAccounts: async (data) => {
+        return post(`account/reorder`, data);
+    },
+
     getRecords: async (account_id) => {
         const endpoint =
             account_id > 0 ? `account/${account_id}/record` : `record`;

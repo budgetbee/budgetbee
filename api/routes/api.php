@@ -51,6 +51,7 @@ Route::prefix('account')->middleware('auth:sanctum')->group(function () {
     Route::get('currencies', [AccountController::class, 'getCurrencies']);
     Route::get('{id}', [AccountController::class, 'getById']);
     Route::post('', [AccountController::class, 'create']);
+    Route::post('reorder', [AccountController::class, 'reorder']);
     Route::post('{id}/adjust', [AccountController::class, 'adjustBalance']);
     Route::post('{id}', [AccountController::class, 'update']);
     Route::delete('{id}', [AccountController::class, 'delete']);

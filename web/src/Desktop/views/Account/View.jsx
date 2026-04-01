@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import numeral from "numeral";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGripVertical } from "@fortawesome/free-solid-svg-icons";
 import Layout from "../../layout/Layout";
 import Api from "../../../Api/Endpoints";
 
@@ -10,6 +11,8 @@ export default function View() {
     const [currencies, setCurrencies] = useState([]);
     const [newAccount, setNewAccount] = useState(null);
     const [accountToEdit, setAccountToEdit] = useState(null);
+    const [draggedIndex, setDraggedIndex] = useState(null);
+    const [dragSnapshot, setDragSnapshot] = useState(null);
 
     useEffect(() => {
         async function getData() {
@@ -52,6 +55,39 @@ export default function View() {
         const data = await Api.getAccounts();
         setAccounts(data);
         setNewAccount(null);
+    };
+
+    const handleDragStart = (e, index) => {
+        setDraggedIndex(index);
+        setDragSnapshot([...accounts]);
+        e.dataTransfer.effectAllowed = "move";
+    };
+
+    const handleDragOver = (e, index) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        if (draggedIndex === null || draggedIndex === index) return;
+
+        const reordered = [...accounts];
+        const [removed] = reordered.splice(draggedIndex, 1);
+        reordered.splice(index, 0, removed);
+        setDraggedIndex(index);
+        setAccounts(reordered);
+    };
+
+    const handleDrop = async (e) => {
+        e.preventDefault();
+        const newOrder = accounts.map((a) => a.id);
+        setDraggedIndex(null);
+        const result = await Api.reorderAccounts({ accounts: newOrder });
+        if (result?.error) {
+            setAccounts(dragSnapshot);
+        }
+        setDragSnapshot(null);
+    };
+
+    const handleDragEnd = () => {
+        setDraggedIndex(null);
     };
 
     const createNewForm = (
@@ -165,11 +201,19 @@ export default function View() {
                             backgroundColor: account.color,
                         };
                         return (
-                            <div key={index}>
+                            <div
+                                key={account.id}
+                                draggable
+                                onDragStart={(e) => handleDragStart(e, index)}
+                                onDragOver={(e) => handleDragOver(e, index)}
+                                onDrop={handleDrop}
+                                onDragEnd={handleDragEnd}
+                                className={draggedIndex === index ? "opacity-50" : ""}
+                            >
                                 <div className="flex flex-row justify-between items-center text-white px-4 py-4">
                                     <div className="flex flex-row gap-x-4 items-center basis-5/12">
-                                        <div className="text-gray-500">
-                                            #{account.id}
+                                        <div className="text-gray-500 cursor-grab active:cursor-grabbing">
+                                            <FontAwesomeIcon icon={faGripVertical} />
                                         </div>
                                         {accountToEdit?.id === account.id ? (
                                             <input
