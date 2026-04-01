@@ -22,7 +22,7 @@ class BalanceController extends Controller
     {
         $query = Account::where('user_id', $request->user()->id);
         if ($request->has('account_id')) {
-            $query->where('id', $request->query('account_id'));
+            $query->whereIn('id', (array)$request->query('account_id'));
         }
         $accounts = $query->get();
 
@@ -84,7 +84,7 @@ class BalanceController extends Controller
 
         $accountQuery = Account::where('user_id', $request->user()->id);
         if ($request->has('account_id')) {
-            $accountQuery->where('id', $request->query('account_id'));
+            $accountQuery->whereIn('id', (array)$request->query('account_id'));
         }
         $balance = $accountQuery->get()->sum('initial_balance_base_currency');
 

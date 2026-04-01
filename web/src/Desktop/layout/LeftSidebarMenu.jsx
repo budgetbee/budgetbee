@@ -8,7 +8,8 @@ import {
     faBars,
     faGear,
     faSackDollar,
-    faCalendarDays
+    faCalendarDays,
+    faChartPie
 } from "@fortawesome/free-solid-svg-icons";
 import Api from "../../Api/Endpoints";
 import RecordModalButton from "../Components/Record/RecordModalButton";
@@ -64,6 +65,12 @@ export default function LeftSidebarMenu({ onRecordChange }) {
             href: "/upcoming",
             icon: faCalendarDays,
             color: "text-blue-400",
+        },
+        reports: {
+            name: "Reports",
+            href: "/reports",
+            icon: faChartPie,
+            color: "text-purple-400",
         },
         accounts: {
             name: "Accounts",

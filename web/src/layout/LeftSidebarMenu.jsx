@@ -8,7 +8,8 @@ import {
     faBars,
     faGear,
     faSackDollar,
-    faCalendarDays
+    faCalendarDays,
+    faChartPie
 } from "@fortawesome/free-solid-svg-icons";
 
 import Api from "../Api/Endpoints";
@@ -62,6 +63,12 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
             href: "/upcoming",
             icon: faCalendarDays,
             color: "text-blue-400",
+        },
+        reports: {
+            name: "Reports",
+            href: "/reports",
+            icon: faChartPie,
+            color: "text-purple-400",
         },
         accounts: {
             name: "Accounts",
