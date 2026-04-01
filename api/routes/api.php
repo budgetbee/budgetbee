@@ -24,6 +24,8 @@ use App\Http\Controllers\UpcomingExpenseController;
 */
 
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/setup/check', [AuthController::class, 'setupCheck']);
+Route::post('/setup/register', [AuthController::class, 'setupRegister']);
 
 Route::get('version', [AppVersionController::class, 'get'])->middleware('auth:sanctum');
 

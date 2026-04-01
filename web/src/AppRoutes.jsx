@@ -29,6 +29,7 @@ import ReportsDashboard from "./views/Reports/View";
 import ReportsDashboardDesktop from "./Desktop/views/Reports/View";
 
 import Login from "./views/Auth/Login";
+import Register from "./views/Auth/Register";
 
 function AppRoutes() {
 
@@ -37,6 +38,7 @@ function AppRoutes() {
             <Routes>
                 <Route exact path="/" element={isMobile ? <Dashboard /> : <DashboardDesktop />} />
                 <Route exact path="/login" element={<Login />} />
+                <Route exact path="/register" element={<Register />} />
                 <Route path="/dashboard" element={isMobile ? <Dashboard /> : <DashboardDesktop />} />
                 <Route path="/budget" element={isMobile ? <Budget /> : <BudgetDesktop />} />
                 <Route path="/upcoming" element={isMobile ? <UpcomingExpenseDashboard /> : <UpcomingExpenseDashboardDesktop />} />

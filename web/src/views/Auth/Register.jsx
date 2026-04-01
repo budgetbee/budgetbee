@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Api from "../../Api/Endpoints";
 import logo from "../../assets/images/logo.png";
 
-export default function Login() {
+export default function Register() {
     const [isLoading, setIsLoading] = useState(false);
     const [formError, setFormError] = useState("");
     const navigate = useNavigate();
@@ -11,8 +11,8 @@ export default function Login() {
     useEffect(() => {
         const checkSetup = async () => {
             const result = await Api.setupCheck();
-            if (result && result.setup_completed === false) {
-                navigate("/register");
+            if (result && result.setup_completed === true) {
+                navigate("/login");
             }
         };
         checkSetup();
@@ -24,11 +24,11 @@ export default function Login() {
         setFormError("");
         const formData = new FormData(e.target);
         const formObject = Object.fromEntries(formData.entries());
-        const ret = await Api.userLogin(formObject);
+        const ret = await Api.setupRegister(formObject);
         if (ret !== null) {
-            window.location = "/";
+            navigate("/login");
         } else {
-            setFormError("Invalid credentials");
+            setFormError("Registration failed. Please check your details and try again.");
             setIsLoading(false);
         }
     };
@@ -38,7 +38,7 @@ export default function Login() {
             type="submit"
             className="w-full text-gray-900 bg-gradient-to-r from-teal-200 to-lime-200 hover:bg-gradient-to-l hover:from-teal-200 hover:to-lime-200 focus:ring-4 focus:outline-none focus:ring-lime-200 dark:focus:ring-teal-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2"
         >
-            Sign in
+            Create account
         </button>
     );
 
@@ -74,14 +74,17 @@ export default function Login() {
         <div>
             <section className="bg-[#F2F2DA] h-screen">
                 <div className="flex flex-col items-center justify-center px-6 py-8  mx-auto md:h-screen lg:py-0">
-                    <a href="/login" className="flex items-center mx-5 my-10 w-64">
+                    <a href="/register" className="flex items-center mx-5 my-10 w-64">
                         <img className="w-full" src={logo} alt="logo"></img>
                     </a>
                     <div className="w-full bg-white rounded-lg shadow md:mt-0 sm:max-w-md xl:p-0">
                         <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
                             <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl">
-                                Sign in to your account
+                                Create your account
                             </h1>
+                            <p className="text-sm text-gray-500">
+                                Welcome to BudgetBee! Set up your admin account to get started.
+                            </p>
                             {formError && (
                                 <div
                                     className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50"
@@ -95,6 +98,22 @@ export default function Login() {
                                 className="space-y-4 md:space-y-6"
                                 onSubmit={handleSendForm}
                             >
+                                <div>
+                                    <label
+                                        htmlFor="name"
+                                        className="block mb-2 text-sm font-medium text-gray-900"
+                                    >
+                                        Your name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        id="name"
+                                        className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                                        placeholder="John Doe"
+                                        required=""
+                                    ></input>
+                                </div>
                                 <div>
                                     <label
                                         htmlFor="email"
@@ -122,6 +141,22 @@ export default function Login() {
                                         type="password"
                                         name="password"
                                         id="password"
+                                        placeholder="••••••••"
+                                        className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                                        required=""
+                                    ></input>
+                                </div>
+                                <div>
+                                    <label
+                                        htmlFor="confirm_password"
+                                        className="block mb-2 text-sm font-medium text-gray-900"
+                                    >
+                                        Confirm password
+                                    </label>
+                                    <input
+                                        type="password"
+                                        name="confirm_password"
+                                        id="confirm_password"
                                         placeholder="••••••••"
                                         className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
                                         required=""

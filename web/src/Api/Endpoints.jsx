@@ -110,6 +110,24 @@ const Endpoints = {
         return post(`user/register`, data);
     },
 
+    setupCheck: async () => {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/setup/check`);
+            return response.data;
+        } catch (error) {
+            return null;
+        }
+    },
+
+    setupRegister: async (data) => {
+        try {
+            const response = await axios.post(`${API_BASE_URL}/setup/register`, data);
+            return response.data;
+        } catch (error) {
+            return null;
+        }
+    },
+
     userLogout: async () => {
         post(`user/logout`, []);
         cookies.remove("token");
