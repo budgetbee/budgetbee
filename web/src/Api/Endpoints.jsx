@@ -31,9 +31,15 @@ const queryBuilder = (data) => {
     return Object.entries(data)
         .filter(
             ([key, value]) =>
-                value !== null && value !== undefined && value !== ""
+                value !== null && value !== undefined && value !== "" &&
+                !(Array.isArray(value) && value.length === 0)
         )
-        .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+        .flatMap(([key, value]) => {
+            if (Array.isArray(value)) {
+                return value.map((v) => `${key}[]=${encodeURIComponent(v)}`);
+            }
+            return [`${key}=${encodeURIComponent(value)}`];
+        })
         .join("&");
 };
 

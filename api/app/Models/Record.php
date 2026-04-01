@@ -208,7 +208,7 @@ class Record extends Model
         $query->where('user_id', $request->user()->id);
 
         if ($request->has('account_id') && !in_array('account_id', $excludes)) {
-            $query->where('from_account_id', $request->query('account_id'));
+            $query->whereIn('from_account_id', (array)$request->query('account_id'));
         }
         if ($request->has('from_date') && !in_array('from_date', $excludes)) {
             $query->where('date', '>=', (new DateTime($request->query('from_date')))->format('Y-m-d'));
