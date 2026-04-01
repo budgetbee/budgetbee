@@ -27,15 +27,11 @@ If you want to contribute to this project, you can!
 
 BudgetBee is installed via docker-compose, if you want to do an installation from e.g. Portainer, copy the [`/docker/compose` file](https://github.com/budgetbee/budgetbee/tree/main/docker/docker-compose.yml) file, populate the variables and deploy it in your portainer application.
 
-## Important
+## Getting Started
 
-Wait around 30 seconds after all containers are up to execute the create user command
+Once all containers are up and running, open the application in your browser. If no users exist yet, you will be automatically redirected to the registration page where you can create your first admin account by entering your name, email, and password.
 
-To create a user, run this command from your local machine, substituting the values with the ones you want
-
-```bash
-docker exec budgetbee-webserver-1 php scripts/create_user.php <your_name> <your_email> <your_password>
-```
+After registering, you will be redirected to the login page to sign in with your new credentials.
 
 ## Roadmap
 
