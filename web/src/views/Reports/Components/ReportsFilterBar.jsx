@@ -42,7 +42,7 @@ export default function ReportsFilterBar({ searchData, setSearchData }) {
                 : [...prev, accountId];
             setSearchData((sd) => ({
                 ...sd,
-                account_id: next.length === 1 ? next[0] : undefined,
+                account_id: next.length > 0 ? next : undefined,
             }));
             return next;
         });
@@ -175,11 +175,7 @@ export default function ReportsFilterBar({ searchData, setSearchData }) {
                             );
                         })}
                     </div>
-                    {activeAccounts.length > 1 && (
-                        <p className="text-xs text-amber-400/80">
-                            The API supports filtering by one account at a time. Showing all accounts until only one is selected.
-                        </p>
-                    )}
+
                 </div>
             )}
         </div>
