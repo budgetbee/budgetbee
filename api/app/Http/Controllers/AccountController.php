@@ -18,7 +18,10 @@ class AccountController extends Controller
      */
     public function get(Request $request)
     {
-        $accounts = Account::where('user_id', $request->user()->id)->get();
+        $accounts = Account::where('user_id', $request->user()->id)
+            ->orderBy('position')
+            ->orderBy('id')
+            ->get();
 
         return response()->json($accounts);
     }
@@ -45,6 +48,9 @@ class AccountController extends Controller
         $data = $request->only('name', 'type_id', 'color', 'initial_balance', 'currency_id');
 
         $data['user_id'] = $request->user()->id;
+
+        $maxPosition = Account::where('user_id', $request->user()->id)->max('position');
+        $data['position'] = $maxPosition !== null ? $maxPosition + 1 : 0;
 
         $account = new Account();
         $account->fill($data);
@@ -128,6 +134,25 @@ class AccountController extends Controller
             ->get();
 
         return response()->json($record);
+    }
+
+    public function reorder(Request $request)
+    {
+        $this->validate($request, [
+            'accounts' => 'required|array',
+            'accounts.*' => 'required|integer',
+        ]);
+
+        $accountIds = $request->input('accounts');
+        $userId = $request->user()->id;
+
+        foreach ($accountIds as $position => $id) {
+            Account::where('id', $id)
+                ->where('user_id', $userId)
+                ->update(['position' => $position]);
+        }
+
+        return response()->json(['success' => true]);
     }
 
     public function adjustBalance(Request $request, $id)
