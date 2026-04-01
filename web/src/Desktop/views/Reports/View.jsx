@@ -9,12 +9,16 @@ import TimelinePanel from "../../../views/Reports/Components/TimelinePanel";
 import ExpenseCategoryPanel from "../../../views/Reports/Components/ExpenseCategoryPanel";
 import IncomeCategoryPanel from "../../../views/Reports/Components/IncomeCategoryPanel";
 import TopExpensesPanel from "../../../views/Reports/Components/TopExpensesPanel";
+import ExportPdfButton from "../../../views/Reports/Components/ExportPdfButton";
+import useReportData from "../../../views/Reports/hooks/useReportData";
 
 export default function ReportsDashboard() {
     const [searchData, setSearchData] = useState({
         from_date: moment().startOf("month").format("YYYY-MM-DD"),
         to_date: moment().format("YYYY-MM-DD"),
     });
+    const reportData = useReportData(searchData);
+    const pdfFilename = `report_${searchData.from_date}_${searchData.to_date}`;
 
     return (
         <Layout>
@@ -33,6 +37,7 @@ export default function ReportsDashboard() {
                             <p className="text-sm text-gray-400">Track your income and expenses over time</p>
                         </div>
                     </div>
+                    <ExportPdfButton searchData={searchData} reportData={reportData} filename={pdfFilename} />
                 </div>
 
                 {/* Filter bar */}

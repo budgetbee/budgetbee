@@ -27,7 +27,7 @@ export default function TimelinePanel({ searchData }) {
             <div className="flex flex-row justify-between items-center">
                 <div className="text-lg font-bold text-white">Balance Over Time</div>
             </div>
-            <div className="h-72">
+            <div className="h-72" id="pdf-chart-timeline">
                 {isLoading || !data || Object.keys(data).length === 0 ? (
                     <div className="flex items-center justify-center h-full">
                         {isLoading ? (

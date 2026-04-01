@@ -10,12 +10,16 @@ import TimelinePanel from "./Components/TimelinePanel";
 import ExpenseCategoryPanel from "./Components/ExpenseCategoryPanel";
 import IncomeCategoryPanel from "./Components/IncomeCategoryPanel";
 import TopExpensesPanel from "./Components/TopExpensesPanel";
+import ExportPdfButton from "./Components/ExportPdfButton";
+import useReportData from "./hooks/useReportData";
 
 export default function ReportsDashboard() {
     const [searchData, setSearchData] = useState({
         from_date: moment().startOf("month").format("YYYY-MM-DD"),
         to_date: moment().format("YYYY-MM-DD"),
     });
+    const reportData = useReportData(searchData);
+    const pdfFilename = `report_${searchData.from_date}_${searchData.to_date}`;
 
     return (
         <div>
@@ -24,11 +28,14 @@ export default function ReportsDashboard() {
                 <FloatMenu />
 
                 {/* Page title */}
-                <div className="flex flex-row items-center gap-x-2 px-1">
-                    <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-purple-600/30">
-                        <FontAwesomeIcon icon="fa-solid fa-chart-pie" className="text-purple-400" />
+                <div className="flex flex-row items-center justify-between px-1">
+                    <div className="flex flex-row items-center gap-x-2">
+                        <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-purple-600/30">
+                            <FontAwesomeIcon icon="fa-solid fa-chart-pie" className="text-purple-400" />
+                        </div>
+                        <h1 className="text-white text-xl font-bold">Financial Reports</h1>
                     </div>
-                    <h1 className="text-white text-xl font-bold">Financial Reports</h1>
+                    <ExportPdfButton searchData={searchData} reportData={reportData} filename={pdfFilename} />
                 </div>
 
                 {/* Filter bar */}

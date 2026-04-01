@@ -119,7 +119,7 @@ export default function IncomeCategoryPanel({ searchData }) {
             ) : (
                 <div className="flex flex-col gap-y-5">
                     {/* Doughnut */}
-                    <div className="h-52 w-52 mx-auto">
+                    <div className="h-52 w-52 mx-auto" id="pdf-chart-income">
                         <DoughnutChart data={chartData} setParentKey={setParentCategory} />
                     </div>
 
