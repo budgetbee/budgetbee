@@ -21,11 +21,14 @@ class AuthController extends Controller
             'confirm_password' => 'required|string|same:password'
         ]);
         
+        $isFirstUser = User::count() === 0;
+
         User::create(
             [
                 'name' => $validatedData['name'],
                 'email' => $validatedData['email'],
-                'password' => Hash::make($validatedData['password'])
+                'password' => Hash::make($validatedData['password']),
+                'is_admin' => $isFirstUser
             ]
         );
 

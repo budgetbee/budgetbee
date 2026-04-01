@@ -12,7 +12,7 @@ class UserPolicy
      */
     public function view(User $user, User $model): bool
     {
-        return $user->id === 1 || $user->id === $model->id;
+        return $user->is_admin || $user->id === $model->id;
     }
 
     /**
@@ -20,7 +20,7 @@ class UserPolicy
      */
     public function create(User $user): bool
     {
-        return $user->id === 1;
+        return $user->is_admin;
     }
 
     /**
@@ -28,6 +28,6 @@ class UserPolicy
      */
     public function update(User $user, User $model): bool
     {
-        return $user->id === 1 || $user->id === $model->id;
+        return $user->is_admin || $user->id === $model->id;
     }
 }

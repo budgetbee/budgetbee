@@ -28,7 +28,7 @@ class UserController extends Controller
     {
         $user = $request->user();
 
-        if ($user->id == 1) {
+        if ($user->is_admin) {
             $users = User::all();
         } else {
             $users = User::where('id', $user->id)->get();
@@ -41,7 +41,7 @@ class UserController extends Controller
     {
         $user = Auth::user();
 
-        return response()->json(['is_admin' => $user->id === 1]);
+        return response()->json(['is_admin' => $user->is_admin]);
     }
 
     public function getSettings()

@@ -25,7 +25,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'currency_id'
+        'currency_id',
+        'is_admin'
     ];
 
     protected $appends = ['currency_symbol'];
@@ -49,6 +50,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'is_admin' => 'boolean',
     ];
 
     public static function boot()
