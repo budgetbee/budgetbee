@@ -119,7 +119,6 @@ class GenerateTestDataCommand extends Command
                 'email' => $email,
                 'password' => Hash::make($password),
                 'email_verified_at' => now(),
-                'currency_id' => 1 // Se actualizará después
             ]);
             $this->info("✓ User created: {$email}");
         }
