@@ -81,7 +81,12 @@ class BalanceController extends Controller
         }
 
         $records = $query->orderBy('date')->get();
-        $balance = Account::where('user_id', $request->user()->id)->get()->sum('initial_balance_base_currency');
+
+        $accountQuery = Account::where('user_id', $request->user()->id);
+        if ($request->has('account_id')) {
+            $accountQuery->where('id', $request->query('account_id'));
+        }
+        $balance = $accountQuery->get()->sum('initial_balance_base_currency');
 
         $currentYear = Carbon::now()->year;
         $startDate = new DateTime($records->first()->date ?? Carbon::create($currentYear, 1, 1)->startOfMonth()->toDateString());

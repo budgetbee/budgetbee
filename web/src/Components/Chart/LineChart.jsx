@@ -4,7 +4,9 @@ import { Line } from "react-chartjs-2";
 
 ChartJS.register(...registerables);
 
-export default function LineChart({ data }) {
+const parseDate = (dateStr) => new Date(dateStr + "T00:00:00");
+
+export default function LineChart({ data, currencySymbol }) {
     const dataEntries = Object.entries(data);
 
     const chartData = {
@@ -12,10 +14,24 @@ export default function LineChart({ data }) {
         datasets: [
             {
                 data: dataEntries.map(([_, value]) => value),
-                backgroundColor: "rgba(75,192,192,0.2)",
                 borderColor: "rgba(75,192,192,1)",
                 borderWidth: 2,
                 pointRadius: 0,
+                pointHoverRadius: 6,
+                pointHoverBackgroundColor: "rgba(75,192,192,1)",
+                pointHoverBorderColor: "#fff",
+                pointHoverBorderWidth: 2,
+                tension: 0.3,
+                fill: true,
+                backgroundColor: (context) => {
+                    const chart = context.chart;
+                    const { ctx, chartArea } = chart;
+                    if (!chartArea) return "rgba(75,192,192,0.1)";
+                    const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                    gradient.addColorStop(0, "rgba(75,192,192,0.3)");
+                    gradient.addColorStop(1, "rgba(75,192,192,0.02)");
+                    return gradient;
+                },
             },
         ],
     };
@@ -24,23 +40,53 @@ export default function LineChart({ data }) {
     const yMin = Math.min(...dataValues);
     const yMax = Math.max(...dataValues);
 
-    const yMinAligned = yMin - (yMin / 10);
-    const yMaxAligned = yMax + (yMax / 10);
+    const range = yMax - yMin;
+    const padding = range > 0 ? range * 0.1 : Math.abs(yMin) * 0.1 || 10;
+    const yMinAligned = yMin - padding;
+    const yMaxAligned = yMax + padding;
+
+    const formatLabel = (dateStr) => {
+        return parseDate(dateStr).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    };
+
+    const symbol = currencySymbol || "";
 
     const options = {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: {
+            mode: "index",
+            intersect: false,
+        },
         scales: {
             x: {
-                display: false,
+                display: true,
+                ticks: {
+                    color: "rgba(255,255,255,0.5)",
+                    maxTicksLimit: 12,
+                    callback: function (value, index) {
+                        return formatLabel(dataEntries[index]?.[0] || "");
+                    },
+                },
+                grid: {
+                    display: false,
+                },
             },
             y: {
                 type: "linear",
                 min: yMinAligned,
                 max: yMaxAligned,
-                beginAtZero: true,
                 ticks: {
-                    // stepSize: 1000,
+                    color: "rgba(255,255,255,0.5)",
+                    callback: function (value) {
+                        return value.toLocaleString(undefined, {
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0,
+                        });
+                    },
+                },
+                grid: {
+                    color: "rgba(255,255,255,0.06)",
                 },
             },
         },
@@ -49,10 +95,32 @@ export default function LineChart({ data }) {
                 display: false,
             },
             tooltip: {
-                enabled: false,
-            },
-            zoom: {
-                zoom: false,
+                enabled: true,
+                backgroundColor: "rgba(30,41,59,0.95)",
+                titleColor: "rgba(255,255,255,0.7)",
+                bodyColor: "#fff",
+                bodyFont: { size: 14, weight: "bold" },
+                titleFont: { size: 12 },
+                padding: 12,
+                cornerRadius: 8,
+                displayColors: false,
+                callbacks: {
+                    title: function (tooltipItems) {
+                        const dateStr = dataEntries[tooltipItems[0].dataIndex]?.[0] || "";
+                        return parseDate(dateStr).toLocaleDateString(undefined, {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                        });
+                    },
+                    label: function (tooltipItem) {
+                        const value = tooltipItem.raw.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                        });
+                        return symbol + " " + value;
+                    },
+                },
             },
         },
     };

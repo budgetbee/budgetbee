@@ -7,11 +7,16 @@ import Loader from "../../../../Components/Miscellaneous/Loader";
 export default function BalanceChart({ searchData }) {
     const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState(null);
+    const [currencySymbol, setCurrencySymbol] = useState("");
 
     useEffect(() => {
         async function getTimelineBalance() {
-            const data = await Api.getTimelineBalance(searchData);
-            setData(data);
+            const [timelineData, balanceData] = await Promise.all([
+                Api.getTimelineBalance(searchData),
+                Api.getBalance(searchData),
+            ]);
+            setData(timelineData);
+            setCurrencySymbol(balanceData?.currency_symbol || "");
             setIsLoading(false);
         }
         setIsLoading(true);
@@ -19,8 +24,8 @@ export default function BalanceChart({ searchData }) {
     }, [searchData]);
 
     let chart = <Loader classes="w-32 mt-32" />;
-    if (!isLoading) {
-        chart = <LineChart data={data} />
+    if (!isLoading && data && Object.keys(data).length > 0) {
+        chart = <LineChart data={data} currencySymbol={currencySymbol} />
     }
 
     return (
