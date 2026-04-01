@@ -25,6 +25,8 @@ import SettingsUserList from "./Desktop/views/Settings/UserList";
 import SettingsUserFormDesktop from "./Desktop/views/Settings/Components/UserForm";
 import CurrencySettingsDesktop from "./Desktop/views/Settings/CurrencySettings";
 import UpcomingExpenseDashboardDesktop from "./Desktop/views/UpcomingExpense/Dashboard";
+import ReportsDashboard from "./views/Reports/View";
+import ReportsDashboardDesktop from "./Desktop/views/Reports/View";
 
 import Login from "./views/Auth/Login";
 
@@ -52,6 +54,7 @@ function AppRoutes() {
                 <Route path="/settings/users/new" element={isMobile ? <SettingsUserForm /> : <SettingsUserFormDesktop />} />
                 <Route path="/settings/users/:user_id?" element={isMobile ? <SettingsUserForm /> : <SettingsUserFormDesktop />} />
                 <Route path="/settings/currency" element={isMobile ? <CurrencySettingsDesktop /> : <CurrencySettingsDesktop />} />
+                <Route path="/reports" element={isMobile ? <ReportsDashboard /> : <ReportsDashboardDesktop />} />
             </Routes>
         </>
     );
