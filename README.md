@@ -43,6 +43,8 @@ After registering, you will be redirected to the login page to sign in with your
 | Add custom currencies                        |      |
 | Create/Edit Categories                       | ✅    |
 | Budgets by category                          | ✅    |
+| Create report page                           | ✅    |
+| Create upcoming expenses page                | ✅    |
 | Create rules                                 |     |
 | Connect with banks                           |     |
 | Export banckup                               |     |
