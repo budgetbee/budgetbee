@@ -33,6 +33,43 @@ class AuthController extends Controller
         return response()->json();
     }
 
+    public function setupCheck()
+    {
+        $hasUsers = User::count() > 0;
+
+        return response()->json([
+            'setup_completed' => $hasUsers
+        ]);
+    }
+
+    public function setupRegister(Request $request)
+    {
+        if (User::count() > 0) {
+            return response()->json([
+                'message' => 'Setup has already been completed'
+            ], 403);
+        }
+
+        $validatedData = $request->validate([
+            'name' => 'required|string',
+            'email' => 'required|string|max:255|email|unique:users',
+            'password' => 'required|string|min:4',
+            'confirm_password' => 'required|string|same:password'
+        ]);
+
+        User::create(
+            [
+                'name' => $validatedData['name'],
+                'email' => $validatedData['email'],
+                'password' => Hash::make($validatedData['password'])
+            ]
+        );
+
+        return response()->json([
+            'message' => 'User created successfully'
+        ]);
+    }
+
     public function login(Request $request)
     {
         if (!Auth::attempt($request->only('email', 'password'))) {
