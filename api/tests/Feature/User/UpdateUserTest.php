@@ -57,9 +57,10 @@ class UpdateUserTest extends TestCase
 
     public function testUpdateAnotherUserFail(): void
     {
-        $user2 = User::whereNot('id', $this->user->id)->first();
+        $user2 = User::factory()->create();
         $user = ['name' => 'NameTest', 'email' => time() . 'test@test.com'];
         $response = $this->post('/api/user/' . $user2->id, $user);
+        $user2->delete();
 
         $response->assertStatus(403);
     }
