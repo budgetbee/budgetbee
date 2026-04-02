@@ -66,7 +66,7 @@ services:
     image: ghcr.io/budgetbee/budgetbee/proxy:latest
     command: nginx -g "daemon off;"
     ports:
-      - "${APP_PORT}:80"
+      - "${APP_PORT}:80" # Port exposed on the host, e.g. 80 -> http://localhost
     depends_on:
       - webserver
       - web
@@ -79,9 +79,9 @@ services:
     command: sh entrypoint.sh
     environment:
       DB_HOST: db
-      DB_DATABASE: ${DB_DATABASE}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: ${DB_DATABASE}   # Name of the MySQL database (e.g. budgetbee)
+      DB_USERNAME: ${DB_USERNAME}   # MySQL user the app connects with (e.g. budgetbee)
+      DB_PASSWORD: ${DB_PASSWORD}   # Password for the MySQL app user - use a strong value
     depends_on:
       db:
         condition: service_healthy
@@ -97,10 +97,10 @@ services:
     image: mysql:8.2.0
     command: --default-authentication-plugin=mysql_native_password
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${DB_DATABASE}
-      MYSQL_USER: ${DB_USERNAME}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD} # MySQL root password - keep this secret
+      MYSQL_DATABASE: ${DB_DATABASE}           # Must match DB_DATABASE above
+      MYSQL_USER: ${DB_USERNAME}               # Must match DB_USERNAME above
+      MYSQL_PASSWORD: ${DB_PASSWORD}           # Must match DB_PASSWORD above
     healthcheck:
       test: ["CMD", "/usr/bin/mysql", "--user=${DB_USERNAME}", "--password=${DB_PASSWORD}", "--execute", "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${DB_DATABASE}';"]
       timeout: 20s
@@ -115,16 +115,6 @@ networks:
 volumes:
   db_data:
 ```
-
-**Environment variables to set:**
-
-| Variable | Description |
-|----------|-------------|
-| `APP_PORT` | Port on which BudgetBee will be exposed (e.g. `80`) |
-| `DB_DATABASE` | Name of the MySQL database (e.g. `budgetbee`) |
-| `DB_USERNAME` | MySQL user (e.g. `budgetbee`) |
-| `DB_PASSWORD` | MySQL user password |
-| `DB_ROOT_PASSWORD` | MySQL root password |
 
 ## Getting Started
 
