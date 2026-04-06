@@ -112,7 +112,8 @@ class AccountController extends Controller
             ->where('user_id', $request->user()->id);
 
         if ($request->has('search_term')) {
-            $records->where('name', 'like', '%' . $request->query('search_term') . '%');
+            $term = str_replace(['%', '_'], ['\\%', '\\_'], $request->query('search_term'));
+            $records->where('name', 'like', '%' . $term . '%');
         }
 
         $page = $request->query('page');

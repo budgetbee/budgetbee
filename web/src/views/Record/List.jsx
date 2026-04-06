@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Api from "../../Api/Endpoints";
 import RecordCard from "../../Components/Record/Card";
@@ -10,7 +10,7 @@ export default function List() {
     const [data, setData] = useState([]);
     const [page, setPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
-    const searchInputRef = useRef(null);
+    const [inputValue, setInputValue] = useState("");
 
     const { account_id } = useParams();
 
@@ -45,15 +45,14 @@ export default function List() {
 
     const handleSearch = (e) => {
         e.preventDefault();
-        const term = searchInputRef.current.value;
-        setSearchTerm(term);
+        setSearchTerm(inputValue);
         setData([]);
         setPage(1);
         setMoreData(true);
     };
 
     const handleClear = () => {
-        searchInputRef.current.value = "";
+        setInputValue("");
         setSearchTerm("");
         setData([]);
         setPage(1);
@@ -93,7 +92,8 @@ export default function List() {
                         </div>
                         <input
                             type="search"
-                            ref={searchInputRef}
+                            value={inputValue}
+                            onChange={(e) => setInputValue(e.target.value)}
                             className="border text-sm rounded-lg block w-full pl-10 p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
                             placeholder="Search records..."
                         />
