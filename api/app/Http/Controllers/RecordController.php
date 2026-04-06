@@ -13,6 +13,34 @@ class RecordController extends Controller
     {
         $records = Record::where('user_id', $request->user()->id);
 
+        if ($request->has('search_term')) {
+            $term = str_replace(['%', '_'], ['\\%', '\\_'], $request->query('search_term'));
+            $records->where('name', 'like', '%' . $term . '%');
+        }
+        if ($request->has('type')) {
+            $records->where('type', $request->query('type'));
+        }
+        if ($request->has('category_id')) {
+            $records->where('category_id', $request->query('category_id'));
+        }
+        if ($request->has('parent_category_id')) {
+            $records->whereHas('category', function ($q) use ($request) {
+                $q->where('parent_category_id', $request->query('parent_category_id'));
+            });
+        }
+        if ($request->has('from_date')) {
+            $records->where('date', '>=', (new DateTime($request->query('from_date')))->format('Y-m-d'));
+        }
+        if ($request->has('to_date')) {
+            $records->where('date', '<=', (new DateTime($request->query('to_date')))->format('Y-m-d'));
+        }
+        if ($request->has('amount_min')) {
+            $records->whereRaw('ABS(amount) >= ?', [abs((float) $request->query('amount_min'))]);
+        }
+        if ($request->has('amount_max')) {
+            $records->whereRaw('ABS(amount) <= ?', [abs((float) $request->query('amount_max'))]);
+        }
+
         $page = $request->query('page');
         if ($page > 0) {
             $perPage = 20;
