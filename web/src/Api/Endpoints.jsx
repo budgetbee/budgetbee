@@ -210,12 +210,11 @@ const Endpoints = {
         return get(endpoint);
     },
 
-    getPaginateRecords: async (account_id, page, search_term) => {
+    getPaginateRecords: async (account_id, page, filters = {}) => {
         let endpoint =
             account_id > 0 ? `account/${account_id}/record` : `record`;
-        const params = {};
+        const params = { ...filters };
         if (page > 0) params.page = page;
-        if (search_term) params.search_term = search_term;
         const queryString = queryBuilder(params);
         endpoint += queryString ? `?${queryString}` : "";
         return get(endpoint);
