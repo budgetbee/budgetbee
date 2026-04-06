@@ -5,7 +5,7 @@ import DatesSelect from "../../../Components/Miscellaneous/DatesSelect";
 import LineChart from "../../../Components/Chart/LineChart";
 import Loader from "../../../Components/Miscellaneous/Loader";
 
-export default function BalanceChart({ activeAccount }) {
+export default function BalanceChart({ activeAccount, refreshKey }) {
     const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState(null);
     const [balance, setBalance] = useState(null);
@@ -20,7 +20,7 @@ export default function BalanceChart({ activeAccount }) {
             setIsLoading(false);
         }
         getTimelineBalance();
-    }, [activeAccount, fromDate]);
+    }, [activeAccount, fromDate, refreshKey]);
 
     let chart = <Loader classes="w-20 mt-10" />;
     if (!isLoading) {

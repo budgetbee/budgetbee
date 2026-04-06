@@ -10,6 +10,11 @@ import FloatMenu from "../../layout/FloatMenu";
 
 export default function Dashboard() {
     const [activeAccount, setActiveAccount] = useState(null);
+    const [refreshKey, setRefreshKey] = useState(0);
+
+    const handleRefresh = () => {
+        setRefreshKey((prev) => prev + 1);
+    };
 
     return (
         <div>
@@ -20,19 +25,20 @@ export default function Dashboard() {
                     <Accounts
                         activeAccount={activeAccount}
                         setActiveAccount={setActiveAccount}
+                        onRefresh={handleRefresh}
                     />
                 </div>
                 <div>
-                    <BalanceChart activeAccount={activeAccount} />
+                    <BalanceChart activeAccount={activeAccount} refreshKey={refreshKey} />
                 </div>
                 <div>
-                    <CategoryChart activeAccount={activeAccount} />
+                    <CategoryChart activeAccount={activeAccount} refreshKey={refreshKey} />
                 </div>
                 <div>
-                    <CategoryRecords activeAccount={activeAccount} />
+                    <CategoryRecords activeAccount={activeAccount} refreshKey={refreshKey} />
                 </div>
                 <div>
-                    <LastRecords activeAccount={activeAccount} />
+                    <LastRecords activeAccount={activeAccount} refreshKey={refreshKey} />
                 </div>
             </div>
         </div>

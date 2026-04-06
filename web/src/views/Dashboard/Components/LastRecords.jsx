@@ -4,7 +4,7 @@ import Api from "../../../Api/Endpoints";
 import RecordCard from "../../../Components/Record/Card";
 import { Link } from "react-router-dom";
 
-export default function LastRecords({ activeAccount }) {
+export default function LastRecords({ activeAccount, refreshKey }) {
     const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState(null);
 
@@ -16,7 +16,7 @@ export default function LastRecords({ activeAccount }) {
             setIsLoading(false);
         }
         getLastRecords();
-    }, [activeAccount]);
+    }, [activeAccount, refreshKey]);
 
     if (isLoading) {
         return <></>;

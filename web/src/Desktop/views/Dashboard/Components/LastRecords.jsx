@@ -10,8 +10,8 @@ export default function LastRecords({ searchData, onRecordChange }) {
 
     useEffect(() => {
         async function getLastRecords() {
-            searchData.limit = 5;
-            const data = await Api.getLastRecords(searchData);
+            const requestData = { ...searchData, limit: 5 };
+            const data = await Api.getLastRecords(requestData);
             setData(data);
             setIsLoading(false);
         }

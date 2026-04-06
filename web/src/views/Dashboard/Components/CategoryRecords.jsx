@@ -6,7 +6,7 @@ import Api from "../../../Api/Endpoints";
 import RecordCard from "../../../Components/Record/Card";
 import DatesSelect from "../../../Components/Miscellaneous/DatesSelect";
 
-export default function CategoryRecords({ activeAccount }) {
+export default function CategoryRecords({ activeAccount, refreshKey }) {
     const [isLoading, setIsLoading] = useState(true);
     const [showRecords, setShowRecords] = useState(false);
     const [data, setData] = useState([]);
@@ -26,7 +26,7 @@ export default function CategoryRecords({ activeAccount }) {
             setIsLoading(false);
         }
         getBalanceByCategory();
-    }, [activeAccount, fromDate]);
+    }, [activeAccount, fromDate, refreshKey]);
 
     const handleExpand = (parentId) => {
         if (expandedItems.includes(parentId)) {
