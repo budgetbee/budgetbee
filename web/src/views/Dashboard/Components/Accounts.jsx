@@ -7,7 +7,7 @@ import { FreeMode, Pagination } from "swiper/modules";
 import Api from "../../../Api/Endpoints";
 import AccountCardMini from "../../../Components/Account/CardMini";
 
-export default function Accounts({ activeAccount, setActiveAccount }) {
+export default function Accounts({ activeAccount, setActiveAccount, onRefresh }) {
     const [isLoading, setIsLoading] = useState(true);
     const [adjustBalanceOpen, setAdjustBalanceOpen] = useState(false);
     const [data, setData] = useState(null);
@@ -31,7 +31,9 @@ export default function Accounts({ activeAccount, setActiveAccount }) {
         const formData = new FormData(e.target);
         const formObject = Object.fromEntries(formData.entries());
         await Api.accountAdjustBalance(formObject, activeAccount);
-        setActiveAccount(null);
+        const accounts = await Api.getAccounts();
+        setData(accounts);
+        if (onRefresh) onRefresh();
         setAdjustBalanceOpen(false);
     };
 

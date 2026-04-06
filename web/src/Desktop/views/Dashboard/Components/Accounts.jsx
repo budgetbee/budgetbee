@@ -28,8 +28,9 @@ export default function Accounts({ activeAccount, setSearchData }) {
         const formData = new FormData(e.target);
         const formObject = Object.fromEntries(formData.entries());
         await Api.accountAdjustBalance(formObject, activeAccount);
-        const account = { account_id: null };
-        setSearchData((prevData) => ({ ...prevData, ...account }));
+        const accounts = await Api.getAccounts();
+        setData(accounts);
+        setSearchData((prevData) => ({ ...prevData, _refresh: Date.now() }));
         setAdjustBalanceOpen(false);
     };
 

@@ -6,7 +6,7 @@ import DoughnutChart from "../../../Components/Chart/DoughnutChart";
 import DatesSelect from "../../../Components/Miscellaneous/DatesSelect";
 import Loader from "../../../Components/Miscellaneous/Loader";
 
-export default function CategoryChart({ activeAccount }) {
+export default function CategoryChart({ activeAccount, refreshKey }) {
     const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState(null);
     const [parentCategories, setParentCategories] = useState(null);
@@ -43,7 +43,7 @@ export default function CategoryChart({ activeAccount }) {
         if (!parentCategory) {
             getByExpenseCategories();
         }
-    }, [activeAccount, fromDate, parentCategory]);
+    }, [activeAccount, fromDate, parentCategory, refreshKey]);
 
     useEffect(() => {
         if (parentCategory && parentCategories) {
