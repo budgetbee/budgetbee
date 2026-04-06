@@ -110,8 +110,8 @@ export default function List() {
 
     const hasActiveFilters = Object.values(activeFilters).some((v) => v !== "");
 
-    const view = data.map((record, index) => (
-        <div key={index}>
+    const view = data.map((record) => (
+        <div key={record.id}>
             <RecordCard record={record} showName={true} />
         </div>
     ));
