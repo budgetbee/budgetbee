@@ -19,6 +19,8 @@ export default function Form() {
     const [accounts, setAccounts] = useState(null);
     const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
     const [category, setCategory] = useState({ id: 0, name: "" });
+    const [isRecurring, setIsRecurring] = useState(false);
+    const [recurringDay, setRecurringDay] = useState('');
 
     const { record_id } = useParams();
 
@@ -39,6 +41,8 @@ export default function Form() {
                 setRecord(record);
                 setDate(record.date);
                 setName(record.name);
+                setIsRecurring(!!record.recurring_day);
+                setRecurringDay(record.recurring_day ?? '');
             }
             setIsLoading(false);
         }
@@ -79,6 +83,9 @@ export default function Form() {
     const handleSaveForm = async () => {
         const formData = new FormData(document.querySelector("form"));
         const formObject = Object.fromEntries(formData.entries());
+        if (!isRecurring) {
+            formObject.recurring_day = '';
+        }
         await Api.createRecord(formObject, record_id);
         handleBackFunction();
     };
@@ -342,6 +349,34 @@ export default function Form() {
                             onChange={handleInputName}
                             value={name ?? ""}
                         />
+                    </div>
+                    <div className="flex flex-row items-center gap-x-3 px-4 py-2 bg-gray-900 text-gray-200">
+                        <label className="flex items-center gap-x-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={isRecurring}
+                                onChange={e => {
+                                    setIsRecurring(e.target.checked);
+                                    if (!e.target.checked) setRecurringDay('');
+                                }}
+                                className="w-4 h-4"
+                            />
+                            <span className="text-sm">Recurring monthly</span>
+                        </label>
+                        {isRecurring && (
+                            <input
+                                type="number"
+                                name="recurring_day"
+                                min="1"
+                                max="31"
+                                placeholder="Day (1–31)"
+                                value={recurringDay}
+                                onChange={e => setRecurringDay(e.target.value)}
+                                className="w-28 text-center bg-gray-800 text-gray-200 border border-gray-600 rounded p-1 text-sm"
+                                required
+                                aria-label="Day of month for recurring payment (1-31)"
+                            />
+                        )}
                     </div>
                     <div className="basis-5/12">
                         <Calculator value={amount} setValue={setAmount} />
