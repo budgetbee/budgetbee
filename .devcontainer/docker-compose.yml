@@ -58,11 +58,11 @@ services:
       retries: 100
     restart: unless-stopped
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data2:/var/lib/mysql
     networks:
       - skynet_back
 networks:
   skynet:
   skynet_back:
 volumes:
-  db_data:
+  db_data2:

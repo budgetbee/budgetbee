@@ -35,7 +35,10 @@ class RecordFactory extends Factory
             $user = User::inRandomOrder()->first();
         }
         $randomAccount = Account::where('user_id', $user->id)->first();
-        $randomCategory = Category::inRandomOrder()->first()->id;
+
+        // Use only categories that belong to this user's own parent categories
+        $userParentIds = \App\Models\ParentCategory::where('user_id', $user->id)->pluck('id');
+        $randomCategory = Category::whereIn('parent_category_id', $userParentIds)->inRandomOrder()->first()->id;
 
         $startDate = '-1 year';
         $endDate = 'now';
@@ -46,17 +49,22 @@ class RecordFactory extends Factory
 
         $toAccountId = null;
         $rate = null;
-        
+
+        // Get this user's "Incomes" parent category ID to use for income records
+        $userIncomeParent = \App\Models\ParentCategory::where('user_id', $user->id)->where('name', 'Incomes')->first();
+        $userTransferCategory = Category::whereIn('parent_category_id', $userParentIds)->where('name', 'Transfer')->first();
+
         switch ($recordType) {
             case 'income':
-                $randomCategory = Category::where('parent_category_id', 10)->inRandomOrder()->first()->id;
+                $incomeParentId = $userIncomeParent ? $userIncomeParent->id : $userParentIds->first();
+                $randomCategory = Category::where('parent_category_id', $incomeParentId)->inRandomOrder()->first()->id;
                 $amount = $faker->randomFloat(2, 0, 777);
                 break;
             case 'expense':
                 $amount = $faker->randomFloat(2, -300, 10);
                 break;
             case 'transfer':
-                $randomCategory = 1;
+                $randomCategory = $userTransferCategory ? $userTransferCategory->id : $randomCategory;
                 $amount = $faker->randomFloat(2, -300, 100);
                 $toAccountId = Account::where('user_id', $user->id)->inRandomOrder()->first()->id;
                 $rate = $faker->randomFloat(2, -1, 2);

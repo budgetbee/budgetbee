@@ -9,7 +9,8 @@ import {
     faGear,
     faSackDollar,
     faCalendarDays,
-    faChartPie
+    faChartPie,
+    faList
 } from "@fortawesome/free-solid-svg-icons";
 import Api from "../../Api/Endpoints";
 import RecordModalButton from "../Components/Record/RecordModalButton";
@@ -71,6 +72,12 @@ export default function LeftSidebarMenu({ onRecordChange }) {
             href: "/reports",
             icon: faChartPie,
             color: "text-purple-400",
+        },
+        record: {
+            name: "Records",
+            href: "/record/list",
+            icon: faList,
+            color: "text-blue-400",
         },
         accounts: {
             name: "Accounts",

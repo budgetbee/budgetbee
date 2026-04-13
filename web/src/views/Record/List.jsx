@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import Api from "../../Api/Endpoints";
 import RecordCard from "../../Components/Record/Card";
@@ -31,14 +31,26 @@ export default function List() {
     const [selectedParent, setSelectedParent] = useState("");
 
     const { account_id } = useParams();
+    const abortControllerRef = useRef(null);
 
     useEffect(() => {
         Api.getParentCategories().then(setParentCategories);
     }, []);
 
     useEffect(() => {
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
+
         async function getRecords() {
             const newData = await Api.getPaginateRecords(account_id, page, activeFilters);
+            if (controller.signal.aborted) return;
+            if (!Array.isArray(newData)) {
+                setMoreData(false);
+                return;
+            }
             setData((prevData) => [...prevData, ...newData]);
             if (newData.length === 0) {
                 setMoreData(false);
@@ -47,6 +59,8 @@ export default function List() {
         if (moreData === true) {
             getRecords();
         }
+
+        return () => controller.abort();
     }, [page, account_id, moreData, activeFilters]);
 
     function loadMore() {
@@ -118,7 +132,7 @@ export default function List() {
 
     return (
         <div className="absolute bg-background top-0 left-0 w-full min-h-screen">
-            <TopNav />
+            <TopNav menu={true} />
             <div className="mt-14 px-3 pt-3 pb-2">
                 <form onSubmit={handleSearch}>
                     {/* Search row */}
@@ -282,6 +296,21 @@ export default function List() {
             <div className="flex flex-col divide-y divide-gray-600/50 rounded p-px">
                 {view}
                 {moreData && <Loader classes="w-10 my-5" />}
+                {!moreData && data.length === 0 && hasActiveFilters && (
+                    <div className="flex flex-col items-center justify-center py-16 text-center text-gray-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 mb-3 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+                        </svg>
+                        <p className="text-sm font-medium">No records match the current filters</p>
+                        <button
+                            type="button"
+                            onClick={handleClear}
+                            className="mt-3 text-xs text-blue-400 hover:text-blue-300 underline"
+                        >
+                            Clear filters
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

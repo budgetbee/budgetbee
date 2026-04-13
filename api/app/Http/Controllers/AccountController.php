@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Account;
 use App\Models\AccountTypes;
+use App\Models\Category;
 use App\Models\Record;
 use App\Models\UserCurrency;
 use DateTime;
@@ -120,12 +121,23 @@ class AccountController extends Controller
             $records->where('type', $request->query('type'));
         }
         if ($request->has('category_id')) {
-            $records->where('category_id', $request->query('category_id'));
+            $catName = Category::find((int) $request->query('category_id'))?->name;
+            if ($catName) {
+                $allCatIds = Category::where('name', $catName)->pluck('id');
+                $records->whereIn('category_id', $allCatIds);
+            } else {
+                $records->whereRaw('1 = 0');
+            }
         }
         if ($request->has('parent_category_id')) {
-            $records->whereHas('category', function ($q) use ($request) {
-                $q->where('parent_category_id', $request->query('parent_category_id'));
-            });
+            $parentCatName = \App\Models\ParentCategory::find((int) $request->query('parent_category_id'))?->name;
+            if ($parentCatName) {
+                $allParentIds = \App\Models\ParentCategory::where('name', $parentCatName)->pluck('id');
+                $categoryIds = Category::whereIn('parent_category_id', $allParentIds)->pluck('id');
+                $records->whereIn('category_id', $categoryIds);
+            } else {
+                $records->whereRaw('1 = 0');
+            }
         }
         if ($request->has('from_date')) {
             $records->where('date', '>=', (new DateTime($request->query('from_date')))->format('Y-m-d'));
@@ -148,6 +160,7 @@ class AccountController extends Controller
         }
 
         $data = $records->orderByDesc('date')
+            ->orderByDesc('id')
             ->get();
 
         return response()->json($data);
