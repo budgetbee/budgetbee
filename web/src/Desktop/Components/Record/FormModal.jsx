@@ -14,6 +14,7 @@ import {
     Input,
     Button,
     Textarea,
+    Checkbox,
 } from "@nextui-org/react";
 
 export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain, setIsRemoved, onRecordChange }) {
@@ -31,6 +32,8 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
     const [date, setDate] = useState(null);
     const [amount, setAmount] = useState('');
     const [saveAndNew, setSaveAndNew] = useState(false);
+    const [isRecurring, setIsRecurring] = useState(false);
+    const [recurringDay, setRecurringDay] = useState('');
     const formRef = useRef();
 
     useEffect(() => {
@@ -50,6 +53,8 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                 setName(record.name);
                 setDate(moment(record.date).format("YYYY-MM-DD"));
                 setAmount(record.amount);
+                setIsRecurring(!!record.recurring_day);
+                setRecurringDay(record.recurring_day ?? '');
             }
         }
         getData();
@@ -95,6 +100,8 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
         setName('');
         setDate(null);
         setAmount('');
+        setIsRecurring(false);
+        setRecurringDay('');
         setCategories([]);
     };
 
@@ -111,6 +118,9 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
         setLoading(true);
         const formData = new FormData(formRef.current);
         const formObject = Object.fromEntries(formData.entries());
+        if (!isRecurring) {
+            formObject.recurring_day = '';
+        }
         await Api.createRecord(formObject, record_id);
 
         if (record) {
@@ -300,6 +310,32 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                                     value={amount}
                                     onChange={e => setAmount(e.target.value)}
                                 />
+                            </div>
+                            <div className="flex flex-row gap-x-3 items-center">
+                                <Checkbox
+                                    isSelected={isRecurring}
+                                    onValueChange={(checked) => {
+                                        setIsRecurring(checked);
+                                        if (!checked) setRecurringDay('');
+                                    }}
+                                >
+                                    Recurring monthly
+                                </Checkbox>
+                                {isRecurring && (
+                                    <Input
+                                        name="recurring_day"
+                                        type="number"
+                                        label="Day of month"
+                                        placeholder="1–31"
+                                        className="max-w-[130px]"
+                                        min="1"
+                                        max="31"
+                                        value={recurringDay}
+                                        onChange={e => setRecurringDay(e.target.value)}
+                                        isRequired
+                                        aria-label="Day of month for recurring payment (1-31)"
+                                    />
+                                )}
                             </div>
                         </>
                     </ModalBody>

@@ -88,9 +88,10 @@ class RecordController extends Controller
             'amount' => 'required|numeric',
             'rate' => 'nullable|numeric',
             'code' => 'nullable|string',
+            'recurring_day' => 'nullable|integer|min:1|max:31',
         ]);
 
-        $data = $request->only('date', 'from_account_id', 'to_account_id', 'type', 'category_id', 'name', 'amount', 'description', 'rate', 'code');
+        $data = $request->only('date', 'from_account_id', 'to_account_id', 'type', 'category_id', 'name', 'amount', 'description', 'rate', 'code', 'recurring_day');
 
         if ($data['type'] === 'transfer') {
             $this->validate($request, [
@@ -106,6 +107,7 @@ class RecordController extends Controller
 
         $data['category_id'] = $data['category_id'] ?? 1;
         $data['user_id'] = $request->user()->id;
+        $data['recurring_day'] = !empty($data['recurring_day']) ? (int) $data['recurring_day'] : null;
 
         $record = new Record();
         $record->fill($data);
@@ -126,10 +128,11 @@ class RecordController extends Controller
             'to_account_id' => 'integer|exists:App\Models\Account,id',
             'type' => 'required',
             'amount' => 'required',
-            'rate' => 'nullable|numeric'
+            'rate' => 'nullable|numeric',
+            'recurring_day' => 'nullable|integer|min:1|max:31',
         ]);
 
-        $data = $request->only('date', 'from_account_id', 'to_account_id', 'type', 'category_id', 'name', 'amount', 'description', 'rate');
+        $data = $request->only('date', 'from_account_id', 'to_account_id', 'type', 'category_id', 'name', 'amount', 'description', 'rate', 'recurring_day');
 
         if ($data['type'] === 'transfer') {
             $this->validate($request, [
@@ -142,6 +145,8 @@ class RecordController extends Controller
         if ($data['type'] == "expense" || $data['type'] == "transfer") {
             $data['amount'] = "-" . $data['amount'];
         }
+
+        $data['recurring_day'] = !empty($data['recurring_day']) ? (int) $data['recurring_day'] : null;
 
         $record->fill($data);
         $record->save();

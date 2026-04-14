@@ -23,7 +23,7 @@ class Record extends Model
      * @var string[]
      */
     protected $fillable = [
-        'user_id', 'date', 'from_account_id', 'to_account_id', 'type', 'category_id', 'name', 'description', 'amount', 'bank_code', 'link_record_id', 'rate', 'code', 'import_id'
+        'user_id', 'date', 'from_account_id', 'to_account_id', 'type', 'category_id', 'name', 'description', 'amount', 'bank_code', 'link_record_id', 'rate', 'code', 'import_id', 'recurring_day', 'last_recurring_date'
     ];
 
     protected $appends = ['parent_category_icon', 'parent_category_name', 'parent_category_id', 'category_name', 'category_color', 'account_name', 'to_account_name', 'account_type_name', 'icon', 'currency_symbol', 'amount_base_currency'];
