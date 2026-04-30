@@ -18,6 +18,19 @@ import {
     Textarea,
 } from "@nextui-org/react";
 
+const CustomDateInput = React.forwardRef(({ value, onClick, placeholder }, ref) => (
+    <Input
+        ref={ref}
+        label="Date"
+        placeholder={placeholder}
+        value={value || ""}
+        onClick={onClick}
+        readOnly
+        className="w-full cursor-pointer"
+    />
+));
+CustomDateInput.displayName = "CustomDateInput";
+
 export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain, setIsRemoved, onRecordChange }) {
     const [accounts, setAccounts] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -33,6 +46,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
     const [date, setDate] = useState(null);
     const [amount, setAmount] = useState('');
     const [saveAndNew, setSaveAndNew] = useState(false);
+    const [typeError, setTypeError] = useState(false);
     const formRef = useRef();
 
     useEffect(() => {
@@ -103,6 +117,12 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
     const handleSaveForm = async (e) => {
         e.preventDefault();
 
+        if (!type) {
+            setTypeError(true);
+            return;
+        }
+        setTypeError(false);
+
         const currentForm = formRef.current;
 
         if (!currentForm) {
@@ -159,7 +179,8 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                     <ModalHeader className="flex flex-col gap-1"></ModalHeader>
                     <ModalBody>
                         <>
-                            <SelectType onChange={e => setType(e.target.value)} value={type} />
+                            <SelectType onChange={e => { setType(e.target.value); setTypeError(false); }} value={type} />
+                            {typeError && <p className="text-danger text-xs pl-1">Please select a type (Income, Expense or Transfer)</p>}
                             <div className="flex flex-row gap-x-3">
                                 <Select
                                     isRequired
@@ -280,14 +301,13 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                                     defaultValue={record?.rate}
                                 />
                             )}
-                            <div className="flex flex-row gap-x-3">
-                                <div className="flex flex-col gap-y-1">
-                                    <label className="text-xs font-medium text-gray-400">Date</label>
+                            <div className="flex flex-row gap-x-3 w-full">
+                                <div className="w-full">
                                     <DatePicker
                                         selected={date ? new Date(date) : null}
                                         onChange={(d) => setDate(d ? moment(d).format("YYYY-MM-DD") : null)}
-                                        className="border text-sm rounded-lg pl-3 pr-3 py-2 w-36 bg-gray-700 border-gray-600 text-white focus:ring-blue-500 focus:border-blue-500"
-                                        placeholderText="Select date"
+                                        customInput={<CustomDateInput placeholder="Select date" />}
+                                        wrapperClassName="w-full"
                                         dateFormat="yyyy-MM-dd"
                                     />
                                     <input type="hidden" name="date" value={date ?? ""} />
