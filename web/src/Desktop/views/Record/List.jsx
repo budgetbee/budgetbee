@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
+import moment from "moment";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Api from "../../../Api/Endpoints";
 import RecordCard from "../../Components/Record/Card";
@@ -13,11 +16,23 @@ const EMPTY_FILTERS = {
     type: "",
     parent_category_id: "",
     category_id: "",
-    from_date: "",
-    to_date: "",
     amount_min: "",
     amount_max: "",
 };
+
+const DATE_PRESETS = [
+    { label: "Today", from: () => moment().format("YYYY-MM-DD"), to: () => moment().format("YYYY-MM-DD") },
+    { label: "Yesterday", from: () => moment().subtract(1, "days").format("YYYY-MM-DD"), to: () => moment().subtract(1, "days").format("YYYY-MM-DD") },
+    { label: "This Week", from: () => moment().startOf("isoWeek").format("YYYY-MM-DD"), to: () => moment().format("YYYY-MM-DD") },
+    { label: "This Month", from: () => moment().startOf("month").format("YYYY-MM-DD"), to: () => moment().format("YYYY-MM-DD") },
+    { label: "Last Month", from: () => moment().subtract(1, "month").startOf("month").format("YYYY-MM-DD"), to: () => moment().subtract(1, "month").endOf("month").format("YYYY-MM-DD") },
+    { label: "Last 30 Days", from: () => moment().subtract(30, "days").format("YYYY-MM-DD"), to: () => moment().format("YYYY-MM-DD") },
+    { label: "Last 3 Months", from: () => moment().subtract(3, "months").format("YYYY-MM-DD"), to: () => moment().format("YYYY-MM-DD") },
+    { label: "Last 6 Months", from: () => moment().subtract(6, "months").format("YYYY-MM-DD"), to: () => moment().format("YYYY-MM-DD") },
+    { label: "This Year", from: () => moment().startOf("year").format("YYYY-MM-DD"), to: () => moment().format("YYYY-MM-DD") },
+    { label: "Last Year", from: () => moment().subtract(1, "year").startOf("year").format("YYYY-MM-DD"), to: () => moment().subtract(1, "year").endOf("year").format("YYYY-MM-DD") },
+    { label: "Custom", from: null, to: null },
+];
 
 const SELECT_CLASS =
     "w-full text-sm rounded-2xl px-3 py-2 bg-gray-800 border border-gray-600 text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors";
@@ -30,6 +45,8 @@ const TYPE_OPTIONS = [
 ];
 
 export default function List() {
+    const { account_id } = useParams();
+
     const [moreData, setMoreData] = useState(true);
     const [data, setData] = useState([]);
     const [page, setPage] = useState(1);
@@ -38,12 +55,23 @@ export default function List() {
     const [parentCategories, setParentCategories] = useState([]);
     const [subcategories, setSubcategories] = useState([]);
     const [selectedParent, setSelectedParent] = useState("");
+    const [accounts, setAccounts] = useState([]);
 
-    const { account_id } = useParams();
+    // Reports-style date & account filters
+    const [activeAccountIds, setActiveAccountIds] = useState(
+        account_id ? [parseInt(account_id)] : []
+    );
+    const [activeDateFrom, setActiveDateFrom] = useState("");
+    const [activeDateTo, setActiveDateTo] = useState("");
+    const [activePreset, setActivePreset] = useState("");
+    const [customFrom, setCustomFrom] = useState(null);
+    const [customTo, setCustomTo] = useState(null);
+
     const abortControllerRef = useRef(null);
 
     useEffect(() => {
         Api.getParentCategories().then(setParentCategories);
+        Api.getAccounts().then(setAccounts);
     }, []);
 
     useEffect(() => {
@@ -54,13 +82,17 @@ export default function List() {
         abortControllerRef.current = controller;
 
         async function getRecords() {
-            const newData = await Api.getPaginateRecords(account_id, page, activeFilters);
+            const apiFilters = { ...activeFilters };
+            if (activeDateFrom) apiFilters.from_date = activeDateFrom;
+            if (activeDateTo) apiFilters.to_date = activeDateTo;
+            if (activeAccountIds.length > 0) apiFilters.account_id = activeAccountIds;
+            const newData = await Api.getPaginateRecords(null, page, apiFilters);
             if (controller.signal.aborted) return;
             if (!Array.isArray(newData)) {
                 setMoreData(false);
                 return;
             }
-            setData((prev) => [...prev, ...newData]);
+            setData((prev) => (page === 1 ? newData : [...prev, ...newData]));
             if (newData.length < PAGE_SIZE) {
                 setMoreData(false);
             }
@@ -70,7 +102,7 @@ export default function List() {
         }
 
         return () => controller.abort();
-    }, [page, account_id, moreData, activeFilters]);
+    }, [page, moreData, activeFilters, activeDateFrom, activeDateTo, activeAccountIds]);
 
     useEffect(() => {
         function loadMore() {
@@ -116,13 +148,55 @@ export default function List() {
         setActiveFilters(EMPTY_FILTERS);
         setSelectedParent("");
         setSubcategories([]);
+        setActiveAccountIds([]);
+        setActiveDateFrom("");
+        setActiveDateTo("");
+        setActivePreset("");
+        setCustomFrom(null);
+        setCustomTo(null);
         setData([]);
         setPage(1);
         setMoreData(true);
     };
 
-    const hasActiveFilters = Object.values(activeFilters).some((v) => v !== "");
-    const activeFilterCount = Object.values(activeFilters).filter((v) => v !== "").length;
+    const handleAccountToggle = (accountId) => {
+        setActiveAccountIds((prev) =>
+            prev.includes(accountId) ? prev.filter((id) => id !== accountId) : [...prev, accountId]
+        );
+        setData([]);
+        setPage(1);
+        setMoreData(true);
+    };
+
+    const handlePreset = (preset) => {
+        setActivePreset(preset.label);
+        if (preset.label !== "Custom") {
+            setActiveDateFrom(preset.from());
+            setActiveDateTo(preset.to());
+            setData([]);
+            setPage(1);
+            setMoreData(true);
+        }
+    };
+
+    const applyCustomRange = () => {
+        if (!customFrom || !customTo) return;
+        setActiveDateFrom(moment(customFrom).format("YYYY-MM-DD"));
+        setActiveDateTo(moment(customTo).format("YYYY-MM-DD"));
+        setData([]);
+        setPage(1);
+        setMoreData(true);
+    };
+
+    const hasActiveFilters =
+        Object.values(activeFilters).some((v) => v !== "") ||
+        activeAccountIds.length > 0 ||
+        !!activeDateFrom;
+
+    const activeFilterCount =
+        Object.values(activeFilters).filter((v) => v !== "").length +
+        (activeAccountIds.length > 0 ? 1 : 0) +
+        (activeDateFrom ? 1 : 0);
 
     return (
         <Layout>
@@ -187,6 +261,65 @@ export default function List() {
 
                         <div className="border-t border-gray-600/50" />
 
+                        {/* Date presets */}
+                        <div className="flex flex-col gap-y-2">
+                            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Date</span>
+                            <div className="flex flex-wrap gap-2">
+                                {DATE_PRESETS.map((preset) => (
+                                    <button
+                                        key={preset.label}
+                                        type="button"
+                                        onClick={() => handlePreset(preset)}
+                                        className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-150 ${
+                                            activePreset === preset.label
+                                                ? "bg-blue-600 text-white shadow-md shadow-blue-900/40"
+                                                : "bg-gray-800 text-gray-300 hover:bg-gray-600 hover:text-white"
+                                        }`}
+                                    >
+                                        {preset.label}
+                                    </button>
+                                ))}
+                            </div>
+                            {activePreset === "Custom" && (
+                                <div className="flex flex-wrap items-center gap-3 mt-1">
+                                    <DatePicker
+                                        selected={customFrom}
+                                        onChange={(d) => setCustomFrom(d)}
+                                        selectsStart
+                                        startDate={customFrom}
+                                        endDate={customTo}
+                                        className="border text-sm rounded-lg pl-3 pr-3 py-2 w-36 bg-gray-800 border-gray-600 text-white focus:ring-blue-500 focus:border-blue-500"
+                                        placeholderText="From date"
+                                    />
+                                    <span className="text-gray-400 text-sm">to</span>
+                                    <DatePicker
+                                        selected={customTo}
+                                        onChange={(d) => setCustomTo(d)}
+                                        selectsEnd
+                                        startDate={customFrom}
+                                        endDate={customTo}
+                                        minDate={customFrom}
+                                        className="border text-sm rounded-lg pl-3 pr-3 py-2 w-36 bg-gray-800 border-gray-600 text-white focus:ring-blue-500 focus:border-blue-500"
+                                        placeholderText="To date"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={applyCustomRange}
+                                        className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg font-medium transition-colors"
+                                    >
+                                        Apply
+                                    </button>
+                                </div>
+                            )}
+                            {activePreset && activePreset !== "Custom" && activeDateFrom && (
+                                <p className="text-xs text-gray-400">
+                                    {activeDateFrom} &rarr; {activeDateTo}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="border-t border-gray-600/50" />
+
                         {/* Type pills */}
                         <div className="flex flex-col gap-y-2">
                             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Type</span>
@@ -208,7 +341,7 @@ export default function List() {
                             </div>
                         </div>
 
-                        {/* Category / Subcategory / Dates / Amount */}
+                        {/* Account / Category / Subcategory / Amount */}
                         <div className="grid grid-cols-4 gap-x-4 gap-y-4">
 
                             <div className="flex flex-col gap-y-1.5">
@@ -240,26 +373,6 @@ export default function List() {
                                 </select>
                             </div>
 
-                            <div className="flex flex-col gap-y-1.5">
-                                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wide">From date</label>
-                                <input
-                                    type="date"
-                                    value={formFilters.from_date}
-                                    onChange={(e) => handleFilter("from_date", e.target.value)}
-                                    className={SELECT_CLASS}
-                                />
-                            </div>
-
-                            <div className="flex flex-col gap-y-1.5">
-                                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wide">To date</label>
-                                <input
-                                    type="date"
-                                    value={formFilters.to_date}
-                                    onChange={(e) => handleFilter("to_date", e.target.value)}
-                                    className={SELECT_CLASS}
-                                />
-                            </div>
-
                             <div className="flex flex-col gap-y-1.5 col-span-2">
                                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Amount range</label>
                                 <div className="flex items-center gap-x-2">
@@ -285,6 +398,56 @@ export default function List() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Account filter */}
+                        {accounts.length > 0 && (
+                            <div className="flex flex-col gap-y-2 pt-1 border-t border-gray-600/50">
+                                <div className="flex flex-row items-center gap-x-3">
+                                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap">
+                                        Accounts
+                                    </span>
+                                    {activeAccountIds.length > 0 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setActiveAccountIds([]);
+                                                setData([]);
+                                                setPage(1);
+                                                setMoreData(true);
+                                            }}
+                                            className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                                        >
+                                            Clear
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    {accounts.map((account) => {
+                                        const isActive = activeAccountIds.includes(account.id);
+                                        const dotStyle = { backgroundColor: account.color };
+                                        return (
+                                            <button
+                                                key={account.id}
+                                                type="button"
+                                                onClick={() => handleAccountToggle(account.id)}
+                                                className={`flex items-center gap-x-2 px-3 py-1.5 rounded-full text-sm font-medium border transition-all duration-150 ${
+                                                    isActive
+                                                        ? "border-transparent text-white shadow-sm"
+                                                        : "border-gray-600 text-gray-300 hover:border-gray-400 hover:text-white bg-transparent"
+                                                }`}
+                                                style={isActive ? { backgroundColor: account.color + "33", borderColor: account.color } : {}}
+                                            >
+                                                <span
+                                                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                                    style={dotStyle}
+                                                />
+                                                {account.name}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </form>
 

@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import moment from "moment";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import Api from "../../../Api/Endpoints";
 import SelectType from "./SelectType";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -279,16 +281,17 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                                 />
                             )}
                             <div className="flex flex-row gap-x-3">
-                                <Input
-                                    isRequired
-                                    name="date"
-                                    type="date"
-                                    label="Date"
-                                    placeholder=""
-                                    className="max-w-xs"
-                                    value={date}
-                                    onChange={e => setDate(e.target.value)}
-                                />
+                                <div className="flex flex-col gap-y-1">
+                                    <label className="text-xs font-medium text-gray-400">Date</label>
+                                    <DatePicker
+                                        selected={date ? new Date(date) : null}
+                                        onChange={(d) => setDate(d ? moment(d).format("YYYY-MM-DD") : null)}
+                                        className="border text-sm rounded-lg pl-3 pr-3 py-2 w-36 bg-gray-700 border-gray-600 text-white focus:ring-blue-500 focus:border-blue-500"
+                                        placeholderText="Select date"
+                                        dateFormat="yyyy-MM-dd"
+                                    />
+                                    <input type="hidden" name="date" value={date ?? ""} />
+                                </div>
                                 <Input
                                     isRequired
                                     name="amount"

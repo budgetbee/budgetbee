@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
+import moment from "moment";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import Api from "../../Api/Endpoints";
 import RecordCard from "../../Components/Record/Card";
 import TopNav from "../../layout/TopNav";
@@ -10,16 +13,30 @@ const EMPTY_FILTERS = {
     type: "",
     parent_category_id: "",
     category_id: "",
-    from_date: "",
-    to_date: "",
     amount_min: "",
     amount_max: "",
 };
+
+const DATE_PRESETS = [
+    { label: "Today", from: () => moment().format("YYYY-MM-DD"), to: () => moment().format("YYYY-MM-DD") },
+    { label: "Yesterday", from: () => moment().subtract(1, "days").format("YYYY-MM-DD"), to: () => moment().subtract(1, "days").format("YYYY-MM-DD") },
+    { label: "This Week", from: () => moment().startOf("isoWeek").format("YYYY-MM-DD"), to: () => moment().format("YYYY-MM-DD") },
+    { label: "This Month", from: () => moment().startOf("month").format("YYYY-MM-DD"), to: () => moment().format("YYYY-MM-DD") },
+    { label: "Last Month", from: () => moment().subtract(1, "month").startOf("month").format("YYYY-MM-DD"), to: () => moment().subtract(1, "month").endOf("month").format("YYYY-MM-DD") },
+    { label: "Last 30 Days", from: () => moment().subtract(30, "days").format("YYYY-MM-DD"), to: () => moment().format("YYYY-MM-DD") },
+    { label: "Last 3 Months", from: () => moment().subtract(3, "months").format("YYYY-MM-DD"), to: () => moment().format("YYYY-MM-DD") },
+    { label: "Last 6 Months", from: () => moment().subtract(6, "months").format("YYYY-MM-DD"), to: () => moment().format("YYYY-MM-DD") },
+    { label: "This Year", from: () => moment().startOf("year").format("YYYY-MM-DD"), to: () => moment().format("YYYY-MM-DD") },
+    { label: "Last Year", from: () => moment().subtract(1, "year").startOf("year").format("YYYY-MM-DD"), to: () => moment().subtract(1, "year").endOf("year").format("YYYY-MM-DD") },
+    { label: "Custom", from: null, to: null },
+];
 
 const INPUT_CLASS =
     "border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500";
 
 export default function List() {
+    const { account_id } = useParams();
+
     const [moreData, setMoreData] = useState(true);
     const [data, setData] = useState([]);
     const [page, setPage] = useState(1);
@@ -29,12 +46,23 @@ export default function List() {
     const [parentCategories, setParentCategories] = useState([]);
     const [subcategories, setSubcategories] = useState([]);
     const [selectedParent, setSelectedParent] = useState("");
+    const [accounts, setAccounts] = useState([]);
 
-    const { account_id } = useParams();
+    // Date & account filters (applied immediately, like Reports)
+    const [activeAccountIds, setActiveAccountIds] = useState(
+        account_id ? [parseInt(account_id)] : []
+    );
+    const [activeDateFrom, setActiveDateFrom] = useState("");
+    const [activeDateTo, setActiveDateTo] = useState("");
+    const [activePreset, setActivePreset] = useState("");
+    const [customFrom, setCustomFrom] = useState(null);
+    const [customTo, setCustomTo] = useState(null);
+
     const abortControllerRef = useRef(null);
 
     useEffect(() => {
         Api.getParentCategories().then(setParentCategories);
+        Api.getAccounts().then((data) => { if (Array.isArray(data)) setAccounts(data); });
     }, []);
 
     useEffect(() => {
@@ -45,13 +73,17 @@ export default function List() {
         abortControllerRef.current = controller;
 
         async function getRecords() {
-            const newData = await Api.getPaginateRecords(account_id, page, activeFilters);
+            const apiFilters = { ...activeFilters };
+            if (activeDateFrom) apiFilters.from_date = activeDateFrom;
+            if (activeDateTo) apiFilters.to_date = activeDateTo;
+            if (activeAccountIds.length > 0) apiFilters.account_id = activeAccountIds;
+            const newData = await Api.getPaginateRecords(null, page, apiFilters);
             if (controller.signal.aborted) return;
             if (!Array.isArray(newData)) {
                 setMoreData(false);
                 return;
             }
-            setData((prevData) => [...prevData, ...newData]);
+            setData((prevData) => (page === 1 ? newData : [...prevData, ...newData]));
             if (newData.length === 0) {
                 setMoreData(false);
             }
@@ -61,7 +93,7 @@ export default function List() {
         }
 
         return () => controller.abort();
-    }, [page, account_id, moreData, activeFilters]);
+    }, [page, moreData, activeFilters, activeDateFrom, activeDateTo, activeAccountIds]);
 
     function loadMore() {
         if (
@@ -117,12 +149,50 @@ export default function List() {
         setActiveFilters(EMPTY_FILTERS);
         setSelectedParent("");
         setSubcategories([]);
+        setActiveAccountIds([]);
+        setActiveDateFrom("");
+        setActiveDateTo("");
+        setActivePreset("");
+        setCustomFrom(null);
+        setCustomTo(null);
         setData([]);
         setPage(1);
         setMoreData(true);
     };
 
-    const hasActiveFilters = Object.values(activeFilters).some((v) => v !== "");
+    const handleAccountToggle = (accountId) => {
+        setActiveAccountIds((prev) =>
+            prev.includes(accountId) ? prev.filter((id) => id !== accountId) : [...prev, accountId]
+        );
+        setData([]);
+        setPage(1);
+        setMoreData(true);
+    };
+
+    const handlePreset = (preset) => {
+        setActivePreset(preset.label);
+        if (preset.label !== "Custom") {
+            setActiveDateFrom(preset.from());
+            setActiveDateTo(preset.to());
+            setData([]);
+            setPage(1);
+            setMoreData(true);
+        }
+    };
+
+    const applyCustomRange = () => {
+        if (!customFrom || !customTo) return;
+        setActiveDateFrom(moment(customFrom).format("YYYY-MM-DD"));
+        setActiveDateTo(moment(customTo).format("YYYY-MM-DD"));
+        setData([]);
+        setPage(1);
+        setMoreData(true);
+    };
+
+    const hasActiveFilters =
+        Object.values(activeFilters).some((v) => v !== "") ||
+        activeAccountIds.length > 0 ||
+        !!activeDateFrom;
 
     const view = data.map((record) => (
         <div key={record.id}>
@@ -221,27 +291,99 @@ export default function List() {
                                 </div>
                             </div>
 
-                            {/* Date range */}
-                            <div className="grid grid-cols-2 gap-x-2">
-                                <div>
-                                    <label className="block text-xs text-gray-400 mb-1">From date</label>
-                                    <input
-                                        type="date"
-                                        value={formFilters.from_date}
-                                        onChange={(e) => handleFilter("from_date", e.target.value)}
-                                        className={INPUT_CLASS}
-                                    />
+                            {/* Date presets */}
+                            <div>
+                                <label className="block text-xs text-gray-400 mb-1">Date</label>
+                                <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+                                    {DATE_PRESETS.map((preset) => (
+                                        <button
+                                            key={preset.label}
+                                            type="button"
+                                            onClick={() => handlePreset(preset)}
+                                            className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                                                activePreset === preset.label
+                                                    ? "bg-blue-600 text-white"
+                                                    : "bg-gray-700 text-gray-300 border border-gray-600"
+                                            }`}
+                                        >
+                                            {preset.label}
+                                        </button>
+                                    ))}
                                 </div>
-                                <div>
-                                    <label className="block text-xs text-gray-400 mb-1">To date</label>
-                                    <input
-                                        type="date"
-                                        value={formFilters.to_date}
-                                        onChange={(e) => handleFilter("to_date", e.target.value)}
-                                        className={INPUT_CLASS}
-                                    />
-                                </div>
+                                {activePreset === "Custom" && (
+                                    <div className="flex flex-wrap items-center gap-2 mt-2">
+                                        <DatePicker
+                                            selected={customFrom}
+                                            onChange={(d) => setCustomFrom(d)}
+                                            selectsStart
+                                            startDate={customFrom}
+                                            endDate={customTo}
+                                            className="border text-xs rounded-lg px-2 py-1.5 w-32 bg-gray-700 border-gray-600 text-white focus:ring-blue-500 focus:border-blue-500"
+                                            placeholderText="From date"
+                                        />
+                                        <span className="text-gray-400 text-xs">to</span>
+                                        <DatePicker
+                                            selected={customTo}
+                                            onChange={(d) => setCustomTo(d)}
+                                            selectsEnd
+                                            startDate={customFrom}
+                                            endDate={customTo}
+                                            minDate={customFrom}
+                                            className="border text-xs rounded-lg px-2 py-1.5 w-32 bg-gray-700 border-gray-600 text-white focus:ring-blue-500 focus:border-blue-500"
+                                            placeholderText="To date"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={applyCustomRange}
+                                            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded-lg font-medium transition-colors"
+                                        >
+                                            Apply
+                                        </button>
+                                    </div>
+                                )}
+                                {activePreset && activePreset !== "Custom" && activeDateFrom && (
+                                    <p className="text-xs text-gray-400 mt-1">{activeDateFrom} &rarr; {activeDateTo}</p>
+                                )}
                             </div>
+
+                            {/* Account filter */}
+                            {accounts.length > 0 && (
+                                <div>
+                                    <div className="flex items-center gap-x-2 mb-1">
+                                        <label className="block text-xs text-gray-400">Accounts</label>
+                                        {activeAccountIds.length > 0 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => { setActiveAccountIds([]); setData([]); setPage(1); setMoreData(true); }}
+                                                className="text-xs text-blue-400 hover:text-blue-300"
+                                            >
+                                                Clear
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="flex gap-2 flex-wrap">
+                                        {accounts.map((account) => {
+                                            const isActive = activeAccountIds.includes(account.id);
+                                            return (
+                                                <button
+                                                    key={account.id}
+                                                    type="button"
+                                                    onClick={() => handleAccountToggle(account.id)}
+                                                    className={`flex items-center gap-x-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                                                        isActive
+                                                            ? "border-transparent text-white shadow-sm"
+                                                            : "border-gray-600 text-gray-300 bg-transparent"
+                                                    }`}
+                                                    style={isActive ? { backgroundColor: account.color + "33", borderColor: account.color } : {}}
+                                                >
+                                                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: account.color }} />
+                                                    {account.name}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Amount range */}
                             <div className="grid grid-cols-2 gap-x-2">
