@@ -18,9 +18,11 @@ export default function Dashboard() {
         from_date: moment().startOf("year").format("YYYY-MM-DD"),
         to_date: moment().format("YYYY-MM-DD"),
     });
+    const [lastRecordsRefreshKey, setLastRecordsRefreshKey] = useState(0);
 
     const handleRecordChange = () => {
         setSearchData((prev) => ({ ...prev, _refresh: Date.now() }));
+        setLastRecordsRefreshKey((prev) => prev + 1);
     };
 
     return (
@@ -57,7 +59,7 @@ export default function Dashboard() {
                         activeAccount={searchData.account_id}
                         setSearchData={setSearchData}
                     />
-                    <LastRecords searchData={searchData} onRecordChange={handleRecordChange} />
+                    <LastRecords searchData={searchData} onRecordChange={handleRecordChange} refreshKey={lastRecordsRefreshKey} />
                 </div>
             </div>
         </Layout>

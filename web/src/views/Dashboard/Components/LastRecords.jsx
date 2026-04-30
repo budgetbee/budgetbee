@@ -9,13 +9,17 @@ export default function LastRecords({ activeAccount, refreshKey }) {
     const [data, setData] = useState(null);
 
     useEffect(() => {
+        let cancelled = false;
         async function getLastRecords() {
             const searchData = {limit: 5, account_id: activeAccount};
-            const data = await Api.getLastRecords(searchData);
-            setData(data);
-            setIsLoading(false);
+            const result = await Api.getLastRecords(searchData);
+            if (!cancelled) {
+                setData(result);
+                setIsLoading(false);
+            }
         }
         getLastRecords();
+        return () => { cancelled = true; };
     }, [activeAccount, refreshKey]);
 
     if (isLoading) {

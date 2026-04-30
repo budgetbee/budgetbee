@@ -4,19 +4,23 @@ import Api from "../../../../Api/Endpoints";
 import RecordCard from "../../../Components/Record/Card";
 import { Link } from "react-router-dom";
 
-export default function LastRecords({ searchData, onRecordChange }) {
+export default function LastRecords({ searchData, onRecordChange, refreshKey }) {
     const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState(null);
 
     useEffect(() => {
+        let cancelled = false;
         async function getLastRecords() {
             const requestData = { ...searchData, limit: 5 };
-            const data = await Api.getLastRecords(requestData);
-            setData(data);
-            setIsLoading(false);
+            const result = await Api.getLastRecords(requestData);
+            if (!cancelled) {
+                setData(result);
+                setIsLoading(false);
+            }
         }
         getLastRecords();
-    }, [searchData]);
+        return () => { cancelled = true; };
+    }, [searchData, refreshKey]);
 
     if (isLoading) {
         return <></>;
@@ -27,9 +31,9 @@ export default function LastRecords({ searchData, onRecordChange }) {
     return (
         <div>
             <div className="flex flex-col divide-y divide-gray-600/50 bg-background rounded p-px">
-                {data.map((record, index) => {
+                {data.map((record) => {
                     return (
-                        <div key={index}>
+                        <div key={record.id}>
                             <RecordCard record={record} onRecordChange={onRecordChange} />
                         </div>
                     );

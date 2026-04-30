@@ -165,7 +165,11 @@ class RecordController extends Controller
         $query = Record::where('user_id', $request->user()->id);
 
         if ($request->has('account_id')) {
-            $query->where('from_account_id', $request->query('account_id'));
+            $accountId = $request->query('account_id');
+            $query->where(function ($q) use ($accountId) {
+                $q->where('from_account_id', $accountId)
+                  ->orWhere('to_account_id', $accountId);
+            });
         }
         if ($request->has('from_date')) {
             $query->where('date', '>=', (new DateTime($request->query('from_date')))->format('Y-m-d'));
