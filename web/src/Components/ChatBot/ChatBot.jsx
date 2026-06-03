@@ -1,7 +1,23 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCommentDots, faPaperPlane, faTimes, faRobot } from "@fortawesome/free-solid-svg-icons";
+import {
+    faCommentDots,
+    faPaperPlane,
+    faTimes,
+    faRobot,
+    faPaperclip,
+    faFile,
+    faCircleXmark,
+} from "@fortawesome/free-solid-svg-icons";
 import Endpoints from "../../Api/Endpoints";
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+}
 
 export default function ChatBot() {
     const [isOpen, setIsOpen] = useState(false);
@@ -12,9 +28,11 @@ export default function ChatBot() {
         },
     ]);
     const [input, setInput] = useState("");
+    const [files, setFiles] = useState([]);
     const [loading, setLoading] = useState(false);
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
+    const fileInputRef = useRef(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -30,16 +48,57 @@ export default function ChatBot() {
         }
     }, [isOpen]);
 
+    const handleAttachClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (e) => {
+        const selected = Array.from(e.target.files);
+        const valid = selected.filter((f) => f.size <= MAX_FILE_SIZE);
+        const tooBig = selected.filter((f) => f.size > MAX_FILE_SIZE);
+
+        if (tooBig.length > 0) {
+            setMessages((prev) => [
+                ...prev,
+                {
+                    role: "assistant",
+                    content: `Some files exceed the 10 MB limit and were skipped: ${tooBig.map((f) => f.name).join(", ")}`,
+                },
+            ]);
+        }
+
+        setFiles((prev) => [...prev, ...valid]);
+        // Reset so the same file can be re-selected
+        if (fileInputRef.current) fileInputRef.current.value = "";
+    };
+
+    const removeFile = (index) => {
+        setFiles((prev) => prev.filter((_, i) => i !== index));
+    };
+
     const handleSend = async () => {
         const text = input.trim();
-        if (!text || loading) return;
+        if ((!text && files.length === 0) || loading) return;
 
-        const userMessage = { role: "user", content: text };
+        const currentFiles = [...files];
+
+        // Build user message for the chat bubble
+        let content = text;
+        const userMessage = {
+            role: "user",
+            content: content || "",
+            files: currentFiles.map((f) => ({
+                name: f.name,
+                size: f.size,
+            })),
+        };
+
         setMessages((prev) => [...prev, userMessage]);
         setInput("");
+        setFiles([]);
         setLoading(true);
 
-        const response = await Endpoints.chatMessage(text);
+        const response = await Endpoints.chatMessage(text, currentFiles);
 
         if (response?.error) {
             setMessages((prev) => [
@@ -63,6 +122,8 @@ export default function ChatBot() {
         }
     };
 
+    const canSend = (input.trim() || files.length > 0) && !loading;
+
     return (
         <>
             {/* Floating toggle button */}
@@ -78,7 +139,7 @@ export default function ChatBot() {
 
             {/* Chat panel */}
             {isOpen && (
-                <div className="fixed bottom-6 right-6 z-50 w-96 h-[500px] bg-gray-800 rounded-xl shadow-2xl flex flex-col border border-gray-600 overflow-hidden">
+                <div className="fixed bottom-6 right-6 z-50 w-96 h-[550px] bg-gray-800 rounded-xl shadow-2xl flex flex-col border border-gray-600 overflow-hidden">
                     {/* Header */}
                     <div className="flex items-center justify-between px-4 py-3 bg-gray-700 border-b border-gray-600">
                         <div className="flex items-center gap-2">
@@ -107,7 +168,27 @@ export default function ChatBot() {
                                             : "bg-gray-700 text-gray-100 rounded-bl-sm"
                                     }`}
                                 >
-                                    {msg.content}
+                                    {msg.content && <p>{msg.content}</p>}
+                                    {msg.files && msg.files.length > 0 && (
+                                        <div className="mt-1 space-y-1">
+                                            {msg.files.map((f, fi) => (
+                                                <div
+                                                    key={fi}
+                                                    className={`flex items-center gap-1.5 text-xs rounded px-2 py-1 ${
+                                                        msg.role === "user"
+                                                            ? "bg-blue-500/50"
+                                                            : "bg-gray-600"
+                                                    }`}
+                                                >
+                                                    <FontAwesomeIcon icon={faFile} className="text-xs" />
+                                                    <span className="truncate max-w-[150px]">{f.name}</span>
+                                                    <span className="opacity-60 flex-shrink-0">
+                                                        {formatFileSize(f.size)}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -125,9 +206,46 @@ export default function ChatBot() {
                         <div ref={messagesEndRef} />
                     </div>
 
+                    {/* File previews */}
+                    {files.length > 0 && (
+                        <div className="px-4 py-2 bg-gray-750 border-t border-gray-600 flex flex-wrap gap-2">
+                            {files.map((file, idx) => (
+                                <div
+                                    key={idx}
+                                    className="flex items-center gap-1.5 bg-gray-600 rounded-lg px-2.5 py-1.5 text-xs text-gray-200"
+                                >
+                                    <FontAwesomeIcon icon={faFile} className="text-blue-400" />
+                                    <span className="truncate max-w-[120px]">{file.name}</span>
+                                    <span className="text-gray-400">{formatFileSize(file.size)}</span>
+                                    <button
+                                        onClick={() => removeFile(idx)}
+                                        className="text-gray-400 hover:text-red-400 ml-1"
+                                    >
+                                        <FontAwesomeIcon icon={faCircleXmark} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
                     {/* Input */}
                     <div className="px-4 py-3 bg-gray-700 border-t border-gray-600">
                         <div className="flex gap-2">
+                            <button
+                                onClick={handleAttachClick}
+                                disabled={loading}
+                                className="px-2 py-2 bg-gray-600 hover:bg-gray-500 disabled:opacity-50 text-gray-300 hover:text-white rounded-lg transition-colors"
+                                title="Attach file"
+                            >
+                                <FontAwesomeIcon icon={faPaperclip} />
+                            </button>
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleFileChange}
+                                multiple
+                                className="hidden"
+                            />
                             <input
                                 ref={inputRef}
                                 type="text"
@@ -140,7 +258,7 @@ export default function ChatBot() {
                             />
                             <button
                                 onClick={handleSend}
-                                disabled={!input.trim() || loading}
+                                disabled={!canSend}
                                 className="px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
                             >
                                 <FontAwesomeIcon icon={faPaperPlane} className="text-sm" />

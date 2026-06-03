@@ -95,10 +95,24 @@ class AiController extends Controller
     public function chat(Request $request)
     {
         $request->validate([
-            'message' => 'required|string|max:2000',
+            'message' => 'nullable|string|max:2000',
+            'files' => 'nullable|array',
+            'files.*' => 'file|max:10240', // 10 MB per file
         ]);
 
-        $userMessage = $request->input('message');
+        $userMessage = $request->input('message', '');
+        $uploadedFiles = $request->file('files', []);
+
+        $fileInfo = [];
+        if ($uploadedFiles) {
+            foreach ($uploadedFiles as $file) {
+                $fileInfo[] = [
+                    'name' => $file->getClientOriginalName(),
+                    'size' => $file->getSize(),
+                    'mime' => $file->getMimeType(),
+                ];
+            }
+        }
 
         // TODO: Integrate with OpenAI / DeepSeek API using stored provider keys
         $dummyResponses = [
@@ -110,6 +124,11 @@ class AiController extends Controller
         ];
 
         $response = $dummyResponses[array_rand($dummyResponses)];
+
+        if (!empty($fileInfo)) {
+            $fileNames = implode(', ', array_column($fileInfo, 'name'));
+            $response = "I received your message" . ($userMessage ? ": \"$userMessage\"" : "") . " along with " . count($fileInfo) . " file(s): $fileNames. I'll be able to process files once AI integration is complete!";
+        }
 
         return response()->json([
             'message' => $response,

@@ -53,11 +53,10 @@ async function call(method, endpoint, data = null) {
     };
 
     if (method.toLowerCase() === "post" && data) {
-        options.data = data;
-
-        if (data.file) {
-            options.headers["Content-Type"] = "multipart/form-data";
+        if (data instanceof FormData) {
+            options.data = data;
         } else {
+            options.data = data;
             options.headers["Content-Type"] = "application/json";
         }
     }
@@ -340,7 +339,15 @@ const Endpoints = {
         return post('ai/predict-category', {name: text})
     },
 
-    chatMessage: async (message) => {
+    chatMessage: async (message, files = null) => {
+        if (files && files.length > 0) {
+            const formData = new FormData();
+            formData.append('message', message);
+            files.forEach((file) => {
+                formData.append('files[]', file);
+            });
+            return post('ai/chat', formData);
+        }
         return post('ai/chat', { message });
     },
 
