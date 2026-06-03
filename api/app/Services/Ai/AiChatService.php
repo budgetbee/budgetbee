@@ -3,6 +3,7 @@
 namespace App\Services\Ai;
 
 use App\Models\Account;
+use App\Models\AiMemory;
 use App\Models\AiProviderKey;
 use App\Models\Budget;
 use App\Models\Category;
@@ -304,6 +305,8 @@ class AiChatService
         $currency = $this->user->currency_symbol ?? '$';
         $today = Carbon::now()->format('Y-m-d');
         $currentMonth = Carbon::now()->format('F Y');
+        $memoryContext = AiMemory::getContextForUser($this->user->id);
+        $memorySection = $memoryContext ? "\n**User context (learned from previous conversations):**\n{$memoryContext}\n" : '';
 
         return <<<PROMPT
 You are BudgetBee AI, a friendly and helpful financial assistant integrated into the BudgetBee personal finance app.
@@ -312,7 +315,7 @@ Your role is to help the user understand their finances by answering questions a
 Current date: {$today}
 Current month: {$currentMonth}
 User's currency: {$currency}
-
+{$memorySection}
 You have access to tools that let you query the user's real financial data in the database.
 Always use these tools to provide accurate, data-driven answers. Do NOT make up numbers — only report what the tools return.
 If a query returns no data, tell the user honestly.
@@ -389,6 +392,14 @@ Table format: Date | Description | Amount | Type | Category
 - The user must tell you the account name AND say yes/confirm/create/proceed.
 - **NEVER call `create_records_batch` until the user has specified an account.**
 - When confirmed, call `create_records_batch` with: date, name, amount (ALWAYS positive), type ("income" or "expense"), category_name, account_name.
+
+**MEMORY: You have persistent memory per user. Use the `save_memory` tool to remember important facts:**
+- If the user consistently speaks a language (Spanish, English, etc.), save it as `language`.
+- If the user mentions their preferred account, save it as `preferred_account`.
+- If you notice patterns (e.g., "I always shop at Mercadona on Fridays"), save them.
+- Save any fact that would help you provide better, more personalized responses in future conversations.
+- Use the memory context provided above — it contains everything learned from previous conversations.
+- **Call `save_memory` automatically** when you learn something new — no need to ask permission.
 PROMPT;
     }
 
@@ -575,6 +586,27 @@ PROMPT;
                     ],
                 ],
             ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'save_memory',
+                    'description' => 'Save a fact about the user to persistent memory. Use this to remember user preferences, language, habits, or any information that helps personalize future interactions.',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'key' => [
+                                'type' => 'string',
+                                'description' => 'Short key describing what you are remembering (e.g., "language", "preferred_account", "shopping_habit").',
+                            ],
+                            'value' => [
+                                'type' => 'string',
+                                'description' => 'The fact or preference to remember (e.g., "Spanish", "Checking Account", "Shops at Mercadona on Fridays").',
+                            ],
+                        ],
+                        'required' => ['key', 'value'],
+                    ],
+                ],
+            ],
         ];
     }
 
@@ -661,6 +693,7 @@ PROMPT;
             'search_records' => $this->toolSearchRecords($arguments),
             'get_categories' => $this->toolGetCategories(),
             'create_records_batch' => $this->toolCreateRecordsBatch($arguments),
+            'save_memory' => $this->toolSaveMemory($arguments),
             default => ['error' => "Unknown tool: {$name}"],
         };
     }
@@ -1043,5 +1076,36 @@ PROMPT;
         }
 
         return null;
+    }
+
+    /**
+     * Save a fact to the user's persistent AI memory.
+     */
+    private function toolSaveMemory(array $args): array
+    {
+        $key = trim($args['key'] ?? '');
+        $value = trim($args['value'] ?? '');
+
+        if (empty($key) || empty($value)) {
+            return ['error' => 'Both key and value are required.'];
+        }
+
+        // Limit key length and value length
+        $key = substr($key, 0, 100);
+        $value = substr($value, 0, 500);
+
+        AiMemory::upsertForUser($this->user->id, $key, $value);
+
+        Log::info('AI memory saved', [
+            'user_id' => $this->user->id,
+            'key' => $key,
+            'value' => $value,
+        ]);
+
+        return [
+            'saved' => true,
+            'key' => $key,
+            'value' => $value,
+        ];
     }
 }
