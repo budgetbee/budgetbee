@@ -351,6 +351,10 @@ const Endpoints = {
         return post('ai/chat', { message });
     },
 
+    clearChatHistory: async () => {
+        return post('ai/clear-history');
+    },
+
     getApiKeys: async () => {
         return get('api-keys');
     },

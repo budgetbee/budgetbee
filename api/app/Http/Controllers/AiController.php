@@ -90,6 +90,17 @@ class AiController extends Controller
     }
 
     /**
+     * Clear the conversation history for the authenticated user.
+     */
+    public function clearHistory(Request $request)
+    {
+        $chatService = new AiChatService($request->user());
+        $chatService->clearHistory();
+
+        return response()->json(['message' => 'Conversation history cleared.']);
+    }
+
+    /**
      * Handle chat messages from the chatbot with MCP tool-calling.
      * Uses the user's configured AI provider (OpenAI or DeepSeek).
      */

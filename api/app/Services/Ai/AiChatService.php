@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\Record;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -17,6 +18,9 @@ class AiChatService
     private User $user;
     private ?string $provider;
     private ?string $apiKey;
+
+    private const HISTORY_CACHE_PREFIX = 'ai_chat_history_';
+    private const MAX_HISTORY_MESSAGES = 30; // Keep last N messages to stay within token limits
 
     public function __construct(User $user)
     {
@@ -65,6 +69,7 @@ class AiChatService
 
     /**
      * Main entry point: process a chat message and return the AI response.
+     * Maintains conversation history so follow-up questions work naturally.
      */
     public function chat(string $message, array $files = []): string
     {
@@ -72,34 +77,69 @@ class AiChatService
             return "I'm not configured yet. Please add an OpenAI or DeepSeek API key in Settings → Main Settings to enable AI features.";
         }
 
-        $messages = $this->buildMessages($message);
+        // Load existing conversation history
+        $history = $this->getHistory();
 
-        // Call AI with tool definitions (max 3 round-trips for tool calls)
-        $maxIterations = 3;
+        // Build the full message list: system + history + new user message
+        $messages = $this->buildMessagesWithHistory($message, $history);
+
+        // Track tool calls to detect and prevent infinite loops
+        $calledTools = [];
+        $lastToolResults = [];
+
+        // Call AI with tool definitions (max 5 round-trips)
+        $maxIterations = 5;
 
         for ($i = 0; $i < $maxIterations; $i++) {
             $response = $this->callProvider($messages);
 
             if (!$response) {
+                Log::warning('AI chat: provider returned null response', [
+                    'user_id' => $this->user->id,
+                    'provider' => $this->provider,
+                    'iteration' => $i,
+                ]);
                 return "Sorry, I couldn't reach the AI service. Please try again later.";
             }
 
             $choice = $response['choices'][0] ?? null;
             if (!$choice) {
+                Log::warning('AI chat: no choice in response', [
+                    'user_id' => $this->user->id,
+                    'response' => $response,
+                ]);
                 return "Sorry, I received an unexpected response from the AI service.";
             }
 
             $finishReason = $choice['finish_reason'] ?? 'stop';
+
+            Log::debug('AI chat iteration', [
+                'user_id' => $this->user->id,
+                'iteration' => $i,
+                'finish_reason' => $finishReason,
+            ]);
 
             // If the AI wants to call a tool
             if ($finishReason === 'tool_calls' && !empty($choice['message']['tool_calls'])) {
                 $messages[] = $choice['message'];
 
                 foreach ($choice['message']['tool_calls'] as $toolCall) {
-                    $toolResult = $this->executeTool(
-                        $toolCall['function']['name'],
-                        json_decode($toolCall['function']['arguments'], true) ?? []
-                    );
+                    $toolName = $toolCall['function']['name'];
+                    $toolArgs = json_decode($toolCall['function']['arguments'], true) ?? [];
+
+                    Log::info('AI tool call', [
+                        'user_id' => $this->user->id,
+                        'tool' => $toolName,
+                        'args' => $toolArgs,
+                        'iteration' => $i,
+                    ]);
+
+                    // Detect repeated identical tool calls (prevents loops)
+                    $toolFingerprint = $toolName . ':' . json_encode($toolArgs);
+                    $calledTools[] = $toolFingerprint;
+
+                    $toolResult = $this->executeTool($toolName, $toolArgs);
+                    $lastToolResults[$toolName] = $toolResult;
 
                     $messages[] = [
                         'role' => 'tool',
@@ -111,24 +151,90 @@ class AiChatService
                 continue; // Back to the AI with tool results
             }
 
-            // Normal text response
-            return $choice['message']['content'] ?? "I'm not sure how to answer that.";
+            // Normal text response — save to history
+            $assistantReply = $choice['message']['content'] ?? "I'm not sure how to answer that.";
+
+            // Append the exchange to history and persist
+            $history[] = ['role' => 'user', 'content' => $message];
+            $history[] = ['role' => 'assistant', 'content' => $assistantReply];
+            $this->saveHistory($history);
+
+            return $assistantReply;
+        }
+
+        // Loop exhausted — log what happened and try to give a useful fallback
+        Log::warning('AI chat: max tool-call iterations reached', [
+            'user_id' => $this->user->id,
+            'tools_called' => $calledTools,
+            'provider' => $this->provider,
+        ]);
+
+        // Try one final call without tools to force a text response
+        $messagesWithoutTools = $messages;
+        $messagesWithoutTools[] = [
+            'role' => 'user',
+            'content' => 'Please provide a direct answer based on the data above. Do NOT call any more tools.',
+        ];
+        $finalResponse = $this->callProvider($messagesWithoutTools, false);
+        if ($finalResponse && !empty($finalResponse['choices'][0]['message']['content'])) {
+            $assistantReply = $finalResponse['choices'][0]['message']['content'];
+            $history[] = ['role' => 'user', 'content' => $message];
+            $history[] = ['role' => 'assistant', 'content' => $assistantReply];
+            $this->saveHistory($history);
+            return $assistantReply;
         }
 
         return "I'm having trouble processing your request. Could you try rephrasing it?";
     }
 
     /**
-     * Build the messages array for the AI provider.
+     * Clear the conversation history for this user.
      */
-    private function buildMessages(string $userMessage): array
+    public function clearHistory(): void
+    {
+        Cache::forget(self::HISTORY_CACHE_PREFIX . $this->user->id);
+    }
+
+    /**
+     * Get the conversation history from cache.
+     */
+    private function getHistory(): array
+    {
+        return Cache::get(self::HISTORY_CACHE_PREFIX . $this->user->id, []);
+    }
+
+    /**
+     * Save the conversation history to cache (keeps last N messages).
+     */
+    private function saveHistory(array $history): void
+    {
+        // Trim to max messages to avoid unbounded growth
+        if (count($history) > self::MAX_HISTORY_MESSAGES) {
+            $history = array_slice($history, -self::MAX_HISTORY_MESSAGES);
+        }
+
+        // Cache for 24 hours (conversation expires after a day of inactivity)
+        Cache::put(self::HISTORY_CACHE_PREFIX . $this->user->id, $history, now()->addDay());
+    }
+
+    /**
+     * Build the messages array including conversation history.
+     */
+    private function buildMessagesWithHistory(string $userMessage, array $history): array
     {
         $systemPrompt = $this->getSystemPrompt();
 
         $messages = [
             ['role' => 'system', 'content' => $systemPrompt],
-            ['role' => 'user', 'content' => $userMessage],
         ];
+
+        // Include recent conversation history for context
+        foreach ($history as $msg) {
+            $messages[] = $msg;
+        }
+
+        // Add the new user message
+        $messages[] = ['role' => 'user', 'content' => $userMessage];
 
         return $messages;
     }
@@ -322,7 +428,7 @@ PROMPT;
     /**
      * Call the AI provider's API.
      */
-    private function callProvider(array $messages): ?array
+    private function callProvider(array $messages, bool $includeTools = true): ?array
     {
         $apiUrl = match ($this->provider) {
             'openai' => 'https://api.openai.com/v1/chat/completions',
@@ -337,11 +443,14 @@ PROMPT;
         $payload = [
             'model' => $this->getModelName(),
             'messages' => $messages,
-            'tools' => $this->getTools(),
-            'tool_choice' => 'auto',
             'temperature' => 0.3,
             'max_tokens' => 2000,
         ];
+
+        if ($includeTools) {
+            $payload['tools'] = $this->getTools();
+            $payload['tool_choice'] = 'auto';
+        }
 
         try {
             $httpResponse = Http::withHeaders([

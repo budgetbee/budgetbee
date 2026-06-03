@@ -9,6 +9,7 @@ import {
     faFile,
     faFileImage,
     faCircleXmark,
+    faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import Endpoints from "../../Api/Endpoints";
 import MarkdownRenderer from "./MarkdownRenderer";
@@ -216,6 +217,16 @@ export default function ChatBot() {
         }
     };
 
+    const handleNewChat = async () => {
+        await Endpoints.clearChatHistory();
+        setMessages([]);
+        setInput("");
+        setFiles([]);
+        setProvider("");
+        persistedMessages = [];
+        persistedProvider = "";
+    };
+
     const canSend = (input.trim() || files.length > 0) && !loading;
 
     return (
@@ -248,12 +259,21 @@ export default function ChatBot() {
                                 </span>
                             )}
                         </div>
-                        <button
-                            onClick={() => setIsOpen(false)}
-                            className="text-gray-400 hover:text-white transition-colors"
-                        >
-                            <FontAwesomeIcon icon={faTimes} />
-                        </button>
+                        <div className="flex items-center gap-1">
+                            <button
+                                onClick={handleNewChat}
+                                className="text-gray-400 hover:text-white transition-colors px-2"
+                                title="New conversation"
+                            >
+                                <FontAwesomeIcon icon={faPlus} />
+                            </button>
+                            <button
+                                onClick={() => setIsOpen(false)}
+                                className="text-gray-400 hover:text-white transition-colors"
+                            >
+                                <FontAwesomeIcon icon={faTimes} />
+                            </button>
+                        </div>
                     </div>
 
                     {/* Messages */}
