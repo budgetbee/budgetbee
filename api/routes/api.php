@@ -108,6 +108,7 @@ Route::prefix('budget')->middleware('auth:sanctum')->group(function () {
 
 Route::prefix('ai')->middleware('auth:sanctum')->group(function () {
     Route::post('/predict-category', [AiController::class, 'predictCategoryRequest']);
+    Route::post('/chat', [AiController::class, 'chat']);
 });
 
 Route::prefix('api-keys')->middleware('auth:sanctum')->group(function () {

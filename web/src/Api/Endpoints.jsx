@@ -340,6 +340,10 @@ const Endpoints = {
         return post('ai/predict-category', {name: text})
     },
 
+    chatMessage: async (message) => {
+        return post('ai/chat', { message });
+    },
+
     getApiKeys: async () => {
         return get('api-keys');
     },
