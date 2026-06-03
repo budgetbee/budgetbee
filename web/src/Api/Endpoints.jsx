@@ -371,6 +371,18 @@ const Endpoints = {
     deleteUpcomingExpense: async (id) => {
         return del(`upcoming-expenses/${id}`);
     },
+
+    getAiProviderKeys: async () => {
+        return get('ai-provider-keys');
+    },
+
+    saveAiProviderKey: async (data) => {
+        return post('ai-provider-keys', data);
+    },
+
+    deleteAiProviderKey: async (id) => {
+        return del(`ai-provider-keys/${id}`);
+    },
 }
 
 export default Endpoints;
