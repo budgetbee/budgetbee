@@ -52,6 +52,17 @@ class RecordController extends Controller
         if ($request->has('amount_max')) {
             $records->whereRaw('ABS(amount) <= ?', [abs((float) $request->query('amount_max'))]);
         }
+        if ($request->has('account_id')) {
+            $accountIds = $request->query('account_id');
+            if (!is_array($accountIds)) {
+                $accountIds = [$accountIds];
+            }
+            $accountIds = array_map('intval', $accountIds);
+            $records->where(function ($q) use ($accountIds) {
+                $q->whereIn('from_account_id', $accountIds)
+                  ->orWhereIn('to_account_id', $accountIds);
+            });
+        }
 
         $page = $request->query('page');
         if ($page > 0) {
