@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\Process\Process;
 use App\Services\Ai\AiChatService;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use Illuminate\Support\Facades\Log;
 
 class AiController extends Controller
 {
@@ -116,15 +118,45 @@ class AiController extends Controller
         $uploadedFiles = $request->file('files', []);
 
         $fileInfo = [];
+        $spreadsheetText = '';
+
         if ($uploadedFiles) {
             foreach ($uploadedFiles as $file) {
+                $mime = $file->getMimeType();
+                $ext = strtolower($file->getClientOriginalExtension());
+
+                // Parse spreadsheets and extract tabular data as text
+                if (in_array($ext, ['xlsx', 'xls', 'csv', 'ods']) || in_array($mime, [
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'application/vnd.ms-excel',
+                    'text/csv',
+                    'application/vnd.oasis.opendocument.spreadsheet',
+                ])) {
+                    try {
+                        $spreadsheetText .= $this->parseSpreadsheet($file->getRealPath(), $file->getClientOriginalName());
+                    } catch (\Exception $e) {
+                        Log::error('Failed to parse spreadsheet', [
+                            'file' => $file->getClientOriginalName(),
+                            'error' => $e->getMessage(),
+                        ]);
+                        $spreadsheetText .= "\n\n[Could not read file: {$file->getClientOriginalName()}]\n";
+                    }
+                    continue;
+                }
+
+                // Images go to vision processing
                 $fileInfo[] = [
                     'name' => $file->getClientOriginalName(),
                     'size' => $file->getSize(),
-                    'mime' => $file->getMimeType(),
+                    'mime' => $mime,
                     'path' => $file->getRealPath(),
                 ];
             }
+        }
+
+        // Append spreadsheet data to the user message
+        if ($spreadsheetText) {
+            $userMessage = trim($userMessage . "\n\n" . $spreadsheetText);
         }
 
         // Use MCP-enabled AI service if configured
@@ -156,5 +188,42 @@ class AiController extends Controller
         return response()->json([
             'message' => $response,
         ]);
+    }
+
+    /**
+     * Parse a spreadsheet file and extract data as a markdown table string.
+     */
+    private function parseSpreadsheet(string $path, string $filename): string
+    {
+        $spreadsheet = IOFactory::load($path);
+        $worksheet = $spreadsheet->getActiveSheet();
+        $rows = $worksheet->toArray();
+
+        if (empty($rows)) {
+            return "\n\n**{$filename}**: (empty file)\n";
+        }
+
+        // Limit to 100 rows to avoid token explosion
+        $rows = array_slice($rows, 0, 100);
+
+        $output = "\n\n**File: {$filename}**\n\n";
+
+        // Build markdown table
+        $header = array_shift($rows);
+        $header = array_map(fn($h) => trim((string)($h ?? '')), $header);
+
+        $output .= '| ' . implode(' | ', $header) . " |\n";
+        $output .= '| ' . implode(' | ', array_fill(0, count($header), '---')) . " |\n";
+
+        foreach ($rows as $row) {
+            $cells = array_map(fn($c) => trim((string)($c ?? '')), $row);
+            // Pad to header length
+            $cells = array_pad($cells, count($header), '');
+            $output .= '| ' . implode(' | ', $cells) . " |\n";
+        }
+
+        $output .= "\n(File has " . count($rows) . " data rows)\n";
+
+        return $output;
     }
 }

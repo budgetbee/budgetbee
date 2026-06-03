@@ -261,7 +261,7 @@ class AiChatService
                     'type' => 'image_url',
                     'image_url' => [
                         'url' => $image['base64'],
-                        'detail' => 'high',
+                        'detail' => 'low',
                     ],
                 ];
             }
@@ -342,14 +342,53 @@ Here's your spending breakdown for this month:
 > Your biggest expense category this month is *Supermarkets* at 62% of total spending.
 ```
 
-**IMAGE ANALYSIS: When the user sends you an image (e.g., a bank statement screenshot):**
-1. Carefully read ALL visible transactions in the image. Be thorough — extract every transaction you can see.
-2. Present the extracted data in a clean markdown table with columns: Date, Description, Amount, Suggested Category.
-3. Try to guess the most appropriate category for each transaction based on the description (e.g., "UBER" → Transport, "CARREFOUR" → Supermarkets, "NETFLIX" → Subscriptions).
-4. After presenting the table, ask the user: "Would you like me to create these records? Reply **yes** to confirm."
-5. **CRITICAL: NEVER call `create_records_batch` without explicit user confirmation.** Only create records when the user clearly says yes/confirm/create them.
-6. If the user says yes, call `create_records_batch` with the EXACT same data you presented.
-7. After creating, summarize how many were created successfully.
+**DATA EXTRACTION: When the user sends you financial data (image, spreadsheet, or pasted text):**
+
+The user may send data in different formats:
+- **Images** (screenshots, photos of bank statements) → analyze visually
+- **Spreadsheet data** (appears as a markdown table in the message starting with `**File: *.xlsx**`) → process the table directly
+- **Pasted text** → process as-is
+
+Follow the same extraction flow regardless of format:
+
+**Step 1 — Extract ALL transactions:**
+Carefully read every visible transaction. Pay special attention to the AMOUNT column:
+- **NEGATIVE amounts or payments** (e.g., -531.19, or amounts in a "debit/expenses" column) = **expenses**
+- **POSITIVE amounts or deposits** (e.g., +5000, or descriptions like "SALARY", "PAYROLL", "DEPOSIT", "INCOMING TRANSFER") = **income**
+- Bank statements typically show expenses with a minus sign and income without one.
+
+**Step 2 — MANDATORY: Call context tools BEFORE presenting anything:**
+- **You MUST call `get_accounts`** as your very first action after seeing the image. This is NOT optional.
+- **You MUST call `get_categories`** to see the user's actual category names.
+- Do NOT present extracted data until you have called both tools and received results.
+
+**Step 3 — Categorize intelligently:**
+Match each transaction to the closest existing category from `get_categories`. Common patterns:
+- "SALARY", "PAYROLL", "DEPOSIT" → Income
+- "SUPERMARKET", "GROCERY", "WALMART", "TESCO", "LIDL", "ALDI" → Supermarkets / Groceries
+- "NETFLIX", "SPOTIFY", "DISNEY", "HBO", "PRIME", "SUBSCRIPTION" → Subscriptions
+- "UBER", "LYFT", "TRANSPORT", "GAS", "FUEL" → Transport
+- "RESTAURANT", "CAFE", "COFFEE", "DELIVERY", "DOORDASH" → Restaurants / Dining
+- "INSURANCE", "GEICO" → Insurance
+- "LOAN", "MORTGAGE" → Loan payment
+- "FEE", "COMMISSION", "SERVICE CHARGE" → Bank fees
+- "RENT", "LEASE" → Housing
+- "ELECTRIC", "WATER", "UTILITY" → Utilities
+- "PHARMACY", "DOCTOR", "MEDICAL" → Healthcare
+- Use the ACTUAL category names from `get_categories`. If unsure, use "Other".
+
+**Step 4 — Present the data with ALL columns:**
+Table format: Date | Description | Amount | Type | Category
+
+**Step 5 — CRITICAL: Ask the user which account to use:**
+- After presenting the table, **you MUST ask the user which account to use**. Example:
+  "Which account should I create these records in? Available accounts: **Checking ($1,200)**, **Savings ($5,000)**."
+- Do NOT assume a default account. Wait for the user to tell you.
+
+**Step 6 — Only create when BOTH account AND confirmation are received:**
+- The user must tell you the account name AND say yes/confirm/create/proceed.
+- **NEVER call `create_records_batch` until the user has specified an account.**
+- When confirmed, call `create_records_batch` with: date, name, amount (ALWAYS positive), type ("income" or "expense"), category_name, account_name.
 PROMPT;
     }
 
@@ -512,18 +551,23 @@ PROMPT;
                                         ],
                                         'amount' => [
                                             'type' => 'number',
-                                            'description' => 'Positive amount (e.g., 45.50). The system will set it as expense automatically.',
+                                            'description' => 'ALWAYS a positive number (e.g., 45.50). The system handles the sign internally.',
+                                        ],
+                                        'type' => [
+                                            'type' => 'string',
+                                            'enum' => ['income', 'expense'],
+                                            'description' => 'Whether this is income (money received, salary, deposit) or expense (payment, purchase, withdrawal). Required for every record.',
                                         ],
                                         'category_name' => [
                                             'type' => 'string',
-                                            'description' => 'Optional: suggested category name. The system will try to match it to an existing category.',
+                                            'description' => 'Category name. MUST match one of the user\'s real categories from get_categories. Call get_categories first.',
                                         ],
                                         'account_name' => [
                                             'type' => 'string',
-                                            'description' => 'Optional: suggested account name. If not provided, uses the default account.',
+                                            'description' => 'Account name. MUST match one of the user\'s real accounts from get_accounts. Call get_accounts first BEFORE presenting data to the user.',
                                         ],
                                     ],
-                                    'required' => ['date', 'name', 'amount'],
+                                    'required' => ['date', 'name', 'amount', 'type', 'account_name'],
                                 ],
                             ],
                         ],
@@ -566,7 +610,7 @@ PROMPT;
                 'Authorization' => "Bearer {$this->apiKey}",
                 'Content-Type' => 'application/json',
             ])
-                ->timeout(30)
+                ->timeout(60)
                 ->post($apiUrl, $payload);
 
             if ($httpResponse->successful()) {
@@ -856,8 +900,9 @@ PROMPT;
             return ['error' => 'No records provided.', 'created' => 0];
         }
 
-        // Get user's default account (first one found)
-        $defaultAccount = Account::where('user_id', $this->user->id)->first();
+        // Get all user accounts for matching
+        $userAccounts = Account::where('user_id', $this->user->id)->get();
+        $defaultAccount = $userAccounts->first();
 
         // Pre-load all categories for fuzzy matching
         $allCategories = Category::where(function ($q) {
@@ -873,6 +918,8 @@ PROMPT;
             $recordName = $record['name'] ?? 'Unknown';
             $recordAmount = abs(floatval($record['amount'] ?? 0));
             $recordDate = $record['date'] ?? Carbon::now()->format('Y-m-d');
+            $recordType = $record['type'] ?? 'expense';
+            $recordAccountName = $record['account_name'] ?? null;
 
             if ($recordAmount <= 0) {
                 $skipped++;
@@ -880,26 +927,23 @@ PROMPT;
                 continue;
             }
 
-            // Fuzzy match category
-            $categoryId = 44; // Default "Other" category
-            $categoryName = $record['category_name'] ?? null;
-            if ($categoryName) {
-                $matched = $this->fuzzyMatchCategory($categoryName, $allCategories);
-                if ($matched) {
-                    $categoryId = $matched->id;
-                }
-            }
-
             // Match account
-            $accountId = $defaultAccount ? $defaultAccount->id : null;
-            $accountName = $record['account_name'] ?? null;
-            if ($accountName && $accountName !== ($defaultAccount->name ?? '')) {
-                $matchedAccount = Account::where('user_id', $this->user->id)
-                    ->where('name', 'like', "%{$accountName}%")
-                    ->first();
+            $accountId = null;
+            $matchedAccountName = 'Unknown';
+            if ($recordAccountName) {
+                $matchedAccount = $userAccounts->first(fn($a) =>
+                    mb_strtolower($a->name) === mb_strtolower($recordAccountName) ||
+                    str_contains(mb_strtolower($a->name), mb_strtolower($recordAccountName)) ||
+                    str_contains(mb_strtolower($recordAccountName), mb_strtolower($a->name))
+                );
                 if ($matchedAccount) {
                     $accountId = $matchedAccount->id;
+                    $matchedAccountName = $matchedAccount->name;
                 }
+            }
+            if (!$accountId && $defaultAccount) {
+                $accountId = $defaultAccount->id;
+                $matchedAccountName = $defaultAccount->name;
             }
 
             if (!$accountId) {
@@ -908,19 +952,41 @@ PROMPT;
                 continue;
             }
 
+            // Fuzzy match category
+            $categoryId = 44; // Default "Other" category
+            $matchedCategoryName = 'Other';
+            $categoryName = $record['category_name'] ?? null;
+            if ($categoryName) {
+                $matched = $this->fuzzyMatchCategory($categoryName, $allCategories);
+                if ($matched) {
+                    $categoryId = $matched->id;
+                    $matchedCategoryName = $matched->name;
+                }
+            }
+
+            // For income, try to find an income category if not matched
+            if ($recordType === 'income' && (!$categoryName || $categoryId === 44)) {
+                $incomeCategory = $allCategories->first(fn($c) => $c->parent_category_id == 10);
+                if ($incomeCategory) {
+                    $categoryId = $incomeCategory->id;
+                    $matchedCategoryName = $incomeCategory->name;
+                }
+            }
+
+            // Determine amount sign: expenses are negative, income is positive
+            $finalAmount = $recordType === 'income' ? $recordAmount : -$recordAmount;
+
             try {
                 $newRecord = Record::create([
                     'user_id' => $this->user->id,
                     'date' => $recordDate,
                     'from_account_id' => $accountId,
-                    'type' => 'expense',
+                    'type' => $recordType === 'income' ? 'income' : 'expense',
                     'category_id' => $categoryId,
                     'name' => $recordName,
-                    'amount' => -$recordAmount,
+                    'amount' => $finalAmount,
                     'rate' => 1,
                 ]);
-
-                $matchedCategory = $allCategories->firstWhere('id', $categoryId);
 
                 $created++;
                 $details[] = [
@@ -928,7 +994,9 @@ PROMPT;
                     'status' => 'created',
                     'date' => $recordDate,
                     'amount' => $recordAmount,
-                    'category' => $matchedCategory->name ?? 'Other',
+                    'type' => $recordType,
+                    'category' => $matchedCategoryName,
+                    'account' => $matchedAccountName,
                     'id' => $newRecord->id,
                 ];
             } catch (\Exception $e) {

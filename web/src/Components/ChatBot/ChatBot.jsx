@@ -414,7 +414,7 @@ export default function ChatBot() {
                                 ref={fileInputRef}
                                 onChange={handleFileChange}
                                 multiple
-                                accept="image/*,.pdf,.csv,.xlsx,.xls,.docx,.txt"
+                                accept="image/*,.pdf,.csv,.xlsx,.xls,.ods,.txt"
                                 className="hidden"
                             />
                             <input
