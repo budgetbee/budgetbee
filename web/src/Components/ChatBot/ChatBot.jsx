@@ -227,6 +227,23 @@ export default function ChatBot() {
         persistedProvider = "";
     };
 
+    const handleClose = () => setIsOpen(false);
+
+    const handleOverlayClick = (e) => {
+        if (e.target === e.currentTarget) {
+            setIsOpen(false);
+        }
+    };
+
+    // Close on Escape key
+    useEffect(() => {
+        const handleEsc = (e) => {
+            if (e.key === "Escape" && isOpen) setIsOpen(false);
+        };
+        document.addEventListener("keydown", handleEsc);
+        return () => document.removeEventListener("keydown", handleEsc);
+    }, [isOpen]);
+
     const canSend = (input.trim() || files.length > 0) && !loading;
 
     return (
@@ -242,39 +259,43 @@ export default function ChatBot() {
                 </button>
             )}
 
-            {/* Chat panel */}
+            {/* Modal overlay + centered chat panel */}
             {isOpen && (
                 <div
-                    ref={chatPanelRef}
-                    className="fixed bottom-6 right-6 z-50 w-[450px] h-[550px] bg-gray-800 rounded-xl shadow-2xl flex flex-col border border-gray-600 overflow-hidden"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+                    onClick={handleOverlayClick}
                 >
-                    {/* Header */}
-                    <div className="flex items-center justify-between px-4 py-3 bg-gray-700 border-b border-gray-600">
-                        <div className="flex items-center gap-2">
-                            <FontAwesomeIcon icon={faRobot} className="text-blue-400" />
-                            <span className="font-semibold text-white">BudgetBee AI</span>
-                            {provider && (
-                                <span className="text-xs text-gray-400 bg-gray-600 px-1.5 py-0.5 rounded">
-                                    {provider}
-                                </span>
-                            )}
+                    <div
+                        ref={chatPanelRef}
+                        className="w-[700px] h-[600px] max-h-[90vh] bg-gray-800 rounded-xl shadow-2xl flex flex-col border border-gray-600 overflow-hidden"
+                    >
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-4 py-3 bg-gray-700 border-b border-gray-600 rounded-t-xl">
+                            <div className="flex items-center gap-2">
+                                <FontAwesomeIcon icon={faRobot} className="text-blue-400" />
+                                <span className="font-semibold text-white text-lg">BudgetBee AI</span>
+                                {provider && (
+                                    <span className="text-xs text-gray-400 bg-gray-600 px-1.5 py-0.5 rounded">
+                                        {provider}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <button
+                                    onClick={handleNewChat}
+                                    className="text-gray-400 hover:text-white transition-colors px-2"
+                                    title="New conversation"
+                                >
+                                    <FontAwesomeIcon icon={faPlus} />
+                                </button>
+                                <button
+                                    onClick={handleClose}
+                                    className="text-gray-400 hover:text-white transition-colors"
+                                >
+                                    <FontAwesomeIcon icon={faTimes} />
+                                </button>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                            <button
-                                onClick={handleNewChat}
-                                className="text-gray-400 hover:text-white transition-colors px-2"
-                                title="New conversation"
-                            >
-                                <FontAwesomeIcon icon={faPlus} />
-                            </button>
-                            <button
-                                onClick={() => setIsOpen(false)}
-                                className="text-gray-400 hover:text-white transition-colors"
-                            >
-                                <FontAwesomeIcon icon={faTimes} />
-                            </button>
-                        </div>
-                    </div>
 
                     {/* Messages */}
                     <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
@@ -417,7 +438,9 @@ export default function ChatBot() {
                         </div>
                     </div>
                 </div>
+                </div>
             )}
         </>
     );
 }
+
