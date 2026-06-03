@@ -15,6 +15,16 @@ import MarkdownRenderer from "./MarkdownRenderer";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
+// Module-level state persists across SPA route changes but resets on full page refresh
+let persistedOpen = false;
+let persistedMessages = [
+    {
+        role: "assistant",
+        content: "Hi! I'm your BudgetBee assistant. How can I help you today?",
+    },
+];
+let persistedProvider = "";
+
 function formatFileSize(bytes) {
     if (bytes < 1024) return bytes + " B";
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
@@ -30,21 +40,21 @@ function getFileIcon(file) {
 }
 
 export default function ChatBot() {
-    const [isOpen, setIsOpen] = useState(false);
-    const [messages, setMessages] = useState([
-        {
-            role: "assistant",
-            content: "Hi! I'm your BudgetBee assistant. How can I help you today?",
-        },
-    ]);
+    const [isOpen, setIsOpen] = useState(persistedOpen);
+    const [messages, setMessages] = useState(persistedMessages);
     const [input, setInput] = useState("");
     const [files, setFiles] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [provider, setProvider] = useState("");
+    const [provider, setProvider] = useState(persistedProvider);
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
     const fileInputRef = useRef(null);
     const chatPanelRef = useRef(null);
+
+    // Sync state to module-level so it survives SPA route changes
+    useEffect(() => { persistedOpen = isOpen; }, [isOpen]);
+    useEffect(() => { persistedMessages = messages; }, [messages]);
+    useEffect(() => { persistedProvider = provider; }, [provider]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
