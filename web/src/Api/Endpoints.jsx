@@ -342,9 +342,9 @@ const Endpoints = {
     chatMessage: async (message, files = null) => {
         if (files && files.length > 0) {
             const formData = new FormData();
-            formData.append('message', message);
-            files.forEach((file) => {
-                formData.append('files[]', file);
+            formData.append('message', message || '');
+            files.forEach((f) => {
+                formData.append('files[]', f.file, f.name);
             });
             return post('ai/chat', formData);
         }

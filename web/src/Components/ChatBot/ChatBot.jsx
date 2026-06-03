@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faCommentDots,
@@ -7,6 +7,7 @@ import {
     faRobot,
     faPaperclip,
     faFile,
+    faFileImage,
     faCircleXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import Endpoints from "../../Api/Endpoints";
@@ -17,6 +18,14 @@ function formatFileSize(bytes) {
     if (bytes < 1024) return bytes + " B";
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
     return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+}
+
+function isImageFile(file) {
+    return file.type.startsWith("image/");
+}
+
+function getFileIcon(file) {
+    return isImageFile(file) ? faFileImage : faFile;
 }
 
 export default function ChatBot() {
@@ -33,6 +42,7 @@ export default function ChatBot() {
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
     const fileInputRef = useRef(null);
+    const chatPanelRef = useRef(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -48,48 +58,114 @@ export default function ChatBot() {
         }
     }, [isOpen]);
 
-    const handleAttachClick = () => {
-        fileInputRef.current?.click();
-    };
+    // Cleanup object URLs on unmount to prevent memory leaks
+    useEffect(() => {
+        return () => {
+            files.forEach((f) => {
+                if (f.previewUrl) URL.revokeObjectURL(f.previewUrl);
+            });
+        };
+    }, [files]);
 
-    const handleFileChange = (e) => {
-        const selected = Array.from(e.target.files);
-        const valid = selected.filter((f) => f.size <= MAX_FILE_SIZE);
-        const tooBig = selected.filter((f) => f.size > MAX_FILE_SIZE);
+    const addFiles = useCallback((newFiles) => {
+        const valid = newFiles.filter((f) => f.file.size <= MAX_FILE_SIZE);
+        const tooBig = newFiles.filter((f) => f.file.size > MAX_FILE_SIZE);
 
         if (tooBig.length > 0) {
             setMessages((prev) => [
                 ...prev,
                 {
                     role: "assistant",
-                    content: `Some files exceed the 10 MB limit and were skipped: ${tooBig.map((f) => f.name).join(", ")}`,
+                    content: `Some files exceed the 10 MB limit and were skipped: ${tooBig.map((f) => f.displayName).join(", ")}`,
                 },
             ]);
         }
 
-        setFiles((prev) => [...prev, ...valid]);
-        // Reset so the same file can be re-selected
+        // Generate preview URLs for images, keep real File intact
+        const wrapped = valid.map((f) => ({
+            file: f.file,
+            displayName: f.displayName,
+            previewUrl: isImageFile(f.file) ? URL.createObjectURL(f.file) : null,
+        }));
+
+        setFiles((prev) => [...prev, ...wrapped]);
+    }, []);
+
+    const handleAttachClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (e) => {
+        const selected = Array.from(e.target.files).map((f) => ({
+            file: f,
+            displayName: f.name,
+        }));
+        addFiles(selected);
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
+    const handlePaste = useCallback(
+        (e) => {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            const imageItems = [];
+            for (const item of items) {
+                if (item.type.startsWith("image/")) {
+                    imageItems.push(item);
+                }
+            }
+
+            if (imageItems.length === 0) return;
+
+            e.preventDefault();
+
+            const pastedFiles = [];
+            imageItems.forEach((item, idx) => {
+                const blob = item.getAsFile();
+                if (blob && blob.size > 0) {
+                    const ext = item.type.split("/")[1] || "png";
+                    const timestamp = Date.now();
+                    pastedFiles.push({
+                        file: blob,
+                        displayName: `screenshot_${timestamp}_${idx + 1}.${ext}`,
+                    });
+                }
+            });
+
+            if (pastedFiles.length > 0) {
+                addFiles(pastedFiles);
+            }
+        },
+        [addFiles]
+    );
+
     const removeFile = (index) => {
-        setFiles((prev) => prev.filter((_, i) => i !== index));
+        setFiles((prev) => {
+            const entry = prev[index];
+            if (entry?.previewUrl) URL.revokeObjectURL(entry.previewUrl);
+            return prev.filter((_, i) => i !== index);
+        });
     };
 
     const handleSend = async () => {
         const text = input.trim();
         if ((!text && files.length === 0) || loading) return;
 
-        const currentFiles = [...files];
+        // Build file list with display names for FormData
+        const currentFiles = files.map((f) => ({
+            file: f.file,
+            name: f.displayName,
+        }));
 
-        // Build user message for the chat bubble
-        let content = text;
         const userMessage = {
             role: "user",
-            content: content || "",
-            files: currentFiles.map((f) => ({
-                name: f.name,
-                size: f.size,
+            content: text || "",
+            files: files.map((f) => ({
+                name: f.displayName,
+                size: f.file.size,
+                type: f.file.type,
+                previewUrl: f.previewUrl,
             })),
         };
 
@@ -116,6 +192,9 @@ export default function ChatBot() {
     };
 
     const handleKeyDown = (e) => {
+        // Don't intercept paste (Ctrl+V) — let the onPaste handler deal with it
+        if ((e.ctrlKey || e.metaKey) && e.key === "v") return;
+
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             handleSend();
@@ -139,7 +218,10 @@ export default function ChatBot() {
 
             {/* Chat panel */}
             {isOpen && (
-                <div className="fixed bottom-6 right-6 z-50 w-96 h-[550px] bg-gray-800 rounded-xl shadow-2xl flex flex-col border border-gray-600 overflow-hidden">
+                <div
+                    ref={chatPanelRef}
+                    className="fixed bottom-6 right-6 z-50 w-96 h-[550px] bg-gray-800 rounded-xl shadow-2xl flex flex-col border border-gray-600 overflow-hidden"
+                >
                     {/* Header */}
                     <div className="flex items-center justify-between px-4 py-3 bg-gray-700 border-b border-gray-600">
                         <div className="flex items-center gap-2">
@@ -171,22 +253,34 @@ export default function ChatBot() {
                                     {msg.content && <p>{msg.content}</p>}
                                     {msg.files && msg.files.length > 0 && (
                                         <div className="mt-1 space-y-1">
-                                            {msg.files.map((f, fi) => (
-                                                <div
-                                                    key={fi}
-                                                    className={`flex items-center gap-1.5 text-xs rounded px-2 py-1 ${
-                                                        msg.role === "user"
-                                                            ? "bg-blue-500/50"
-                                                            : "bg-gray-600"
-                                                    }`}
-                                                >
-                                                    <FontAwesomeIcon icon={faFile} className="text-xs" />
-                                                    <span className="truncate max-w-[150px]">{f.name}</span>
-                                                    <span className="opacity-60 flex-shrink-0">
-                                                        {formatFileSize(f.size)}
-                                                    </span>
-                                                </div>
-                                            ))}
+                                            {msg.files.map((f, fi) =>
+                                                f.previewUrl ? (
+                                                    <img
+                                                        key={fi}
+                                                        src={f.previewUrl}
+                                                        alt={f.name}
+                                                        className="max-w-full max-h-48 rounded object-cover"
+                                                    />
+                                                ) : (
+                                                    <div
+                                                        key={fi}
+                                                        className={`flex items-center gap-1.5 text-xs rounded px-2 py-1 ${
+                                                            msg.role === "user"
+                                                                ? "bg-blue-500/50"
+                                                                : "bg-gray-600"
+                                                        }`}
+                                                    >
+                                                        <FontAwesomeIcon
+                                                            icon={getFileIcon(f)}
+                                                            className="text-xs"
+                                                        />
+                                                        <span className="truncate max-w-[150px]">{f.name}</span>
+                                                        <span className="opacity-60 flex-shrink-0">
+                                                            {formatFileSize(f.size)}
+                                                        </span>
+                                                    </div>
+                                                )
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -209,14 +303,22 @@ export default function ChatBot() {
                     {/* File previews */}
                     {files.length > 0 && (
                         <div className="px-4 py-2 bg-gray-750 border-t border-gray-600 flex flex-wrap gap-2">
-                            {files.map((file, idx) => (
+                            {files.map((entry, idx) => (
                                 <div
                                     key={idx}
                                     className="flex items-center gap-1.5 bg-gray-600 rounded-lg px-2.5 py-1.5 text-xs text-gray-200"
                                 >
-                                    <FontAwesomeIcon icon={faFile} className="text-blue-400" />
-                                    <span className="truncate max-w-[120px]">{file.name}</span>
-                                    <span className="text-gray-400">{formatFileSize(file.size)}</span>
+                                    {entry.previewUrl ? (
+                                        <img
+                                            src={entry.previewUrl}
+                                            alt={entry.displayName}
+                                            className="w-6 h-6 rounded object-cover"
+                                        />
+                                    ) : (
+                                        <FontAwesomeIcon icon={getFileIcon(entry.file)} className="text-blue-400" />
+                                    )}
+                                    <span className="truncate max-w-[120px]">{entry.displayName}</span>
+                                    <span className="text-gray-400">{formatFileSize(entry.file.size)}</span>
                                     <button
                                         onClick={() => removeFile(idx)}
                                         className="text-gray-400 hover:text-red-400 ml-1"
@@ -230,6 +332,9 @@ export default function ChatBot() {
 
                     {/* Input */}
                     <div className="px-4 py-3 bg-gray-700 border-t border-gray-600">
+                        <div className="flex gap-2 items-center text-xs text-gray-400 mb-1.5">
+                            <span>Ctrl+V to paste images</span>
+                        </div>
                         <div className="flex gap-2">
                             <button
                                 onClick={handleAttachClick}
@@ -244,6 +349,7 @@ export default function ChatBot() {
                                 ref={fileInputRef}
                                 onChange={handleFileChange}
                                 multiple
+                                accept="image/*,.pdf,.csv,.xlsx,.xls,.docx,.txt"
                                 className="hidden"
                             />
                             <input
@@ -252,7 +358,8 @@ export default function ChatBot() {
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={handleKeyDown}
-                                placeholder="Type a message..."
+                                onPaste={handlePaste}
+                                placeholder="Type a message or paste an image..."
                                 disabled={loading}
                                 className="flex-1 bg-gray-600 border border-gray-500 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 disabled:opacity-50"
                             />
