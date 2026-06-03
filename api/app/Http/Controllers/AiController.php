@@ -7,6 +7,7 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\Process\Process;
+use App\Services\Ai\AiChatService;
 
 class AiController extends Controller
 {
@@ -89,15 +90,15 @@ class AiController extends Controller
     }
 
     /**
-     * Handle chat messages from the chatbot.
-     * Currently returns a dummy response for UI testing.
+     * Handle chat messages from the chatbot with MCP tool-calling.
+     * Uses the user's configured AI provider (OpenAI or DeepSeek).
      */
     public function chat(Request $request)
     {
         $request->validate([
             'message' => 'nullable|string|max:2000',
             'files' => 'nullable|array',
-            'files.*' => 'file|max:10240', // 10 MB per file
+            'files.*' => 'file|max:10240',
         ]);
 
         $userMessage = $request->input('message', '');
@@ -114,20 +115,30 @@ class AiController extends Controller
             }
         }
 
-        // TODO: Integrate with OpenAI / DeepSeek API using stored provider keys
+        // Use MCP-enabled AI service if configured
+        $chatService = new AiChatService($request->user());
+
+        if ($chatService->isConfigured()) {
+            $response = $chatService->chat($userMessage, $fileInfo);
+
+            return response()->json([
+                'message' => $response,
+                'provider' => $chatService->getProviderName(),
+            ]);
+        }
+
+        // Fallback: dummy response when no AI provider is configured
         $dummyResponses = [
-            "Hello! I'm BudgetBee's AI assistant. I can help you with your finances, budgets, and expenses. What would you like to know?",
-            "That's a great question! In the future, I'll be able to analyze your spending patterns and give personalized advice.",
-            "I'm still learning, but soon I'll help you track expenses, categorize records, and manage your budget more efficiently.",
-            "Thanks for your message! I'm here to help with anything related to your BudgetBee account.",
-            "Interesting! Once I'm fully integrated with your data, I'll provide insights about your financial habits.",
+            "Hello! I'm BudgetBee's AI assistant. I can help you with your finances, budgets, and expenses once you configure an AI provider. Go to Settings → Main Settings to add your OpenAI or DeepSeek API key.",
+            "I'd love to help analyze your finances! Please configure an AI provider (OpenAI or DeepSeek) in Settings → Main Settings first.",
+            "To unlock my full capabilities, add your OpenAI or DeepSeek API key in the Settings page. Then I'll be able to query your financial data and give you personalized insights!",
         ];
 
         $response = $dummyResponses[array_rand($dummyResponses)];
 
         if (!empty($fileInfo)) {
             $fileNames = implode(', ', array_column($fileInfo, 'name'));
-            $response = "I received your message" . ($userMessage ? ": \"$userMessage\"" : "") . " along with " . count($fileInfo) . " file(s): $fileNames. I'll be able to process files once AI integration is complete!";
+            $response = "I received your message" . ($userMessage ? ": \"$userMessage\"" : "") . " along with " . count($fileInfo) . " file(s): $fileNames. Configure an AI provider in Settings to let me process them!";
         }
 
         return response()->json([

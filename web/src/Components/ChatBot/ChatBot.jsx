@@ -11,6 +11,7 @@ import {
     faCircleXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import Endpoints from "../../Api/Endpoints";
+import MarkdownRenderer from "./MarkdownRenderer";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
@@ -39,6 +40,7 @@ export default function ChatBot() {
     const [input, setInput] = useState("");
     const [files, setFiles] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [provider, setProvider] = useState("");
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
     const fileInputRef = useRef(null);
@@ -186,6 +188,9 @@ export default function ChatBot() {
                 ...prev,
                 { role: "assistant", content: response.message },
             ]);
+            if (response.provider) {
+                setProvider(response.provider);
+            }
         }
 
         setLoading(false);
@@ -220,13 +225,18 @@ export default function ChatBot() {
             {isOpen && (
                 <div
                     ref={chatPanelRef}
-                    className="fixed bottom-6 right-6 z-50 w-96 h-[550px] bg-gray-800 rounded-xl shadow-2xl flex flex-col border border-gray-600 overflow-hidden"
+                    className="fixed bottom-6 right-6 z-50 w-[450px] h-[550px] bg-gray-800 rounded-xl shadow-2xl flex flex-col border border-gray-600 overflow-hidden"
                 >
                     {/* Header */}
                     <div className="flex items-center justify-between px-4 py-3 bg-gray-700 border-b border-gray-600">
                         <div className="flex items-center gap-2">
                             <FontAwesomeIcon icon={faRobot} className="text-blue-400" />
                             <span className="font-semibold text-white">BudgetBee AI</span>
+                            {provider && (
+                                <span className="text-xs text-gray-400 bg-gray-600 px-1.5 py-0.5 rounded">
+                                    {provider}
+                                </span>
+                            )}
                         </div>
                         <button
                             onClick={() => setIsOpen(false)}
@@ -244,13 +254,17 @@ export default function ChatBot() {
                                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                             >
                                 <div
-                                    className={`max-w-[80%] px-4 py-2 rounded-xl text-sm ${
+                                    className={`px-4 py-2 rounded-xl text-sm ${
                                         msg.role === "user"
-                                            ? "bg-blue-600 text-white rounded-br-sm"
-                                            : "bg-gray-700 text-gray-100 rounded-bl-sm"
+                                            ? "max-w-[80%] bg-blue-600 text-white rounded-br-sm"
+                                            : "max-w-[90%] bg-gray-700 text-gray-100 rounded-bl-sm"
                                     }`}
                                 >
-                                    {msg.content && <p>{msg.content}</p>}
+                                    {msg.content && msg.role === "assistant" ? (
+                                        <MarkdownRenderer content={msg.content} />
+                                    ) : msg.content ? (
+                                        <p>{msg.content}</p>
+                                    ) : null}
                                     {msg.files && msg.files.length > 0 && (
                                         <div className="mt-1 space-y-1">
                                             {msg.files.map((f, fi) =>
