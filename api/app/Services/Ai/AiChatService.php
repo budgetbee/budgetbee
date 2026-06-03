@@ -77,11 +77,25 @@ class AiChatService
             return "I'm not configured yet. Please add an OpenAI or DeepSeek API key in Settings → Main Settings to enable AI features.";
         }
 
+        // Detect images and determine if vision is needed
+        $imageFiles = $this->filterImageFiles($files);
+        $hasImages = !empty($imageFiles);
+
+        // Image analysis requires OpenAI (GPT-4o-mini with vision)
+        if ($hasImages && $this->provider !== 'openai') {
+            return "📷 **Image analysis** is only available with **OpenAI**. Please configure an OpenAI API key in Settings → Main Settings to analyze images. DeepSeek does not currently support vision capabilities.";
+        }
+
+        // If no message and no images, prompt the user
+        if (empty(trim($message)) && !$hasImages) {
+            return "How can I help you? You can ask me about your finances, budgets, or send me an image of your bank transactions to extract them.";
+        }
+
         // Load existing conversation history
         $history = $this->getHistory();
 
         // Build the full message list: system + history + new user message
-        $messages = $this->buildMessagesWithHistory($message, $history);
+        $messages = $this->buildMessagesWithHistory($message, $history, $imageFiles);
 
         // Track tool calls to detect and prevent infinite loops
         $calledTools = [];
@@ -218,9 +232,9 @@ class AiChatService
     }
 
     /**
-     * Build the messages array including conversation history.
+     * Build the messages array including conversation history and optional images.
      */
-    private function buildMessagesWithHistory(string $userMessage, array $history): array
+    private function buildMessagesWithHistory(string $userMessage, array $history, array $imageFiles = []): array
     {
         $systemPrompt = $this->getSystemPrompt();
 
@@ -233,10 +247,53 @@ class AiChatService
             $messages[] = $msg;
         }
 
-        // Add the new user message
-        $messages[] = ['role' => 'user', 'content' => $userMessage];
+        // Build the new user message content
+        if (!empty($imageFiles)) {
+            // Vision format: content is an array of text + image parts
+            $content = [];
+            if (!empty(trim($userMessage))) {
+                $content[] = ['type' => 'text', 'text' => $userMessage];
+            } else {
+                $content[] = ['type' => 'text', 'text' => 'Please analyze this image and extract any financial transactions you can see.'];
+            }
+            foreach ($imageFiles as $image) {
+                $content[] = [
+                    'type' => 'image_url',
+                    'image_url' => [
+                        'url' => $image['base64'],
+                        'detail' => 'high',
+                    ],
+                ];
+            }
+            $messages[] = ['role' => 'user', 'content' => $content];
+        } else {
+            // Plain text message
+            $messages[] = ['role' => 'user', 'content' => $userMessage];
+        }
 
         return $messages;
+    }
+
+    /**
+     * Filter uploaded files to only include images, converting them to base64.
+     */
+    private function filterImageFiles(array $files): array
+    {
+        $images = [];
+        foreach ($files as $file) {
+            $mime = $file['mime'] ?? '';
+            if (in_array($mime, ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'])) {
+                $path = $file['path'] ?? null;
+                if ($path && file_exists($path)) {
+                    $base64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($path));
+                    $images[] = [
+                        'name' => $file['name'],
+                        'base64' => $base64,
+                    ];
+                }
+            }
+        }
+        return $images;
     }
 
     /**
@@ -284,6 +341,15 @@ Here's your spending breakdown for this month:
 
 > Your biggest expense category this month is *Supermarkets* at 62% of total spending.
 ```
+
+**IMAGE ANALYSIS: When the user sends you an image (e.g., a bank statement screenshot):**
+1. Carefully read ALL visible transactions in the image. Be thorough — extract every transaction you can see.
+2. Present the extracted data in a clean markdown table with columns: Date, Description, Amount, Suggested Category.
+3. Try to guess the most appropriate category for each transaction based on the description (e.g., "UBER" → Transport, "CARREFOUR" → Supermarkets, "NETFLIX" → Subscriptions).
+4. After presenting the table, ask the user: "Would you like me to create these records? Reply **yes** to confirm."
+5. **CRITICAL: NEVER call `create_records_batch` without explicit user confirmation.** Only create records when the user clearly says yes/confirm/create them.
+6. If the user says yes, call `create_records_batch` with the EXACT same data you presented.
+7. After creating, summarize how many were created successfully.
 PROMPT;
     }
 
@@ -422,6 +488,49 @@ PROMPT;
                     ],
                 ],
             ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'create_records_batch',
+                    'description' => 'Create multiple financial records at once. ONLY call this after the user has explicitly confirmed they want the records created. Always present the extracted data first and ask for confirmation. The user must say "yes", "create them", "confirm", or similar before you call this tool.',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'records' => [
+                                'type' => 'array',
+                                'description' => 'Array of records to create.',
+                                'items' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'date' => [
+                                            'type' => 'string',
+                                            'description' => 'Date in Y-m-d format.',
+                                        ],
+                                        'name' => [
+                                            'type' => 'string',
+                                            'description' => 'Transaction name/description.',
+                                        ],
+                                        'amount' => [
+                                            'type' => 'number',
+                                            'description' => 'Positive amount (e.g., 45.50). The system will set it as expense automatically.',
+                                        ],
+                                        'category_name' => [
+                                            'type' => 'string',
+                                            'description' => 'Optional: suggested category name. The system will try to match it to an existing category.',
+                                        ],
+                                        'account_name' => [
+                                            'type' => 'string',
+                                            'description' => 'Optional: suggested account name. If not provided, uses the default account.',
+                                        ],
+                                    ],
+                                    'required' => ['date', 'name', 'amount'],
+                                ],
+                            ],
+                        ],
+                        'required' => ['records'],
+                    ],
+                ],
+            ],
         ];
     }
 
@@ -507,6 +616,7 @@ PROMPT;
             'get_budgets' => $this->toolGetBudgets(),
             'search_records' => $this->toolSearchRecords($arguments),
             'get_categories' => $this->toolGetCategories(),
+            'create_records_batch' => $this->toolCreateRecordsBatch($arguments),
             default => ['error' => "Unknown tool: {$name}"],
         };
     }
@@ -734,5 +844,136 @@ PROMPT;
         return [
             'category_groups' => $categories->values()->toArray(),
         ];
+    }
+
+    /**
+     * Create multiple records in batch. Used after user confirms extracted transactions.
+     */
+    private function toolCreateRecordsBatch(array $args): array
+    {
+        $records = $args['records'] ?? [];
+        if (empty($records)) {
+            return ['error' => 'No records provided.', 'created' => 0];
+        }
+
+        // Get user's default account (first one found)
+        $defaultAccount = Account::where('user_id', $this->user->id)->first();
+
+        // Pre-load all categories for fuzzy matching
+        $allCategories = Category::where(function ($q) {
+            $q->where('user_id', $this->user->id)
+                ->orWhereNull('user_id');
+        })->get();
+
+        $created = 0;
+        $skipped = 0;
+        $details = [];
+
+        foreach ($records as $record) {
+            $recordName = $record['name'] ?? 'Unknown';
+            $recordAmount = abs(floatval($record['amount'] ?? 0));
+            $recordDate = $record['date'] ?? Carbon::now()->format('Y-m-d');
+
+            if ($recordAmount <= 0) {
+                $skipped++;
+                $details[] = ['name' => $recordName, 'status' => 'skipped', 'reason' => 'Zero or negative amount'];
+                continue;
+            }
+
+            // Fuzzy match category
+            $categoryId = 44; // Default "Other" category
+            $categoryName = $record['category_name'] ?? null;
+            if ($categoryName) {
+                $matched = $this->fuzzyMatchCategory($categoryName, $allCategories);
+                if ($matched) {
+                    $categoryId = $matched->id;
+                }
+            }
+
+            // Match account
+            $accountId = $defaultAccount ? $defaultAccount->id : null;
+            $accountName = $record['account_name'] ?? null;
+            if ($accountName && $accountName !== ($defaultAccount->name ?? '')) {
+                $matchedAccount = Account::where('user_id', $this->user->id)
+                    ->where('name', 'like', "%{$accountName}%")
+                    ->first();
+                if ($matchedAccount) {
+                    $accountId = $matchedAccount->id;
+                }
+            }
+
+            if (!$accountId) {
+                $skipped++;
+                $details[] = ['name' => $recordName, 'status' => 'skipped', 'reason' => 'No account found'];
+                continue;
+            }
+
+            try {
+                $newRecord = Record::create([
+                    'user_id' => $this->user->id,
+                    'date' => $recordDate,
+                    'from_account_id' => $accountId,
+                    'type' => 'expense',
+                    'category_id' => $categoryId,
+                    'name' => $recordName,
+                    'amount' => -$recordAmount,
+                    'rate' => 1,
+                ]);
+
+                $matchedCategory = $allCategories->firstWhere('id', $categoryId);
+
+                $created++;
+                $details[] = [
+                    'name' => $recordName,
+                    'status' => 'created',
+                    'date' => $recordDate,
+                    'amount' => $recordAmount,
+                    'category' => $matchedCategory->name ?? 'Other',
+                    'id' => $newRecord->id,
+                ];
+            } catch (\Exception $e) {
+                $skipped++;
+                Log::error('Failed to create record from AI batch', [
+                    'user_id' => $this->user->id,
+                    'record' => $recordName,
+                    'error' => $e->getMessage(),
+                ]);
+                $details[] = ['name' => $recordName, 'status' => 'skipped', 'reason' => 'Database error'];
+            }
+        }
+
+        return [
+            'created' => $created,
+            'skipped' => $skipped,
+            'total' => count($records),
+            'details' => $details,
+            'currency' => $this->user->currency_symbol,
+        ];
+    }
+
+    /**
+     * Fuzzy match a category name to the closest existing category.
+     */
+    private function fuzzyMatchCategory(string $name, $allCategories): ?Category
+    {
+        $name = mb_strtolower(trim($name));
+
+        // Direct match first
+        $direct = $allCategories->first(fn($c) => mb_strtolower($c->name) === $name);
+        if ($direct) return $direct;
+
+        // Contains match
+        $contains = $allCategories->first(fn($c) => str_contains(mb_strtolower($c->name), $name) || str_contains($name, mb_strtolower($c->name)));
+        if ($contains) return $contains;
+
+        // Parent category match (e.g., "supermarket" matches any category under "Supermarkets")
+        foreach ($allCategories as $cat) {
+            $parentName = mb_strtolower($cat->parent_name ?? '');
+            if ($parentName && (str_contains($parentName, $name) || str_contains($name, $parentName))) {
+                return $cat; // Return first category under matched parent
+            }
+        }
+
+        return null;
     }
 }

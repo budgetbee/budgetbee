@@ -424,7 +424,7 @@ export default function ChatBot() {
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={handleKeyDown}
                                 onPaste={handlePaste}
-                                placeholder="Type a message or paste an image..."
+                                placeholder="Type a message, paste an image, or send a bank screenshot..."
                                 disabled={loading}
                                 className="flex-1 bg-gray-600 border border-gray-500 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 disabled:opacity-50"
                             />

@@ -112,7 +112,7 @@ class AiController extends Controller
             'files.*' => 'file|max:10240',
         ]);
 
-        $userMessage = $request->input('message', '');
+        $userMessage = (string) $request->input('message', '');
         $uploadedFiles = $request->file('files', []);
 
         $fileInfo = [];
@@ -122,6 +122,7 @@ class AiController extends Controller
                     'name' => $file->getClientOriginalName(),
                     'size' => $file->getSize(),
                     'mime' => $file->getMimeType(),
+                    'path' => $file->getRealPath(),
                 ];
             }
         }
