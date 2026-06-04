@@ -307,6 +307,7 @@ class AiChatService
         $currentMonth = Carbon::now()->format('F Y');
         $memoryContext = AiMemory::getContextForUser($this->user->id);
         $memorySection = $memoryContext ? "\n**User context (learned from previous conversations):**\n{$memoryContext}\n" : '';
+        $categoriesList = $this->buildCategoriesList();
 
         return <<<PROMPT
 You are BudgetBee AI, a friendly and helpful financial assistant integrated into the BudgetBee personal finance app.
@@ -316,10 +317,24 @@ Current date: {$today}
 Current month: {$currentMonth}
 User's currency: {$currency}
 {$memorySection}
+**User's available categories:**
+{$categoriesList}
+
 You have access to tools that let you query the user's real financial data in the database.
 Always use these tools to provide accurate, data-driven answers. Do NOT make up numbers — only report what the tools return.
 If a query returns no data, tell the user honestly.
 Be concise but friendly. Format currency amounts with the user's currency symbol.
+
+**CRITICAL — Date handling:**
+- When the user says "this month", ALWAYS pass `from_date` as the first day of the current month.
+- When the user says "this year", ALWAYS pass `from_date` as `{$today}`-01-01 (first day of current year).
+- When the user says "last month", ALWAYS calculate and pass the correct first day of last month.
+- User can also specify explicit dates (e.g., "from January 1st to January 31st") — parse these and pass them as `from_date` and `to_date`.
+- When no time period is mentioned, the tools default to all records.
+
+**When querying by category:** match the user's words to the closest category from the list above, then use the exact category name in tool calls.
+
+**When creating records:** always pass the `category_id` (the number in parentheses) from the list above.
 
 **IMPORTANT: Always format your responses using Markdown.** Use the following formatting rules:
 - Use **bold** for key numbers, totals, and important figures.
@@ -345,53 +360,17 @@ Here's your spending breakdown for this month:
 > Your biggest expense category this month is *Supermarkets* at 62% of total spending.
 ```
 
-**DATA EXTRACTION: When the user sends you financial data (image, spreadsheet, or pasted text):**
+**DATA EXTRACTION — When the user sends an image or file with transactions:**
 
-The user may send data in different formats:
-- **Images** (screenshots, photos of bank statements) → analyze visually
-- **Spreadsheet data** (appears as a markdown table in the message starting with `**File: *.xlsx**`) → process the table directly
-- **Pasted text** → process as-is
+1. Call `get_accounts`. Do NOT call `get_categories` (already listed above).
+2. Extract EVERY transaction: negative = expense, positive = income.
+3. Match each to a `category_id` from the list above.
+4. Present a compact table: Date | Description | Amount | Type | Category
+5. Ask: "¿En qué cuenta los creo? Responde con el nombre de la cuenta y **sí** para confirmar."
+6. NEVER call `create_records_batch` without account + confirmation.
+7. When confirmed, use: date, name, amount (positive), type, category_id, account_name.
 
-Follow the same extraction flow regardless of format:
-
-**Step 1 — Extract ALL transactions:**
-Carefully read every visible transaction. Pay special attention to the AMOUNT column:
-- **NEGATIVE amounts or payments** (e.g., -531.19, or amounts in a "debit/expenses" column) = **expenses**
-- **POSITIVE amounts or deposits** (e.g., +5000, or descriptions like "SALARY", "PAYROLL", "DEPOSIT", "INCOMING TRANSFER") = **income**
-- Bank statements typically show expenses with a minus sign and income without one.
-
-**Step 2 — MANDATORY: Call context tools BEFORE presenting anything:**
-- **You MUST call `get_accounts`** as your very first action after seeing the image. This is NOT optional.
-- **You MUST call `get_categories`** to see the user's actual category names.
-- Do NOT present extracted data until you have called both tools and received results.
-
-**Step 3 — Categorize intelligently:**
-Match each transaction to the closest existing category from `get_categories`. Common patterns:
-- "SALARY", "PAYROLL", "DEPOSIT" → Income
-- "SUPERMARKET", "GROCERY", "WALMART", "TESCO", "LIDL", "ALDI" → Supermarkets / Groceries
-- "NETFLIX", "SPOTIFY", "DISNEY", "HBO", "PRIME", "SUBSCRIPTION" → Subscriptions
-- "UBER", "LYFT", "TRANSPORT", "GAS", "FUEL" → Transport
-- "RESTAURANT", "CAFE", "COFFEE", "DELIVERY", "DOORDASH" → Restaurants / Dining
-- "INSURANCE", "GEICO" → Insurance
-- "LOAN", "MORTGAGE" → Loan payment
-- "FEE", "COMMISSION", "SERVICE CHARGE" → Bank fees
-- "RENT", "LEASE" → Housing
-- "ELECTRIC", "WATER", "UTILITY" → Utilities
-- "PHARMACY", "DOCTOR", "MEDICAL" → Healthcare
-- Use the ACTUAL category names from `get_categories`. If unsure, use "Other".
-
-**Step 4 — Present the data with ALL columns:**
-Table format: Date | Description | Amount | Type | Category
-
-**Step 5 — CRITICAL: Ask the user which account to use:**
-- After presenting the table, **you MUST ask the user which account to use**. Example:
-  "Which account should I create these records in? Available accounts: **Checking ($1,200)**, **Savings ($5,000)**."
-- Do NOT assume a default account. Wait for the user to tell you.
-
-**Step 6 — Only create when BOTH account AND confirmation are received:**
-- The user must tell you the account name AND say yes/confirm/create/proceed.
-- **NEVER call `create_records_batch` until the user has specified an account.**
-- When confirmed, call `create_records_batch` with: date, name, amount (ALWAYS positive), type ("income" or "expense"), category_name, account_name.
+**Be concise. One table, one question. No repetition.**
 
 **MEMORY: You have persistent memory per user. Use the `save_memory` tool to remember important facts:**
 - If the user consistently speaks a language (Spanish, English, etc.), save it as `language`.
@@ -441,15 +420,15 @@ PROMPT;
                         'properties' => [
                             'from_date' => [
                                 'type' => 'string',
-                                'description' => 'Start date in Y-m-d format. Defaults to first day of current month if not provided.',
+                                'description' => 'Start date in Y-m-d format. Defaults to January 1st of current year. ALWAYS set this explicitly when the user mentions a time period (e.g., "this month" → first day of month, "this year" → first day of year, "last month" → first day of last month).',
                             ],
                             'to_date' => [
                                 'type' => 'string',
-                                'description' => 'End date in Y-m-d format. Defaults to today if not provided.',
+                                'description' => 'End date in Y-m-d format. Defaults to today.',
                             ],
                             'category_name' => [
                                 'type' => 'string',
-                                'description' => 'Optional: filter by category or parent category name (partial match supported, e.g., "supermarket" or "groceries").',
+                                'description' => 'Optional: filter by category name. Use the EXACT category name from the list in the system prompt.',
                             ],
                         ],
                     ],
@@ -465,11 +444,11 @@ PROMPT;
                         'properties' => [
                             'from_date' => [
                                 'type' => 'string',
-                                'description' => 'Start date in Y-m-d format. Defaults to first day of current month if not provided.',
+                                'description' => 'Start date in Y-m-d format. Defaults to January 1st of current year. ALWAYS set this explicitly when the user mentions a time period.',
                             ],
                             'to_date' => [
                                 'type' => 'string',
-                                'description' => 'End date in Y-m-d format. Defaults to today if not provided.',
+                                'description' => 'End date in Y-m-d format. Defaults to today.',
                             ],
                         ],
                     ],
@@ -571,14 +550,18 @@ PROMPT;
                                         ],
                                         'category_name' => [
                                             'type' => 'string',
-                                            'description' => 'Category name. MUST match one of the user\'s real categories from get_categories. Call get_categories first.',
+                                            'description' => 'DEPRECATED: use category_id instead. Category name from the list.',
+                                        ],
+                                        'category_id' => [
+                                            'type' => 'integer',
+                                            'description' => 'The exact category ID from the list above. Always use this — pick the ID that best matches the transaction description.',
                                         ],
                                         'account_name' => [
                                             'type' => 'string',
                                             'description' => 'Account name. MUST match one of the user\'s real accounts from get_accounts. Call get_accounts first BEFORE presenting data to the user.',
                                         ],
                                     ],
-                                    'required' => ['date', 'name', 'amount', 'type', 'account_name'],
+                                    'required' => ['date', 'name', 'amount', 'type', 'category_id', 'account_name'],
                                 ],
                             ],
                         ],
@@ -629,7 +612,7 @@ PROMPT;
             'model' => $this->getModelName(),
             'messages' => $messages,
             'temperature' => 0.3,
-            'max_tokens' => 2000,
+            'max_tokens' => 4000,
         ];
 
         if ($includeTools) {
@@ -741,7 +724,7 @@ PROMPT;
 
     private function toolGetExpensesByCategory(array $args): array
     {
-        $fromDate = $args['from_date'] ?? Carbon::now()->startOfMonth()->format('Y-m-d');
+        $fromDate = $args['from_date'] ?? Carbon::now()->startOfYear()->format('Y-m-d');
         $toDate = $args['to_date'] ?? Carbon::now()->format('Y-m-d');
         $categoryFilter = $args['category_name'] ?? null;
 
@@ -756,6 +739,7 @@ PROMPT;
             })
             ->with('category.parent');
 
+        // Filter by category name if provided (AI uses exact names from prompt)
         if ($categoryFilter) {
             $query->where(function ($q) use ($categoryFilter) {
                 $q->whereHas('category', function ($sq) use ($categoryFilter) {
@@ -790,7 +774,7 @@ PROMPT;
 
     private function toolGetIncomeByCategory(array $args): array
     {
-        $fromDate = $args['from_date'] ?? Carbon::now()->startOfMonth()->format('Y-m-d');
+        $fromDate = $args['from_date'] ?? Carbon::now()->startOfYear()->format('Y-m-d');
         $toDate = $args['to_date'] ?? Carbon::now()->format('Y-m-d');
 
         $incomeCategoryIds = Category::where('parent_category_id', 10)->pluck('id');
@@ -985,15 +969,29 @@ PROMPT;
                 continue;
             }
 
-            // Fuzzy match category
-            $categoryId = 44; // Default "Other" category
-            $matchedCategoryName = 'Other';
+            // Category: use ID directly if provided, otherwise fall back to name matching
+            $categoryId = $record['category_id'] ?? null;
             $categoryName = $record['category_name'] ?? null;
-            if ($categoryName) {
-                $matched = $this->fuzzyMatchCategory($categoryName, $allCategories);
-                if ($matched) {
-                    $categoryId = $matched->id;
-                    $matchedCategoryName = $matched->name;
+            $matchedCategoryName = 'Unknown';
+
+            if ($categoryId) {
+                $cat = $allCategories->firstWhere('id', $categoryId);
+                if ($cat) {
+                    $matchedCategoryName = $cat->name;
+                } else {
+                    $categoryId = 44; // Invalid ID → fallback
+                    $matchedCategoryName = 'Other';
+                }
+            } else {
+                // Fallback: match by name
+                $categoryId = 44;
+                $matchedCategoryName = 'Other';
+                if ($categoryName) {
+                    $matched = $this->fuzzyMatchCategory($categoryName, $allCategories);
+                    if ($matched) {
+                        $categoryId = $matched->id;
+                        $matchedCategoryName = $matched->name;
+                    }
                 }
             }
 
@@ -1058,24 +1056,53 @@ PROMPT;
     private function fuzzyMatchCategory(string $name, $allCategories): ?Category
     {
         $name = mb_strtolower(trim($name));
+        if (empty($name)) return null;
 
-        // Direct match first
+        // 1. Exact match (case insensitive)
         $direct = $allCategories->first(fn($c) => mb_strtolower($c->name) === $name);
         if ($direct) return $direct;
 
-        // Contains match
-        $contains = $allCategories->first(fn($c) => str_contains(mb_strtolower($c->name), $name) || str_contains($name, mb_strtolower($c->name)));
+        // 2. Category name contains query (e.g., "Gasolina" contains "gas")
+        $contains = $allCategories->first(fn($c) => str_contains(mb_strtolower($c->name), $name));
         if ($contains) return $contains;
 
-        // Parent category match (e.g., "supermarket" matches any category under "Supermarkets")
-        foreach ($allCategories as $cat) {
-            $parentName = mb_strtolower($cat->parent_name ?? '');
-            if ($parentName && (str_contains($parentName, $name) || str_contains($name, $parentName))) {
-                return $cat; // Return first category under matched parent
-            }
+        // 3. Query contains category name (e.g., "Compras online" contains "Compras")
+        //    Only if query >= 4 chars to avoid "es" matching everything
+        if (mb_strlen($name) >= 4) {
+            $reverse = $allCategories->first(fn($c) =>
+                str_contains($name, mb_strtolower($c->name))
+            );
+            if ($reverse) return $reverse;
         }
 
         return null;
+    }
+
+    /**
+     * Build a formatted list of the user's categories for the system prompt.
+     */
+    private function buildCategoriesList(): string
+    {
+        $categories = Category::where(function ($q) {
+            $q->where('user_id', $this->user->id)
+                ->orWhereNull('user_id');
+        })
+            ->with('parent')
+            ->get()
+            ->groupBy('parent_category_id');
+
+        if ($categories->isEmpty()) {
+            return '(No categories configured yet)';
+        }
+
+        $lines = [];
+        foreach ($categories as $parentId => $cats) {
+            $parentName = $cats->first()->parent_name ?? 'Other';
+            $catList = $cats->map(fn($c) => "`{$c->name}` (ID:{$c->id})")->implode(', ');
+            $lines[] = "- **{$parentName}** (parent ID:{$parentId}): {$catList}";
+        }
+
+        return implode("\n", $lines);
     }
 
     /**
