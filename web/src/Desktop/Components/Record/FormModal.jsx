@@ -212,7 +212,17 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                                 onChange={e => setFromAccount(e.target.value)}
                             >
                                 {(item) => (
-                                    <SelectItem key={item.id} value={item.id}>
+                                    <SelectItem key={item.id} value={item.id}
+                                        startContent={
+                                            <span
+                                                className="inline-block w-3 h-3 rounded-full flex-shrink-0"
+                                                style={{ backgroundColor: item.color || '#666' }}
+                                            />
+                                        }
+                                        endContent={
+                                            <span className="text-default-400 text-xs">{item.currency_symbol}</span>
+                                        }
+                                    >
                                         {item.name}
                                     </SelectItem>
                                 )}
@@ -231,7 +241,17 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                                     onChange={e => setToAccount(e.target.value)}
                                 >
                                     {accounts.map((account) => (
-                                        <SelectItem key={account.id} value={account.id}>
+                                        <SelectItem key={account.id} value={account.id}
+                                            startContent={
+                                                <span
+                                                    className="inline-block w-3 h-3 rounded-full flex-shrink-0"
+                                                    style={{ backgroundColor: account.color || '#666' }}
+                                                />
+                                            }
+                                            endContent={
+                                                <span className="text-default-400 text-xs">{account.currency_symbol}</span>
+                                            }
+                                        >
                                             {account.name}
                                         </SelectItem>
                                     ))}
@@ -378,7 +398,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                                     size="sm"
                                     onClick={() => doSave(false)}
                                 >
-                                    Save &amp; Close
+                                    {'Save & Close'}
                                 </Button>
                             )}
                             <Button
@@ -389,7 +409,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                                 onClick={() => doSave(true)}
                                 endContent={!loading && <FontAwesomeIcon icon="fa-solid fa-plus" />}
                             >
-                                {isEditing ? "Save" : "Save &amp; New"}
+                                {isEditing ? 'Save' : 'Save & New'}
                             </Button>
                         </div>
                     </ModalFooter>
