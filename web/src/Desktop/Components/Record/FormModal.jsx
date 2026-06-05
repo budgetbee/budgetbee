@@ -86,30 +86,18 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
     const handleConceptChange = (e) => {
         const value = e.target.value;
         setName(value);
-    
-        // Clear the previous timeout if it exists
-        if (debounceTimeout.current) {
-            clearTimeout(debounceTimeout.current);
-        }
-    
-        // Set a new timeout to call the API after 1 second
-        debounceTimeout.current = setTimeout(async () => {
-            const predict = await Api.predictCategory(value);
-            setCategory(predict.category);
-            setParentCategory(predict.parent_category);
-        }, 1000);
     };
 
-    const debounceTimeout = useRef(null);
-
     const resetForm = () => {
+        const currentDate = date;
+        const currentFromAccount = fromAccount;
         setType("");
-        setFromAccount('');
+        setFromAccount(currentFromAccount);
         setToAccount('');
         setParentCategory(null);
         setCategory(null);
         setName('');
-        setDate(null);
+        setDate(currentDate);
         setAmount('');
         setCategories([]);
     };
@@ -289,7 +277,14 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                                     </Select>
                                 </div>
                             )}
-                            {type === "transfer" && (
+                            {type === "transfer" &&
+                                fromAccount &&
+                                toAccount &&
+                                (() => {
+                                    const fromCurr = accounts.find(a => a.id === Number(fromAccount))?.currency_code;
+                                    const toCurr = accounts.find(a => a.id === Number(toAccount))?.currency_code;
+                                    return fromCurr && toCurr && fromCurr !== toCurr;
+                                })() && (
                                 <Input
                                     isRequired
                                     name="rate"

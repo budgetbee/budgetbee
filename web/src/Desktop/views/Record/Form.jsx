@@ -215,8 +215,8 @@ export default function Form() {
                                         </div>
                                         {record.from_account_id &&
                                             record?.to_account_id &&
-                                            record?.from_account_id !==
-                                                record?.to_account_id && (
+                                            accounts.find(item => item.id === Number(record.from_account_id))?.currency_code !==
+                                                accounts.find(item => item.id === Number(record.to_account_id))?.currency_code && (
                                                 <div>
                                                     <label
                                                         for="rate"
