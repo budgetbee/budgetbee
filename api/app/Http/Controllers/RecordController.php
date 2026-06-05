@@ -21,6 +21,16 @@ class RecordController extends Controller
         if ($request->has('type')) {
             $records->where('type', $request->query('type'));
         }
+        if ($request->has('account_id')) {
+            $accountIds = $request->query('account_id');
+            if (!is_array($accountIds)) {
+                $accountIds = [$accountIds];
+            }
+            $records->where(function ($q) use ($accountIds) {
+                $q->whereIn('from_account_id', $accountIds)
+                  ->orWhereIn('to_account_id', $accountIds);
+            });
+        }
         if ($request->has('category_id')) {
             $catName = Category::find((int) $request->query('category_id'))?->name;
             if ($catName) {
