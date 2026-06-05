@@ -59,6 +59,7 @@ export default function List() {
     const [customTo, setCustomTo] = useState(null);
 
     const abortControllerRef = useRef(null);
+    const isLoadingRef = useRef(false);
 
     useEffect(() => {
         Api.getParentCategories().then(setParentCategories);
@@ -73,6 +74,7 @@ export default function List() {
         abortControllerRef.current = controller;
 
         async function getRecords() {
+            isLoadingRef.current = true;
             const apiFilters = { ...activeFilters };
             if (activeDateFrom) apiFilters.from_date = activeDateFrom;
             if (activeDateTo) apiFilters.to_date = activeDateTo;
@@ -81,12 +83,14 @@ export default function List() {
             if (controller.signal.aborted) return;
             if (!Array.isArray(newData)) {
                 setMoreData(false);
+                isLoadingRef.current = false;
                 return;
             }
             setData((prevData) => (page === 1 ? newData : [...prevData, ...newData]));
             if (newData.length === 0) {
                 setMoreData(false);
             }
+            isLoadingRef.current = false;
         }
         if (moreData === true) {
             getRecords();
@@ -96,7 +100,7 @@ export default function List() {
     }, [page, moreData, activeFilters, activeDateFrom, activeDateTo, activeAccountIds]);
 
     function loadMore() {
-        if (
+        if (!isLoadingRef.current && moreData &&
             window.scrollY + window.innerHeight >=
             document.documentElement.scrollHeight
         ) {
