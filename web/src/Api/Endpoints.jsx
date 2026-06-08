@@ -9,9 +9,12 @@ const TOKEN_DURATION_MS = 2 * 60 * 60 * 1000; // 2 hours
 const setTokenCookie = (token) => {
     const expirationDate = new Date();
     expirationDate.setTime(expirationDate.getTime() + TOKEN_DURATION_MS);
+    const isSecure = window.location.protocol === 'https:';
     cookies.set(TOKEN_COOKIE_NAME, token, {
         path: "/",
         expires: expirationDate,
+        secure: isSecure,
+        sameSite: 'Lax',
     });
 };
 
