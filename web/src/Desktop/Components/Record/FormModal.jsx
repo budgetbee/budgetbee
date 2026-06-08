@@ -37,6 +37,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
     const [date, setDate] = useState(null);
     const [amount, setAmount] = useState(0);
     const [typeError, setTypeError] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const formRef = useRef();
 
     const tc = typeConfig[type] || {};
@@ -74,19 +75,10 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
     }, [parentCategory]);
 
     const resetForm = () => {
-        const currentDate = date;
-        const currentFromAccount = fromAccount;
-        const currentParentCategory = parentCategory;
-        const currentCategory = category;
         setType("");
-        setFromAccount(currentFromAccount);
         setToAccount('');
-        setParentCategory(currentParentCategory);
-        setCategory(currentCategory);
         setName('');
-        setDate(currentDate);
         setAmount(0);
-        setCategories([]);
     };
 
     const doSave = useCallback(async (isSaveAndNew) => {
@@ -110,6 +102,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
 
         if (record) fetchAgain();
         if (onRecordChange) onRecordChange();
+        await refreshAccounts();
 
         setLoading(false);
 
@@ -125,15 +118,19 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
         doSave(true);
     };
 
+    const refreshAccounts = async () => {
+        const fetchAccounts = await Api.getAccounts();
+        setAccounts(fetchAccounts);
+    };
+
     const handleDeleteRecord = async () => {
-        const userConfirmed = window.confirm("Delete this record?");
-        if (userConfirmed) {
-            await Api.deleteRecord(record_id);
-            if (onRecordChange) onRecordChange();
-            onOpenChange();
-        }
-        setLoading(false);
+        setLoading(true);
+        await Api.deleteRecord(record_id);
+        if (onRecordChange) onRecordChange();
         setIsRemoved(true);
+        setLoading(false);
+        setShowDeleteConfirm(false);
+        onOpenChange();
     };
 
     const selectedAccount = accounts.find(a => a.id === Number(fromAccount));
@@ -178,7 +175,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                 },
             }}
         >
-            <ModalContent>
+            <ModalContent className="relative">
                 <form onSubmit={handleFormSubmit} ref={formRef} id="recordForm" className="block">
                     <ModalBody className="gap-0 p-0">
                         {/* Type selector tabs */}
@@ -506,7 +503,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                                         variant="light"
                                         size="md"
                                         isLoading={loading}
-                                        onClick={handleDeleteRecord}
+                                        onClick={() => setShowDeleteConfirm(true)}
                                         className="flex-1 h-12 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-medium"
                                         startContent={!loading && <FontAwesomeIcon icon={faTrash} />}
                                     >
@@ -548,6 +545,38 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                         </div>
                     </ModalFooter>
                 </form>
+
+                {/* Delete confirmation overlay */}
+                {showDeleteConfirm && (
+                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#0a0a0f]/95 rounded-2xl">
+                        <div className="text-center px-6">
+                            <div className="w-14 h-14 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-4">
+                                <FontAwesomeIcon icon={faTrash} className="text-red-400 text-xl" />
+                            </div>
+                            <h3 className="text-white text-lg font-semibold mb-2">Delete record?</h3>
+                            <p className="text-gray-400 text-sm mb-6">This action cannot be undone.</p>
+                            <div className="flex flex-row gap-x-3">
+                                <Button
+                                    variant="flat"
+                                    size="md"
+                                    onClick={() => setShowDeleteConfirm(false)}
+                                    className="flex-1 bg-[#1a1a2e] text-gray-300 hover:bg-[#2a2a3e]"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    size="md"
+                                    isLoading={loading}
+                                    onClick={handleDeleteRecord}
+                                    className="flex-1 bg-red-500 text-white hover:bg-red-600"
+                                    startContent={!loading && <FontAwesomeIcon icon={faTrash} />}
+                                >
+                                    Delete
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </ModalContent>
         </Modal>
     );
