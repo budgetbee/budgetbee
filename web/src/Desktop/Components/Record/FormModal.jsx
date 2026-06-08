@@ -22,10 +22,36 @@ const typeConfig = {
     transfer: { color: "text-blue-400", bg: "bg-blue-500/20", border: "border-blue-500/30", accent: "bg-blue-500", label: "Transfer", sign: "" },
 };
 
-export default function FormModal({ isOpen, onOpenChange, record_id, recordData, fetchAgain, setIsRemoved, onRecordChange }) {
-    const [accounts, setAccounts] = useState([]);
+// Module-level cache to survive component unmount/remount
+let cachedAccounts = null;
+let cachedParentCategories = null;
+const categoriesByParentCache = {};
+
+const fetchAccountsOnce = async () => {
+    if (!cachedAccounts) {
+        cachedAccounts = await Api.getAccounts();
+    }
+    return cachedAccounts;
+};
+
+const fetchParentCategoriesOnce = async () => {
+    if (!cachedParentCategories) {
+        cachedParentCategories = await Api.getParentCategories();
+    }
+    return cachedParentCategories;
+};
+
+const fetchCategoriesByParentOnce = async (parentId) => {
+    if (!categoriesByParentCache[parentId]) {
+        categoriesByParentCache[parentId] = await Api.getCategoriesByParent(parentId);
+    }
+    return categoriesByParentCache[parentId];
+};
+
+export default function FormModal({ isOpen, onOpenChange, record_id, recordData, accounts: accountsProp, parentCategories: parentCategoriesProp, fetchAgain, setIsRemoved, onRecordChange }) {
+    const [accounts, setAccounts] = useState(accountsProp || []);
     const [loading, setLoading] = useState(false);
-    const [parentCategories, setParentCategories] = useState([]);
+    const [parentCategories, setParentCategories] = useState(parentCategoriesProp || []);
     const [categories, setCategories] = useState([]);
     const [record, setRecord] = useState(null);
     const [type, setType] = useState("");
@@ -44,10 +70,23 @@ export default function FormModal({ isOpen, onOpenChange, record_id, recordData,
 
     useEffect(() => {
         async function getData() {
-            const fetchAccounts = await Api.getAccounts();
-            const fetchParentCategories = await Api.getParentCategories();
-            setAccounts(fetchAccounts);
-            setParentCategories(fetchParentCategories);
+            // Prefer cache (freshest, updated after saves) > props > fetch
+            if (cachedAccounts) {
+                setAccounts(cachedAccounts);
+            } else if (accountsProp?.length) {
+                setAccounts(accountsProp);
+            } else {
+                const data = await fetchAccountsOnce();
+                setAccounts(data);
+            }
+            if (cachedParentCategories) {
+                setParentCategories(cachedParentCategories);
+            } else if (parentCategoriesProp?.length) {
+                setParentCategories(parentCategoriesProp);
+            } else {
+                const data = await fetchParentCategoriesOnce();
+                setParentCategories(data);
+            }
 
             // Use recordData prop if provided (instant), otherwise fetch from API
             if (recordData) {
@@ -74,12 +113,12 @@ export default function FormModal({ isOpen, onOpenChange, record_id, recordData,
             }
         }
         getData();
-    }, [isOpen, record_id, recordData]);
+    }, [isOpen, record_id, recordData, accountsProp, parentCategoriesProp]);
 
     useEffect(() => {
         async function getCategories() {
-            const categories = await Api.getCategoriesByParent(parentCategory);
-            setCategories(categories);
+            const data = await fetchCategoriesByParentOnce(parentCategory);
+            setCategories(data);
         }
         if (parentCategory) {
             getCategories();
@@ -131,7 +170,8 @@ export default function FormModal({ isOpen, onOpenChange, record_id, recordData,
     };
 
     const refreshAccounts = async () => {
-        const fetchAccounts = await Api.getAccounts();
+        cachedAccounts = null; // Invalidate cache so next fetch gets fresh data
+        const fetchAccounts = await fetchAccountsOnce();
         setAccounts(fetchAccounts);
     };
 
@@ -525,7 +565,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, recordData,
                                         type="button"
                                         size="md"
                                         isLoading={loading}
-                                        onClick={() => doSave(true)}
+                                        onClick={() => doSave(false)}
                                         className="flex-1 h-12 bg-green-500 text-white hover:bg-green-600 font-medium"
                                     >
                                         Save
