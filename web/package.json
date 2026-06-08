@@ -1,6 +1,7 @@
 {
   "name": "budgetbee",
-  "version": "0.12",
+  "version": "0.12.1",
+  "author": "Pelukosa",
   "private": true,
   "type": "module",
   "dependencies": {
