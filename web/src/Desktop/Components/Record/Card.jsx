@@ -39,6 +39,7 @@ export default function Card({ record, showName, onRecordChange }) {
             onOpen={onOpen}
             onOpenChange={onOpenChange}
             record_id={record.id}
+            recordData={recordData}
             fetchAgain={() => fetchAgain(record.id)}
             setIsRemoved={setIsRemoved}
             onRecordChange={onRecordChange}

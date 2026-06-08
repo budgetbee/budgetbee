@@ -22,7 +22,7 @@ const typeConfig = {
     transfer: { color: "text-blue-400", bg: "bg-blue-500/20", border: "border-blue-500/30", accent: "bg-blue-500", label: "Transfer", sign: "" },
 };
 
-export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain, setIsRemoved, onRecordChange }) {
+export default function FormModal({ isOpen, onOpenChange, record_id, recordData, fetchAgain, setIsRemoved, onRecordChange }) {
     const [accounts, setAccounts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [parentCategories, setParentCategories] = useState([]);
@@ -45,10 +45,22 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
     useEffect(() => {
         async function getData() {
             const fetchAccounts = await Api.getAccounts();
-            const parentCategories = await Api.getParentCategories();
+            const fetchParentCategories = await Api.getParentCategories();
             setAccounts(fetchAccounts);
-            setParentCategories(parentCategories);
-            if (record_id !== undefined) {
+            setParentCategories(fetchParentCategories);
+
+            // Use recordData prop if provided (instant), otherwise fetch from API
+            if (recordData) {
+                setRecord(recordData);
+                setFromAccount(recordData.from_account_id);
+                setToAccount(recordData.to_account_id);
+                setParentCategory(recordData.parent_category_id);
+                setCategory(recordData.category_id);
+                setType(recordData.type);
+                setName(recordData.name);
+                setDate(moment(recordData.date).format("YYYY-MM-DD"));
+                setAmount(Math.abs(recordData.amount));
+            } else if (record_id !== undefined) {
                 const record = await Api.getRecordById(record_id);
                 setRecord(record);
                 setFromAccount(record.from_account_id);
@@ -62,7 +74,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
             }
         }
         getData();
-    }, [isOpen, record_id]);
+    }, [isOpen, record_id, recordData]);
 
     useEffect(() => {
         async function getCategories() {
