@@ -250,34 +250,34 @@ export default function ChatBot() {
 
     return (
         <>
-            {/* Floating toggle button */}
+            {/* Floating toggle button — just above the FloatMenu (+) on mobile */}
             {!isOpen && (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
+                    className="fixed bottom-32 right-[3.2em] sm:bottom-6 sm:right-6 z-50 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
                     title="Open AI Chat"
                 >
                     <FontAwesomeIcon icon={faCommentDots} className="text-xl" />
                 </button>
             )}
 
-            {/* Modal overlay + centered chat panel */}
+            {/* Modal overlay + centered chat panel — responsive on mobile */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+                    className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4"
                     onClick={handleOverlayClick}
                 >
                     <div
                         ref={chatPanelRef}
-                        className="w-[700px] h-[600px] max-h-[90vh] bg-gray-800 rounded-xl shadow-2xl flex flex-col border border-gray-600 overflow-hidden"
+                        className="w-full sm:w-[700px] h-[85vh] sm:h-[600px] max-h-[90vh] bg-gray-800 rounded-t-xl sm:rounded-xl shadow-2xl flex flex-col border border-gray-600 overflow-hidden"
                     >
                         {/* Header */}
-                        <div className="flex items-center justify-between px-4 py-3 bg-gray-700 border-b border-gray-600 rounded-t-xl">
-                            <div className="flex items-center gap-2">
-                                <FontAwesomeIcon icon={faRobot} className="text-blue-400" />
-                                <span className="font-semibold text-white text-lg">BudgetBee AI</span>
+                        <div className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3 bg-gray-700 border-b border-gray-600 rounded-t-xl">
+                            <div className="flex items-center gap-1.5 sm:gap-2">
+                                <FontAwesomeIcon icon={faRobot} className="text-blue-400 text-sm sm:text-base" />
+                                <span className="font-semibold text-white text-base sm:text-lg">BudgetBee AI</span>
                                 {provider && (
-                                    <span className="text-xs text-gray-400 bg-gray-600 px-1.5 py-0.5 rounded">
+                                    <span className="text-[10px] sm:text-xs text-gray-400 bg-gray-600 px-1.5 py-0.5 rounded hidden sm:inline">
                                         {provider}
                                     </span>
                                 )}
@@ -285,32 +285,32 @@ export default function ChatBot() {
                             <div className="flex items-center gap-1">
                                 <button
                                     onClick={handleNewChat}
-                                    className="text-gray-400 hover:text-white transition-colors px-2"
+                                    className="text-gray-400 hover:text-white transition-colors px-1.5 sm:px-2"
                                     title="New conversation"
                                 >
-                                    <FontAwesomeIcon icon={faPlus} />
+                                    <FontAwesomeIcon icon={faPlus} className="text-sm sm:text-base" />
                                 </button>
                                 <button
                                     onClick={handleClose}
-                                    className="text-gray-400 hover:text-white transition-colors"
+                                    className="text-gray-400 hover:text-white transition-colors px-1.5 sm:px-2"
                                 >
-                                    <FontAwesomeIcon icon={faTimes} />
+                                    <FontAwesomeIcon icon={faTimes} className="text-sm sm:text-base" />
                                 </button>
                             </div>
                         </div>
 
                     {/* Messages */}
-                    <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+                    <div className="flex-1 overflow-y-auto px-2 sm:px-4 py-2 sm:py-3 space-y-2 sm:space-y-3">
                         {messages.map((msg, idx) => (
                             <div
                                 key={idx}
                                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                             >
                                 <div
-                                    className={`px-4 py-2 rounded-xl text-sm ${
+                                    className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm ${
                                         msg.role === "user"
-                                            ? "max-w-[80%] bg-blue-600 text-white rounded-br-sm"
-                                            : "max-w-[90%] bg-gray-700 text-gray-100 rounded-bl-sm"
+                                            ? "max-w-[85%] sm:max-w-[80%] bg-blue-600 text-white rounded-br-sm"
+                                            : "max-w-[95%] sm:max-w-[90%] bg-gray-700 text-gray-100 rounded-bl-sm"
                                     }`}
                                 >
                                     {msg.content && msg.role === "assistant" ? (
@@ -369,7 +369,7 @@ export default function ChatBot() {
 
                     {/* File previews */}
                     {files.length > 0 && (
-                        <div className="px-4 py-2 bg-gray-750 border-t border-gray-600 flex flex-wrap gap-2">
+                        <div className="px-2 sm:px-4 py-1.5 sm:py-2 bg-gray-750 border-t border-gray-600 flex flex-wrap gap-1.5 sm:gap-2">
                             {files.map((entry, idx) => (
                                 <div
                                     key={idx}
@@ -398,17 +398,17 @@ export default function ChatBot() {
                     )}
 
                     {/* Input */}
-                    <div className="px-4 py-3 bg-gray-700 border-t border-gray-600">
-                        <div className="flex gap-2 items-center text-xs text-gray-400 mb-1.5">
+                    <div className="px-2 sm:px-4 py-2 sm:py-3 bg-gray-700 border-t border-gray-600">
+                        <div className="hidden sm:flex gap-2 items-center text-xs text-gray-400 mb-1.5">
                             <span>Ctrl+V to paste images</span>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-1.5 sm:gap-2">
                             <button
                                 onClick={handleAttachClick}
-                                className="px-2 py-2 bg-gray-600 hover:bg-gray-500 text-gray-300 hover:text-white rounded-lg transition-colors"
+                                className="px-1.5 sm:px-2 py-2 bg-gray-600 hover:bg-gray-500 text-gray-300 hover:text-white rounded-lg transition-colors flex-shrink-0"
                                 title="Attach file"
                             >
-                                <FontAwesomeIcon icon={faPaperclip} />
+                                <FontAwesomeIcon icon={faPaperclip} className="text-xs sm:text-sm" />
                             </button>
                             <input
                                 type="file"
@@ -425,15 +425,15 @@ export default function ChatBot() {
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={handleKeyDown}
                                 onPaste={handlePaste}
-                                placeholder="Type a message, paste an image, or send a bank screenshot..."
-                                className="flex-1 bg-gray-600 border border-gray-500 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+                                placeholder="Escribe un mensaje..."
+                                className="flex-1 min-w-0 bg-gray-600 border border-gray-500 rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
                             />
                             <button
                                 onClick={handleSend}
                                 disabled={!canSend}
-                                className="px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+                                className="px-2 sm:px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex-shrink-0"
                             >
-                                <FontAwesomeIcon icon={faPaperPlane} className="text-sm" />
+                                <FontAwesomeIcon icon={faPaperPlane} className="text-xs sm:text-sm" />
                             </button>
                         </div>
                     </div>
