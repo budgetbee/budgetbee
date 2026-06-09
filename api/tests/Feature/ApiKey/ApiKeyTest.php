@@ -83,7 +83,7 @@ class ApiKeyTest extends TestCase
         $apiKey = ApiKey::where('user_id', $this->user->id)->first();
 
         $this->assertNotEquals($plainTextKey, $apiKey->key);
-        $this->assertEquals(hash('sha256', $plainTextKey), $apiKey->key);
+        $this->assertEquals(hash_hmac('sha256', $plainTextKey, config('app.key')), $apiKey->key);
     }
 
     public function testCannotDeleteOtherUsersApiKey(): void
@@ -92,7 +92,7 @@ class ApiKeyTest extends TestCase
         $apiKey = ApiKey::create([
             'user_id' => $otherUser->id,
             'name' => 'Other Key',
-            'key' => hash('sha256', 'test-key'),
+            'key' => hash_hmac('sha256', 'test-key', config('app.key')),
         ]);
 
         $response = $this->deleteJson('/api/api-keys/' . $apiKey->id);

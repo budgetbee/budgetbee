@@ -42,7 +42,7 @@ class ExternalApiTest extends TestCase
         $this->apiKey = ApiKey::create([
             'user_id' => $this->user->id,
             'name' => 'Test API Key',
-            'key' => hash('sha256', $this->apiKeyPlain),
+            'key' => hash_hmac('sha256', $this->apiKeyPlain, config('app.key')),
         ]);
     }
 
