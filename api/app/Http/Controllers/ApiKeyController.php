@@ -24,7 +24,7 @@ class ApiKeyController extends Controller
         ]);
 
         $plainTextKey = Str::random(48);
-        $hashedKey = hash('sha256', $plainTextKey);
+        $hashedKey = hash_hmac('sha256', $plainTextKey, config('app.key'));
 
         $apiKey = ApiKey::create([
             'user_id' => $request->user()->id,

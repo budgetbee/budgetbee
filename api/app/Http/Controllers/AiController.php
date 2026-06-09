@@ -144,12 +144,23 @@ class AiController extends Controller
                     continue;
                 }
 
+                // Validate file path is within the temp directory (prevents path traversal)
+                $realPath = $file->getRealPath();
+                $tempDir = sys_get_temp_dir();
+                if (!str_starts_with(realpath($realPath), realpath($tempDir))) {
+                    Log::warning('AI chat: suspicious file path detected', [
+                        'user_id' => $request->user()->id,
+                        'filename' => $file->getClientOriginalName(),
+                    ]);
+                    continue;
+                }
+
                 // Images go to vision processing
                 $fileInfo[] = [
                     'name' => $file->getClientOriginalName(),
                     'size' => $file->getSize(),
                     'mime' => $mime,
-                    'path' => $file->getRealPath(),
+                    'path' => $realPath,
                 ];
             }
         }

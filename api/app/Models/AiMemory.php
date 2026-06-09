@@ -29,7 +29,12 @@ class AiMemory extends Model
 
         $lines = [];
         foreach ($memories as $m) {
-            $lines[] = "- **{$m->key}**: {$m->value}";
+            // Sanitize to prevent prompt injection via memory values
+            $safeKey = str_replace(['`', '<', '>', '[', ']', '(', ')', '*', '_', '|'], '', $m->key);
+            $safeValue = str_replace(['`', '<', '>', '[', ']', '(', ')', '*', '_', '|'], '', $m->value);
+            $safeKey = mb_substr(trim($safeKey), 0, 100);
+            $safeValue = mb_substr(trim($safeValue), 0, 300);
+            $lines[] = "- **{$safeKey}**: {$safeValue}";
         }
 
         return implode("\n", $lines);

@@ -109,7 +109,7 @@ Route::prefix('budget')->middleware(['auth:sanctum', 'token.refresh'])->group(fu
 
 Route::prefix('ai')->middleware(['auth:sanctum', 'token.refresh'])->group(function () {
     Route::post('/predict-category', [AiController::class, 'predictCategoryRequest']);
-    Route::post('/chat', [AiController::class, 'chat']);
+    Route::post('/chat', [AiController::class, 'chat'])->middleware('throttle:100,1');
     Route::post('/clear-history', [AiController::class, 'clearHistory']);
 });
 

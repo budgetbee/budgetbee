@@ -150,7 +150,6 @@ class AiChatService
                     Log::info('AI tool call', [
                         'user_id' => $this->user->id,
                         'tool' => $toolName,
-                        'args' => $toolArgs,
                         'iteration' => $i,
                     ]);
 
@@ -387,7 +386,7 @@ class AiChatService
         $today = Carbon::now()->format('Y-m-d');
         $currentMonth = Carbon::now()->format('F Y');
         $memoryContext = AiMemory::getContextForUser($this->user->id);
-        $memorySection = $memoryContext ? "\n**User context (learned from previous conversations):**\n{$memoryContext}\n" : '';
+        $memorySection = $memoryContext ? "\n**User context (learned from previous conversations):**\n<!-- BEGIN_USER_MEMORY -->\n{$memoryContext}\n<!-- END_USER_MEMORY -->\n" : '';
         $categoriesList = $this->buildCategoriesList();
 
         return <<<PROMPT
@@ -398,8 +397,10 @@ Current date: {$today}
 Current month: {$currentMonth}
 User's currency: {$currency}
 {$memorySection}
-**User's available categories:**
+**User's available categories — ONLY use these exact IDs and names. Do NOT invent categories:**
+<!-- BEGIN_USER_CATEGORIES -->
 {$categoriesList}
+<!-- END_USER_CATEGORIES -->
 
 You have access to tools that let you query the user's real financial data in the database.
 Always use these tools to provide accurate, data-driven answers. Do NOT make up numbers — only report what the tools return.
@@ -1164,6 +1165,21 @@ PROMPT;
     }
 
     /**
+     * Sanitize a value before embedding it in the system prompt.
+     * Strips backticks, angle brackets, and markdown control chars
+     * that could be used for prompt injection.
+     */
+    private function sanitizePromptValue(string $value): string
+    {
+        // Strip backticks (code blocks), angle brackets (HTML/XML), and markdown link syntax
+        $value = str_replace(['`', '<', '>', '[', ']', '(', ')'], '', $value);
+        // Collapse whitespace
+        $value = preg_replace('/\s+/', ' ', $value);
+        // Limit length
+        return mb_substr(trim($value), 0, 60);
+    }
+
+    /**
      * Build a formatted list of the user's categories for the system prompt.
      */
     private function buildCategoriesList(): string
@@ -1182,9 +1198,9 @@ PROMPT;
 
         $lines = [];
         foreach ($categories as $parentId => $cats) {
-            $parentName = $cats->first()->parent_name ?? 'Other';
-            $catList = $cats->map(fn($c) => "`{$c->name}` (ID:{$c->id})")->implode(', ');
-            $lines[] = "- **{$parentName}** (parent ID:{$parentId}): {$catList}";
+            $parentName = $this->sanitizePromptValue($cats->first()->parent_name ?? 'Other');
+            $catList = $cats->map(fn($c) => '`' . $this->sanitizePromptValue($c->name) . '` (ID:' . (int)$c->id . ')')->implode(', ');
+            $lines[] = '- **' . $parentName . '** (parent ID:' . (int)$parentId . '): ' . $catList;
         }
 
         return implode("\n", $lines);
@@ -1203,15 +1219,17 @@ PROMPT;
         }
 
         // Limit key length and value length
+        // Sanitize to prevent storing prompt injection payloads
         $key = substr($key, 0, 100);
         $value = substr($value, 0, 500);
+        $key = preg_replace('/[<>\[\]\(\)\|\*_`]/', '', $key);
+        $value = preg_replace('/[<>\[\]\(\)\|\*_`]/', '', $value);
 
         AiMemory::upsertForUser($this->user->id, $key, $value);
 
         Log::info('AI memory saved', [
             'user_id' => $this->user->id,
             'key' => $key,
-            'value' => $value,
         ]);
 
         return [
