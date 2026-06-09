@@ -16,6 +16,7 @@
     "@vitejs/plugin-react": "4.2.1",
     "axios": "^1.14.0",
     "chart.js": "4.4.1",
+    "chartjs-chart-sankey": "^0.14.3",
     "font-awesome": "4.7.0",
     "framer-motion": "10.17.6",
     "html2canvas": "^1.4.1",
