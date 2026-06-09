@@ -70,10 +70,11 @@ class UserController extends Controller
         $this->authorize('update', $user);
 
         $request->validate([
-            'currency_id' => 'nullable|integer|exists:App\Models\Types\Currency,id'
+            'currency_id' => 'nullable|integer|exists:App\Models\Types\Currency,id',
+            'language' => 'nullable|string|in:en,es'
         ]);
 
-        $data = $request->only('currency_id');
+        $data = $request->only(['currency_id', 'language']);
 
         $user->update($data);
 

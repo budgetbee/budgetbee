@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import Api from "../../Api/Endpoints";
 import UpcomingExpenseCard from "./UpcomingExpenseCard";
+import { useTranslation } from "react-i18next";
 
 export default function UpcomingExpenseList({ forceReload }) {
+    const { t } = useTranslation();
     const [expenses, setExpenses] = useState([]);
     const [reload, setReload] = useState(false);
 
@@ -18,8 +20,8 @@ export default function UpcomingExpenseList({ forceReload }) {
     if (expenses.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center py-16 text-gray-500">
-                <span className="text-lg">No upcoming expenses</span>
-                <span className="text-sm mt-1">Create one to start tracking</span>
+                <span className="text-lg">{t('upcomingExpenses.noUpcomingExpenses')}</span>
+                <span className="text-sm mt-1">{t('upcomingExpenses.createOneToStartTracking')}</span>
             </div>
         );
     }

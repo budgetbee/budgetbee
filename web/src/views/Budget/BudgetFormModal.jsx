@@ -1,9 +1,11 @@
 import React, { useRef, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Api from "../../Api/Endpoints";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Input, Select, SelectItem } from "@nextui-org/react";
 
 export default function BudgetFormModal({ isOpen, onOpenChange, budget, setIsUpdated }) {
+    const { t } = useTranslation();
     const [isLoading, setIsLoading] = useState(true);
     const [parentCategories, setParentCategories] = useState([]);
     const [parentCategory, setParentCategory] = useState(budget?.parent_category_id);
@@ -36,7 +38,7 @@ export default function BudgetFormModal({ isOpen, onOpenChange, budget, setIsUpd
         }
     }, [parentCategory]);
 
-    const title = budget ? 'Edit budget' : 'Create a new budget';
+    const title = budget ? t('budget.editBudget') : t('budget.newBudget');
 
     const handleSaveForm = async (e) => {
         e.preventDefault();
@@ -85,12 +87,12 @@ export default function BudgetFormModal({ isOpen, onOpenChange, budget, setIsUpd
                         <ModalBody>
                             <form onSubmit={handleSaveForm} ref={formRef} id="budgetForm" className="block flex flex-col gap-y-2">
                                 <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
-                                    <Input name="amount" type="number" step="any" label="Amount/Month" color="secundary" value={amount} onChange={(e) => setAmount(e.target.value)} />
+                                    <Input name="amount" type="number" step="any" label={`${t('budget.amount')}/${t('budget.monthly')}`} color="secundary" value={amount} onChange={(e) => setAmount(e.target.value)} />
                                 </div>
                                 <div className="flex flex-row gap-x-3">
                                     <Select
                                         className="max-w-xs"
-                                        label="Category"
+                                        label={t('record.parentCategory') + ' *'}
                                         name="parent_category_id"
                                         isRequired
                                         selectedKeys={[parentCategory?.toString()]}
@@ -117,7 +119,7 @@ export default function BudgetFormModal({ isOpen, onOpenChange, budget, setIsUpd
                                     </Select>
                                     <Select
                                         className="max-w-xs"
-                                        label="Sub category"
+                                        label={t('record.subcategory') + ' *'}
                                         name="category_id"
                                         isRequired
                                         selectedKeys={[category?.toString()]}
@@ -154,7 +156,7 @@ export default function BudgetFormModal({ isOpen, onOpenChange, budget, setIsUpd
                                         onClick={handleDelete}
                                         isLoading={isLoading}
                                         startContent={!isLoading && <FontAwesomeIcon icon="fa-solid fa-trash" />}>
-                                        Delete
+                                        {t('common.delete')}
                                     </Button>
                                 )}
                                 <Button
@@ -164,7 +166,7 @@ export default function BudgetFormModal({ isOpen, onOpenChange, budget, setIsUpd
                                     isLoading={isLoading}
                                     startContent={!isLoading && <FontAwesomeIcon icon="fa-solid fa-check" />}
                                 >
-                                    Save
+                                    {t('common.save')}
                                 </Button>
                             </div>
                         </ModalFooter>

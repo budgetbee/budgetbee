@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
     Modal,
     ModalContent,
@@ -13,6 +14,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Api from "../../../Api/Endpoints";
 
 export default function ImportModal() {
+    const { t } = useTranslation();
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [loading, setLoading] = useState(false);
     const [isDropped, setIsDropped] = useState(false);
@@ -55,7 +57,7 @@ export default function ImportModal() {
                     <FontAwesomeIcon icon="fa-solid fa-cloud-arrow-up" />
                 }
             >
-                Import
+                {t('common.import')}
             </Button>
             <Modal
                 isOpen={isOpen}
@@ -77,7 +79,7 @@ export default function ImportModal() {
                                                 className="text-white"
                                                 type="button"
                                             >
-                                                Excel template
+                                                {t('common.excelTemplate')}
                                             </Button>
                                         </a>
                                         <a
@@ -89,7 +91,7 @@ export default function ImportModal() {
                                                 className="text-white"
                                                 type="button"
                                             >
-                                                Json template
+                                                {t('common.jsonTemplate')}
                                             </Button>
                                         </a>
                                     </div>
@@ -112,7 +114,7 @@ export default function ImportModal() {
                                             type="button"
                                             onPress={handleCloseModal}
                                         >
-                                            Upload successful!
+                                            {t('common.uploadSuccess')}
                                         </Button>
                                     ) : (
                                         <Button
@@ -126,7 +128,7 @@ export default function ImportModal() {
                                                 )
                                             }
                                         >
-                                            Upload
+                                            {t('common.upload')}
                                         </Button>
                                     )}
                                 </ModalFooter>

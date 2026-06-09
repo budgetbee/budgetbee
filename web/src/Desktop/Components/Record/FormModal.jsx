@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import moment from "moment";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Api from "../../../Api/Endpoints";
 import SelectType from "./SelectType";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
 import {
     Modal,
     ModalContent,
@@ -31,6 +33,7 @@ const CustomDateInput = React.forwardRef(({ value, onClick, placeholder }, ref) 
 CustomDateInput.displayName = "CustomDateInput";
 
 export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain, setIsRemoved, onRecordChange }) {
+    const { t } = useTranslation();
     const [accounts, setAccounts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [parentCategories, setParentCategories] = useState([]);
@@ -156,7 +159,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
     };
 
     const handleDeleteRecord = async () => {
-        const userConfirmed = window.confirm("Delete this record?");
+        const userConfirmed = window.confirm(t('record.deleteConfirm'));
 
         if (userConfirmed) {
             await Api.deleteRecord(record_id);
@@ -195,14 +198,14 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                             value={type}
                         />
                         {typeError && (
-                            <p className="text-danger text-xs -mt-1">Select a type: Income, Expense or Transfer</p>
+                            <p className="text-danger text-xs -mt-1">{t('record.selectTypeError')}</p>
                         )}
 
                         <div className="flex flex-row gap-x-3">
                             <Select
                                 isRequired
-                                label="Account"
-                                placeholder="Select"
+                                label={t('record.account')}
+                                placeholder={t('record.selectAccount')}
                                 name="from_account_id"
                                 className="flex-1"
                                 size="sm"
@@ -231,8 +234,8 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                             {type === "transfer" && (
                                 <Select
                                     isRequired
-                                    label="To account"
-                                    placeholder="Select"
+                                    label={t('record.toAccount')}
+                                    placeholder={t('record.selectAccount')}
                                     name="to_account_id"
                                     className="flex-1"
                                     size="sm"
@@ -263,7 +266,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                             <div className="flex flex-row gap-x-3">
                                 <Select
                                     className="flex-1"
-                                    label="Category"
+                                    label={t('record.parentCategory')}
                                     name="parent_category_id"
                                     size="sm"
                                     isRequired
@@ -288,7 +291,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                                 </Select>
                                 <Select
                                     className="flex-1"
-                                    label="Subcategory"
+                                    label={t('record.subcategory')}
                                     name="category_id"
                                     size="sm"
                                     isRequired
@@ -320,7 +323,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                                 isRequired
                                 name="amount"
                                 type="number"
-                                label="Amount"
+                                label={t('record.amount')}
                                 placeholder="0.00"
                                 className="flex-[2]"
                                 size="sm"
@@ -335,7 +338,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                                 <DatePicker
                                     selected={date ? new Date(date) : null}
                                     onChange={(d) => setDate(d ? moment(d).format("YYYY-MM-DD") : null)}
-                                    customInput={<CustomDateInput placeholder="Date" />}
+                                    customInput={<CustomDateInput placeholder={t('record.date')} />}
                                     wrapperClassName="w-full"
                                     dateFormat="yyyy-MM-dd"
                                     popperPlacement="bottom"
@@ -349,9 +352,9 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                         </div>
 
                         <Input
-                            label="Description"
+                            label={t('record.description')}
                             name="name"
-                            placeholder="Optional note..."
+                            placeholder={t('record.descriptionPlaceholder')}
                             className="w-full"
                             size="sm"
                             value={name}
@@ -363,7 +366,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                                 isRequired
                                 name="rate"
                                 type="number"
-                                label={`Exchange rate (1 ${fromCurrency} = ? ${toCurrency})`}
+                                label={`${t('record.exchangeRate')} (1 ${fromCurrency} = ? ${toCurrency})`}
                                 placeholder="1.00"
                                 className="w-full"
                                 size="sm"
@@ -385,7 +388,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                                     onClick={handleDeleteRecord}
                                     startContent={!loading && <FontAwesomeIcon icon="fa-solid fa-trash" />}
                                 >
-                                    Delete
+                                    {t('record.delete')}
                                 </Button>
                             )}
                         </div>
@@ -398,7 +401,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                                     size="sm"
                                     onClick={() => doSave(false)}
                                 >
-                                    {'Save & Close'}
+                                    {t('record.saveClose')}
                                 </Button>
                             )}
                             <Button
@@ -409,7 +412,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
                                 onClick={() => doSave(true)}
                                 endContent={!loading && <FontAwesomeIcon icon="fa-solid fa-plus" />}
                             >
-                                {isEditing ? 'Save' : 'Save & New'}
+                                {isEditing ? t('record.save') : t('record.saveNew')}
                             </Button>
                         </div>
                     </ModalFooter>

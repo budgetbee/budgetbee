@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import numeral from "numeral";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Api from "../../../Api/Endpoints";
@@ -6,6 +7,7 @@ import BudgetFormButton from "./BudgetFormButton";
 import { Progress } from "@nextui-org/react";
 
 export default function BudgetList( {forceReload}) {
+    const { t } = useTranslation();
     const [budgets, setBudgets] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [reload, setReload] = useState(false);
@@ -50,7 +52,7 @@ export default function BudgetList( {forceReload}) {
                         className="px-6 py-4 font-medium whitespace-nowrap text-white"
                     >
                         <Progress
-                            label={"(" + numeral(budget.spent_percent).format("0,0.00") + " % Montly)"}
+                            label={`(${numeral(budget.spent_percent).format("0,0.00")} % ${t('budget.monthly')})`}
                             size="md"
                             value={budget.spent}
                             valueLabel={numeral(budget.spent).format("0,0.00") + " / " + numeral(budget.amount).format("0,0.00")}
@@ -73,10 +75,10 @@ export default function BudgetList( {forceReload}) {
             <thead className="text-xs uppercase bg-gray-700 text-gray-400">
                 <tr>
                     <th scope="col" className="px-6 py-3">
-                        Category
+                        {t('record.category')}
                     </th>
                     <th scope="col" className="px-6 py-3">
-                        Amount
+                        {t('record.amount')}
                     </th>
                     <th scope="col" className="px-6 py-3">
 

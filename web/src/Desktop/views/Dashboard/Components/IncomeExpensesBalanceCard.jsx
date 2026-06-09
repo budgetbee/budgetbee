@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import numeral from "numeral";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Api from "../../../../Api/Endpoints";
 
 export default function IncomeExpensesBalanceCard({ searchData }) {
+    const { t } = useTranslation();
     const [totalIncome, setTotalIncome] = useState(0);
     const [totalExpenses, setTotalExpenses] = useState(0);
     const [currency, setCurrency] = useState("");
@@ -27,7 +29,7 @@ export default function IncomeExpensesBalanceCard({ searchData }) {
                             icon="fa-solid fa-caret-up"
                             className="text-green-400"
                         />
-                        <span>Income</span>
+                        <span>{t('dashboard.income')}</span>
                     </div>
                 </div>
                 <div className="font-bold text-2xl">
@@ -41,7 +43,7 @@ export default function IncomeExpensesBalanceCard({ searchData }) {
                             icon="fa-solid fa-caret-down"
                             className="text-red-400"
                         />
-                        <span>Expenses</span>
+                        <span>{t('dashboard.expenses')}</span>
                     </div>
                 </div>
                 <div className="font-bold text-2xl">

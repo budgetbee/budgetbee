@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
     Button,
 } from "@nextui-org/react";
@@ -7,6 +8,7 @@ import { useDisclosure } from "@nextui-org/react";
 import FormModal from "./FormModal";
 
 export default function RecordModalButton({ onRecordChange }) {
+    const { t } = useTranslation();
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
     const modal = (
@@ -29,7 +31,7 @@ export default function RecordModalButton({ onRecordChange }) {
                     <FontAwesomeIcon icon="fa-solid fa-plus" />
                 }
             >
-                New record
+                {t('record.newRecord')}
             </Button>
         </>
     );

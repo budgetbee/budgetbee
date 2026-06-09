@@ -25,7 +25,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'currency_id'
+        'currency_id',
+        'language'
     ];
 
     protected $appends = ['currency_symbol'];
@@ -98,6 +99,7 @@ class User extends Authenticatable
     public function getSettings()
     {
         return [
+            'language' => $this->language ?? 'en',
             'currency' => [
                 'id' => $this->currency ? $this->currency->id : '',
                 'name' => $this->currency->name,

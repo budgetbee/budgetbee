@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
     Modal,
     ModalContent,
@@ -14,6 +15,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyCard from "./CurrencyCard";
 
 export default function BaseSettings() {
+    const { t, i18n } = useTranslation();
     const [isLoading, setIsLoading] = useState(true);
     const [userSettings, setUserSettings] = useState([]);
     const [userCurrencies, setUserCurrencies] = useState([]);
@@ -56,6 +58,11 @@ export default function BaseSettings() {
         } finally {
             getData();
         }
+    };
+
+    const handleLanguageChange = (lang) => {
+        i18n.changeLanguage(lang);
+        setUserSettings((prev) => ({ ...prev, language: lang }));
     };
 
     const handleCreateNewCurrency = async (e) => {
@@ -162,6 +169,35 @@ export default function BaseSettings() {
                         </Button>
                     </div>
                     <div className="w-full flex flex-col gap-y-10">
+                        <div className="w-full">
+                            <label className="block mb-2 text-sm font-medium text-white">
+                                {t('settings.language')}
+                            </label>
+                            <div className="flex flex-row gap-x-3">
+                                <button
+                                    type="button"
+                                    onClick={() => handleLanguageChange('en')}
+                                    className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                                        (userSettings.language || i18n.language) === 'en'
+                                            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                                            : 'bg-gray-700 text-gray-400 border border-gray-600'
+                                    }`}
+                                >
+                                    🇬🇧 {t('settings.english')}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleLanguageChange('es')}
+                                    className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                                        (userSettings.language || i18n.language) === 'es'
+                                            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                                            : 'bg-gray-700 text-gray-400 border border-gray-600'
+                                    }`}
+                                >
+                                    🇪🇸 {t('settings.spanish')}
+                                </button>
+                            </div>
+                        </div>
                         <div className="w-full">
                             <label
                                 htmlFor="name"

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import numeral from "numeral";
 import {
     Modal,
@@ -11,6 +12,7 @@ import Api from "../../../../Api/Endpoints";
 import RecordCard from "../../../Components/Record/Card";
 
 export default function CategoryRecords({ searchData, onRecordChange }) {
+    const { t } = useTranslation();
     const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState(null);
     const [records, setRecords] = useState([]);
@@ -84,7 +86,7 @@ export default function CategoryRecords({ searchData, onRecordChange }) {
             {isOpen && recordsModal}
             <div className="flex flex-col gap-y-3 p-4 bg-gray-700 rounded-3xl py-4 text-white text-lg">
                 <div className="flex flex-row justify-between items-center text-white text-2xl pb-4">
-                    <div className="font-bold">Expenses</div>
+                    <div className="font-bold">{t('dashboard.expenses')}</div>
                 </div>
                 <div className="flex flex-col divide-y divide-gray-500">
                     {data.map(([key, type]) => {

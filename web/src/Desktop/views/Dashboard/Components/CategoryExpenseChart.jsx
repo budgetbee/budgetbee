@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import Api from "../../../../Api/Endpoints";
 import DoughnutChart from "../../../../Components/Chart/DoughnutChart";
 import Loader from "../../../../Components/Miscellaneous/Loader";
 
 export default function CategoryExpenseChart({ searchData }) {
+    const { t } = useTranslation();
     const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState(null);
     const [parentCategories, setParentCategories] = useState(null);
@@ -72,7 +74,7 @@ export default function CategoryExpenseChart({ searchData }) {
         <div>
             <div className="flex flex-col gap-x-2 p-4 bg-gray-700 rounded-3xl py-4">
                 <div className="flex flex-row justify-between items-center text-white text-2xl pb-4">
-                    <div className="font-bold">Expense</div>
+                    <div className="font-bold">{t('dashboard.expenses')}</div>
                 </div>
                 <div className="h-64 w-64">{chart}</div>
             </div>

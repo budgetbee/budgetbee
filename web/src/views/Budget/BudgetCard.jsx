@@ -1,10 +1,12 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import numeral from "numeral";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import BudgetFormButton from "./BudgetFormButton";
 import { Progress } from "@nextui-org/react";
 
 export default function BudgetCard({ budget, setReload }) {
+    const { t } = useTranslation();
 
     return (
         <div className="flex flex-col gap-y-3 px-6 py-4 border-b bg-background border-gray-700">
@@ -27,7 +29,7 @@ export default function BudgetCard({ budget, setReload }) {
             </div>
             <div className="font-medium whitespace-nowrap text-white">
                 <Progress
-                    label={"(" + numeral(budget.spent_percent).format("0,0.00") + " % Montly)"}
+                    label={`(${numeral(budget.spent_percent).format("0,0.00")} % ${t('budget.monthly')})`}
                     size="md"
                     value={budget.spent}
                     valueLabel={numeral(budget.spent).format("0,0.00") + " / " + numeral(budget.amount).format("0,0.00")}

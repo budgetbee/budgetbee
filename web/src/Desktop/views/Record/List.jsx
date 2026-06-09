@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import moment from "moment";
 import DatePicker from "react-datepicker";
@@ -45,7 +46,29 @@ const TYPE_OPTIONS = [
 ];
 
 export default function List() {
+    const { t } = useTranslation();
     const { account_id } = useParams();
+
+    const dateLabelMap = {
+        "Today": t('common.today'),
+        "Yesterday": t('common.yesterday'),
+        "This Week": t('common.thisWeek'),
+        "This Month": t('common.thisMonth'),
+        "Last Month": t('common.lastMonth'),
+        "Last 30 Days": t('common.last30Days'),
+        "Last 3 Months": t('common.last3Months'),
+        "Last 6 Months": t('common.last6Months'),
+        "This Year": t('common.thisYear'),
+        "Last Year": t('common.lastYear'),
+        "Custom": t('common.custom'),
+    };
+
+    const typeLabelMap = {
+        "All": t('common.all'),
+        "Expense": t('record.expense'),
+        "Income": t('record.income'),
+        "Transfer": t('record.transfer'),
+    };
 
     const [moreData, setMoreData] = useState(true);
     const [data, setData] = useState([]);
@@ -213,8 +236,8 @@ export default function List() {
                         <FontAwesomeIcon icon="fa-solid fa-list" className="text-blue-400 text-lg" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-white">Records</h1>
-                        <p className="text-sm text-gray-400">Browse and filter your transactions</p>
+                        <h1 className="text-2xl font-bold text-white">{t('nav.records')}</h1>
+                        <p className="text-sm text-gray-400">{t('record.browseSubtitle')}</p>
                     </div>
                 </div>
 
@@ -235,7 +258,7 @@ export default function List() {
                                     value={formFilters.search_term}
                                     onChange={(e) => handleFilter("search_term", e.target.value)}
                                     className="w-full text-sm rounded-2xl pl-10 pr-4 py-2 bg-gray-800 border border-gray-600 text-white placeholder-gray-500 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                    placeholder="Search records..."
+                                    placeholder={t('record.searchPlaceholder')}
                                 />
                             </div>
                             <button
@@ -245,7 +268,7 @@ export default function List() {
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 20 20">
                                     <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
                                 </svg>
-                                Search
+                                {t('common.search')}
                             </button>
                             {hasActiveFilters && (
                                 <button
@@ -256,7 +279,7 @@ export default function List() {
                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                                     </svg>
-                                    Clear
+                                    {t('common.clear')}
                                     <span className="bg-blue-500 text-white text-xs font-semibold rounded-full w-4 h-4 flex items-center justify-center">
                                         {activeFilterCount}
                                     </span>
@@ -268,7 +291,7 @@ export default function List() {
 
                         {/* Date presets */}
                         <div className="flex flex-col gap-y-2">
-                            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Date</span>
+                            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t('record.date')}</span>
                             <div className="flex flex-wrap gap-2">
                                 {DATE_PRESETS.map((preset) => (
                                     <button
@@ -281,7 +304,7 @@ export default function List() {
                                                 : "bg-gray-800 text-gray-300 hover:bg-gray-600 hover:text-white"
                                         }`}
                                     >
-                                        {preset.label}
+                                        {dateLabelMap[preset.label] || preset.label}
                                     </button>
                                 ))}
                             </div>
@@ -294,9 +317,9 @@ export default function List() {
                                         startDate={customFrom}
                                         endDate={customTo}
                                         className="border text-sm rounded-lg pl-3 pr-3 py-2 w-36 bg-gray-800 border-gray-600 text-white focus:ring-blue-500 focus:border-blue-500"
-                                        placeholderText="From date"
+                                        placeholderText={t('record.date') + ' ' + t('record.fromAccount').toLowerCase()}
                                     />
-                                    <span className="text-gray-400 text-sm">to</span>
+                                    <span className="text-gray-400 text-sm">{t('common.to')}</span>
                                     <DatePicker
                                         selected={customTo}
                                         onChange={(d) => setCustomTo(d)}
@@ -305,14 +328,14 @@ export default function List() {
                                         endDate={customTo}
                                         minDate={customFrom}
                                         className="border text-sm rounded-lg pl-3 pr-3 py-2 w-36 bg-gray-800 border-gray-600 text-white focus:ring-blue-500 focus:border-blue-500"
-                                        placeholderText="To date"
+                                        placeholderText={t('record.date') + ' ' + t('record.toAccount').toLowerCase()}
                                     />
                                     <button
                                         type="button"
                                         onClick={applyCustomRange}
                                         className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg font-medium transition-colors"
                                     >
-                                        Apply
+                                        {t('common.apply')}
                                     </button>
                                 </div>
                             )}
@@ -327,7 +350,7 @@ export default function List() {
 
                         {/* Type pills */}
                         <div className="flex flex-col gap-y-2">
-                            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Type</span>
+                            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t('record.type')}</span>
                             <div className="flex flex-wrap gap-2">
                                 {TYPE_OPTIONS.map((opt) => (
                                     <button
@@ -340,7 +363,7 @@ export default function List() {
                                                 : "bg-gray-800 text-gray-300 hover:bg-gray-600 hover:text-white"
                                         }`}
                                     >
-                                        {opt.label}
+                                        {typeLabelMap[opt.label] || opt.label}
                                     </button>
                                 ))}
                             </div>
@@ -350,13 +373,13 @@ export default function List() {
                         <div className="grid grid-cols-4 gap-x-4 gap-y-4">
 
                             <div className="flex flex-col gap-y-1.5">
-                                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Category</label>
+                                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t('record.category')}</label>
                                 <select
                                     value={selectedParent}
                                     onChange={(e) => handleParentCategoryChange(e.target.value)}
                                     className={SELECT_CLASS}
                                 >
-                                    <option value="">All categories</option>
+                                    <option value="">{t('common.all')} {t('nav.categories').toLowerCase()}</option>
                                     {parentCategories.map((cat) => (
                                         <option key={cat.id} value={cat.id}>{cat.name}</option>
                                     ))}
@@ -364,14 +387,14 @@ export default function List() {
                             </div>
 
                             <div className="flex flex-col gap-y-1.5">
-                                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Subcategory</label>
+                                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t('record.subcategory')}</label>
                                 <select
                                     value={formFilters.category_id}
                                     onChange={(e) => handleSubcategoryChange(e.target.value)}
                                     disabled={subcategories.length === 0}
                                     className={SELECT_CLASS + (subcategories.length === 0 ? " opacity-40 cursor-not-allowed" : "")}
                                 >
-                                    <option value="">All subcategories</option>
+                                    <option value="">{t('common.all')} {t('record.subcategory').toLowerCase()+'s'}</option>
                                     {subcategories.map((cat) => (
                                         <option key={cat.id} value={cat.id}>{cat.name}</option>
                                     ))}
@@ -379,14 +402,14 @@ export default function List() {
                             </div>
 
                             <div className="flex flex-col gap-y-1.5 col-span-2">
-                                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Amount range</label>
+                                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t('record.amount')}</label>
                                 <div className="flex items-center gap-x-2">
                                     <input
                                         type="number"
                                         value={formFilters.amount_min}
                                         onChange={(e) => handleFilter("amount_min", e.target.value)}
                                         className={SELECT_CLASS}
-                                        placeholder="Min"
+                                        placeholder={t('common.min')}
                                         min="0"
                                         step="0.01"
                                     />
@@ -396,7 +419,7 @@ export default function List() {
                                         value={formFilters.amount_max}
                                         onChange={(e) => handleFilter("amount_max", e.target.value)}
                                         className={SELECT_CLASS}
-                                        placeholder="Max"
+                                        placeholder={t('common.max')}
                                         min="0"
                                         step="0.01"
                                     />
@@ -409,7 +432,7 @@ export default function List() {
                             <div className="flex flex-col gap-y-2 pt-1 border-t border-gray-600/50">
                                 <div className="flex flex-row items-center gap-x-3">
                                     <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap">
-                                        Accounts
+                                        {t('nav.accounts')}
                                     </span>
                                     {activeAccountIds.length > 0 && (
                                         <button
@@ -422,7 +445,7 @@ export default function List() {
                                             }}
                                             className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
                                         >
-                                            Clear
+                                            {t('common.clear')}
                                         </button>
                                     )}
                                 </div>
@@ -476,11 +499,11 @@ export default function List() {
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                             </svg>
                             <p className="text-sm font-medium">
-                                {hasActiveFilters ? "No records match the current filters" : "No records yet"}
+                                {hasActiveFilters ? t('record.noMatch') : t('record.noRecords')}
                             </p>
                             {hasActiveFilters && (
                                 <button type="button" onClick={handleClear} className="mt-3 text-xs text-blue-400 hover:text-blue-300 underline">
-                                    Clear filters
+                                    {t('record.clearFilters')}
                                 </button>
                             )}
                         </div>

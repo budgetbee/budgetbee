@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link } from "react-router-dom";
 import Cookies from "universal-cookie";
@@ -18,6 +19,7 @@ import ImportModal from "../Components/Import/ImportModal";
 import logo from "../../assets/images/logo_color_1.svg";
 
 export default function LeftSidebarMenu({ onRecordChange }) {
+    const { t } = useTranslation();
     const [appVersion, setAppVersion] = useState("");
     const [appLatestVersion, setAppLatestVersion] = useState("");
     const [showVersionModal, setShowVersionModal] = useState(false);
@@ -50,55 +52,49 @@ export default function LeftSidebarMenu({ onRecordChange }) {
 
     const links = {
         dashboard: {
-            name: "Dashboard",
+            name: t('nav.dashboard'),
             href: "/dashboard",
             icon: faChartBar,
             color: "text-pink-400",
         },
         budgets: {
-            name: "Budgets",
+            name: t('nav.budget'),
             href: "/budget",
             icon: faSackDollar,
             color: "text-green-400",
         },
         upcoming: {
-            name: "Upcoming",
+            name: t('nav.upcoming'),
             href: "/upcoming",
             icon: faCalendarDays,
             color: "text-blue-400",
         },
         reports: {
-            name: "Reports",
+            name: t('nav.reports'),
             href: "/reports",
             icon: faChartPie,
             color: "text-purple-400",
         },
         record: {
-            name: "Records",
+            name: t('nav.records'),
             href: "/record/list",
             icon: faList,
             color: "text-blue-400",
         },
         accounts: {
-            name: "Accounts",
+            name: t('nav.accounts'),
             href: "/accounts",
             icon: faMoneyCheck,
             color: "text-red-400",
         },
-        // rules: {
-        //     name: "Rules",
-        //     href: "/rule",
-        //     icon: faRobot,
-        //     color: "text-green-400",
-        // },
         categories: {
-            name: "Categories",
+            name: t('nav.categories'),
             href: "/category/list",
             icon: faBars,
             color: "text-orange-400",
         },
         settings: {
-            name: "Settings",
+            name: t('nav.settings'),
             href: "/settings",
             icon: faGear,
             color: "text-gray-400",
@@ -195,7 +191,7 @@ export default function LeftSidebarMenu({ onRecordChange }) {
                         onClick={handleLogout}
                     >
                         <FontAwesomeIcon icon="fa-solid fa-arrow-right-from-bracket" />
-                        <span>Logout</span>
+                        <span>{t('nav.logout')}</span>
                     </button>
                     <small className="text-gray-300">
                         Version: {appVersion}

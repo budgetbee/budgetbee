@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import numeral from "numeral";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGripVertical } from "@fortawesome/free-solid-svg-icons";
@@ -6,6 +7,7 @@ import Layout from "../../layout/Layout";
 import Api from "../../../Api/Endpoints";
 
 export default function View() {
+    const { t } = useTranslation();
     const [accounts, setAccounts] = useState([]);
     const [accountTypes, setAccountTypes] = useState([]);
     const [currencies, setCurrencies] = useState([]);
@@ -107,7 +109,7 @@ export default function View() {
                     id="name"
                     required={true}
                     onChange={handleNewAccountChange}
-                    placeholder="Account name"
+                    placeholder={t('account.name')}
                     className="basis-4/12 block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500"
                 />
                 <select
@@ -146,7 +148,7 @@ export default function View() {
                     name="initial_balance"
                     id="initial_balance"
                     required={true}
-                    placeholder="Initial balance"
+                    placeholder={t('account.initialBalance')}
                     onChange={handleNewAccountChange}
                     className="basis-2/12 block w-full p-4 border border-gray-700 rounded-lg bg-background sm:text-md focus:ring-blue-500 focus:border-blue-500 appearance-none"
                 />
@@ -178,23 +180,23 @@ export default function View() {
                             onClick={() => setNewAccount({})}
                             className="flex flex-row px-5 py-3 gap-x-5 bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 focus:ring-green-800 shadow-lg shadow-green-500/50 shadow-lg shadow-green-800/80 rounded-full justify-between cursor-pointer items-center transition"
                         >
-                            Create new
+                            {t('account.createNew')}
                         </button>
                     </div>
                 </div>
                 {newAccount && createNewForm}
                 <div className="flex flex-col divide-y divide-gray-600/50 rounded-3xl bg-gray-700 p-5 grow">
                     <div className="flex flex-row justify-between items-center text-white font-bold px-4 py-4">
-                        <div className="basis-5/12">Name</div>
-                        <div className="basis-2/12">Account type</div>
-                        <div className="basis-1/12 text-right">Currency</div>
+                        <div className="basis-5/12">{t('account.name')}</div>
+                        <div className="basis-2/12">{t('account.accountType')}</div>
+                        <div className="basis-1/12 text-right">{t('account.currency')}</div>
                         <div className="basis-1/12 text-right">
-                            Initial balance
+                            {t('account.initialBalance')}
                         </div>
                         <div className="basis-2/12 text-right">
-                            Current balance
+                            {t('account.currentBalance')}
                         </div>
-                        <div className="basis-1/12 text-right">Actions</div>
+                        <div className="basis-1/12 text-right">{t('account.actions')}</div>
                     </div>
                     {accounts.map((account, index) => {
                         const inline_style = {

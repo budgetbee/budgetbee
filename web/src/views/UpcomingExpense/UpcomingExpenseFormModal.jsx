@@ -12,6 +12,7 @@ import {
     Select,
     SelectItem,
 } from "@nextui-org/react";
+import { useTranslation } from "react-i18next";
 
 export default function UpcomingExpenseFormModal({
     isOpen,
@@ -30,6 +31,7 @@ export default function UpcomingExpenseFormModal({
     const [amount, setAmount] = useState(expense?.amount ?? "");
     const [dueDate, setDueDate] = useState(expense?.due_date ?? "");
     const formRef = useRef();
+    const { t } = useTranslation();
 
     useEffect(() => {
         async function getData() {
@@ -53,7 +55,7 @@ export default function UpcomingExpenseFormModal({
         }
     }, [parentCategory]);
 
-    const modalTitle = expense ? "Edit upcoming expense" : "New upcoming expense";
+    const modalTitle = expense ? t("upcomingExpenses.edit") : t("upcomingExpenses.new");
 
     const handleSaveForm = async (e) => {
         e.preventDefault();
@@ -104,7 +106,7 @@ export default function UpcomingExpenseFormModal({
                                 <Input
                                     name="title"
                                     type="text"
-                                    label="Title"
+                                    label={t("upcomingExpenses.title")}
                                     isRequired
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
@@ -113,7 +115,7 @@ export default function UpcomingExpenseFormModal({
                                     name="amount"
                                     type="number"
                                     step="any"
-                                    label="Amount"
+                                    label={t("upcomingExpenses.amount")}
                                     isRequired
                                     value={amount}
                                     onChange={(e) => setAmount(e.target.value)}
@@ -121,7 +123,7 @@ export default function UpcomingExpenseFormModal({
                                 <Input
                                     name="due_date"
                                     type="date"
-                                    label="Due date"
+                                    label={t("upcomingExpenses.dueDate")}
                                     isRequired
                                     value={dueDate}
                                     onChange={(e) => setDueDate(e.target.value)}
@@ -129,7 +131,7 @@ export default function UpcomingExpenseFormModal({
                                 <div className="flex flex-row gap-x-3">
                                     <Select
                                         className="max-w-xs"
-                                        label="Category"
+                                        label={t("upcomingExpenses.category")}
                                         name="parent_category_id"
                                         isRequired
                                         selectedKeys={
@@ -161,7 +163,7 @@ export default function UpcomingExpenseFormModal({
                                     </Select>
                                     <Select
                                         className="max-w-xs"
-                                        label="Sub category"
+                                        label={t("upcomingExpenses.subCategory")}
                                         name="category_id"
                                         isRequired
                                         selectedKeys={
@@ -207,7 +209,7 @@ export default function UpcomingExpenseFormModal({
                                             )
                                         }
                                     >
-                                        Delete
+                                        {t("common.delete")}
                                     </Button>
                                 )}
                                 <Button
@@ -221,7 +223,7 @@ export default function UpcomingExpenseFormModal({
                                         )
                                     }
                                 >
-                                    Save
+                                    {t("common.save")}
                                 </Button>
                             </div>
                         </ModalFooter>

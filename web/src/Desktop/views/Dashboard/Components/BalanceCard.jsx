@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import numeral from "numeral";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -6,6 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Api from "../../../../Api/Endpoints";
 
 export default function BalanceCard({ searchData }) {
+    const { t } = useTranslation();
     const [balance, setBalance] = useState(null);
 
     useEffect(() => {
@@ -24,7 +26,7 @@ export default function BalanceCard({ searchData }) {
                         icon="fa-solid fa-coins"
                         className="text-[#F2F2DA]"
                     />
-                    <span>Balance</span>
+                    <span>{t('dashboard.balance')}</span>
                 </div>
             </div>
             <div className="font-bold text-2xl text-left">

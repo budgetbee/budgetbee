@@ -1,12 +1,14 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import FormModal from "./BudgetFormModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, useDisclosure } from "@nextui-org/react";
 
 export default function BudgetFormButton({ budget, setIsUpdated }) {
+    const { t } = useTranslation();
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
-    let btn_label = budget ? 'Edit' : 'Create';
+    let btn_label = budget ? t('common.edit') : t('common.create');
     let btn_color = budget ? 'default' : 'primary';
 
     const modal = (

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import Api from "../../../Api/Endpoints";
 import SettingsLayout from "../../layout/SettingsLayout";
 import CurrencyCard from "./Components/CurrencyCard";
@@ -6,6 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button } from "@nextui-org/react";
 
 export default function CurrencySettings() {
+    const { t } = useTranslation();
     const [userSettings, setUserSettings] = useState([]);
     const [userCurrencies, setUserCurrencies] = useState([]);
     const [currencies, setCurrencies] = useState([]);
@@ -75,7 +77,7 @@ export default function CurrencySettings() {
                                 )
                             }
                         >
-                            Success
+                            {t('common.success')}
                         </Button>
                     </div>
                 </div>
@@ -85,7 +87,7 @@ export default function CurrencySettings() {
                             htmlFor="name"
                             className="block mb-2 text-sm font-medium text-gray-900 text-white"
                         >
-                            Base currency
+                            {t('settings.baseCurrency')}
                         </label>
                         <select
                             name="currency_id"
@@ -180,7 +182,7 @@ export default function CurrencySettings() {
                                         <FontAwesomeIcon icon="fa-solid fa-plus" />
                                     }
                                 >
-                                    Add new currency
+                                    {t('settings.addCurrency')}
                                 </Button>
                             )}
                         </div>

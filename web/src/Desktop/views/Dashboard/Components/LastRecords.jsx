@@ -1,10 +1,12 @@
 import { React, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import Api from "../../../../Api/Endpoints";
 import RecordCard from "../../../Components/Record/Card";
 import { Link } from "react-router-dom";
 
 export default function LastRecords({ searchData, onRecordChange, refreshKey }) {
+    const { t } = useTranslation();
     const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState(null);
 
@@ -41,7 +43,7 @@ export default function LastRecords({ searchData, onRecordChange, refreshKey }) 
                 <div className="px-5 py-3">
                     <Link to={`/record/list/${account_id}`}>
                         <div className="w-fit m-0 text-indigo-300 font-bold">
-                            SHOW MORE
+                            {t('record.showMore')}
                         </div>
                     </Link>
                 </div>

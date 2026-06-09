@@ -2,11 +2,13 @@ import React from "react";
 import FormModal from "./UpcomingExpenseFormModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, useDisclosure } from "@nextui-org/react";
+import { useTranslation } from "react-i18next";
 
 export default function UpcomingExpenseFormButton({ expense, setIsUpdated }) {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
+    const { t } = useTranslation();
 
-    const btn_label = expense ? "" : "Create";
+    const btn_label = expense ? "" : t("upcomingExpenses.create");
     const btn_color = expense ? "default" : "primary";
     const btn_classes = expense
         ? "text-sm w-fit !p-4 min-w-0 min-h-0"

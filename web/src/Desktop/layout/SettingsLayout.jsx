@@ -1,24 +1,26 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 import Layout from "./Layout";
 
 const SettingsLayout = ({ children }) => {
+    const { t } = useTranslation();
     const currentPath = window.location.pathname;
     const pathParts = currentPath.split("/");
     const activePage = pathParts[2];
 
     const links = {
         settings: {
-            name: "Main settings",
+            name: t('settings.title'),
             href: "/settings",
         },
         users: {
-            name: "Users",
+            name: t('settings.users'),
             href: "/settings/users",
         },
         currency: {
-            name: "Currency",
+            name: t('settings.currencies'),
             href: "/settings/currency",
         },
     };
@@ -29,7 +31,7 @@ const SettingsLayout = ({ children }) => {
         <Layout>
             <div className="flex flex-row gap-x-10 px-10 mt-14">
                 <div className="flex flex-col gap-y-4 basis-2/12 bg-gray-700 rounded-3xl px-10 py-5 h-fit">
-                    <div className="text-2xl font-bold mb-5">Settings</div>
+                    <div className="text-2xl font-bold mb-5">{t('settings.title')}</div>
                     <div>
                         {linkArray.map(([key, link]) => {
                             const activeClass =

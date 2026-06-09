@@ -1,10 +1,12 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import DatePicker from "react-datepicker";
 import moment from "moment";
 
 import "react-datepicker/dist/react-datepicker.css";
 
 export default function DateRangeSelector({ setStartDate, setEndDate }) {
+    const { t } = useTranslation();
     const [customRange, setCustomRange] = useState(false);
     const [customStartDate, setCustomStartDate] = useState(
         new Date(moment().startOf("year").format("YYYY-MM-DD"))
@@ -13,17 +15,17 @@ export default function DateRangeSelector({ setStartDate, setEndDate }) {
         new Date(moment().format("YYYY-MM-DD"))
     );
 
-    const dateName = "Current year";
+    const dateName = t('dashboard.currentYear');
 
     const dates = {
-        Today: moment().format("YYYY-MM-DD"),
-        "Last 30 days": moment().subtract(30, "days").format("YYYY-MM-DD"),
-        "Current month": moment().startOf("month").format("YYYY-MM-DD"),
-        "Last 3 months": moment().subtract(3, "months").format("YYYY-MM-DD"),
-        "Last 6 months": moment().subtract(6, "months").format("YYYY-MM-DD"),
-        "Current year": moment().startOf("year").format("YYYY-MM-DD"),
-        "1 year ago": moment().subtract(1, "year").format("YYYY-MM-DD"),
-        Custom: "custom",
+        [t('common.today')]: moment().format("YYYY-MM-DD"),
+        [t('dashboard.last30Days')]: moment().subtract(30, "days").format("YYYY-MM-DD"),
+        [t('dashboard.currentMonth')]: moment().startOf("month").format("YYYY-MM-DD"),
+        [t('dashboard.last3Months')]: moment().subtract(3, "months").format("YYYY-MM-DD"),
+        [t('dashboard.last6Months')]: moment().subtract(6, "months").format("YYYY-MM-DD"),
+        [t('dashboard.currentYear')]: moment().startOf("year").format("YYYY-MM-DD"),
+        [t('dashboard.oneYearAgo')]: moment().subtract(1, "year").format("YYYY-MM-DD"),
+        [t('common.custom')]: "custom",
     };
 
     const handleChange = (event) => {
