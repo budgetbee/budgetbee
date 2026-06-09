@@ -68,6 +68,7 @@ export default function List() {
     const [customTo, setCustomTo] = useState(null);
 
     const abortControllerRef = useRef(null);
+    const isLoadingRef = useRef(false);
 
     useEffect(() => {
         Api.getParentCategories().then(setParentCategories);
@@ -82,6 +83,7 @@ export default function List() {
         abortControllerRef.current = controller;
 
         async function getRecords() {
+            isLoadingRef.current = true;
             const apiFilters = { ...activeFilters };
             if (activeDateFrom) apiFilters.from_date = activeDateFrom;
             if (activeDateTo) apiFilters.to_date = activeDateTo;
@@ -90,12 +92,14 @@ export default function List() {
             if (controller.signal.aborted) return;
             if (!Array.isArray(newData)) {
                 setMoreData(false);
+                isLoadingRef.current = false;
                 return;
             }
             setData((prev) => (page === 1 ? newData : [...prev, ...newData]));
             if (newData.length < PAGE_SIZE) {
                 setMoreData(false);
             }
+            isLoadingRef.current = false;
         }
         if (moreData === true) {
             getRecords();
@@ -106,7 +110,8 @@ export default function List() {
 
     useEffect(() => {
         function loadMore() {
-            if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 100) {
+            if (!isLoadingRef.current && moreData &&
+                window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 100) {
                 setPage((prev) => prev + 1);
             }
         }
@@ -455,7 +460,7 @@ export default function List() {
                 <div className="flex flex-col divide-y divide-gray-600/50 rounded-3xl overflow-hidden bg-gray-700">
                     {data.map((record) => (
                         <div key={record.id}>
-                            <RecordCard record={record} showName={true} />
+                            <RecordCard record={record} showName={true} accounts={accounts} parentCategories={parentCategories} />
                         </div>
                     ))}
 

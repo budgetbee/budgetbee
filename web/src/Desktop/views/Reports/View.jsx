@@ -9,6 +9,7 @@ import TimelinePanel from "../../../views/Reports/Components/TimelinePanel";
 import ExpenseCategoryPanel from "../../../views/Reports/Components/ExpenseCategoryPanel";
 import IncomeCategoryPanel from "../../../views/Reports/Components/IncomeCategoryPanel";
 import TopExpensesPanel from "../../../views/Reports/Components/TopExpensesPanel";
+import SankeyPanel from "../../../views/Reports/Components/SankeyPanel";
 import ExportPdfButton from "../../../views/Reports/Components/ExportPdfButton";
 import useReportData from "../../../views/Reports/hooks/useReportData";
 
@@ -50,6 +51,9 @@ export default function ReportsDashboard() {
 
                 {/* Balance timeline */}
                 <TimelinePanel searchData={searchData} />
+                
+                {/* Sankey flow diagram */}
+                <SankeyPanel searchData={searchData} />
 
                 {/* Top expenses */}
                 <TopExpensesPanel searchData={searchData} />
