@@ -21,6 +21,7 @@ class AiChatService
     private ?string $apiKey;
 
     private const HISTORY_CACHE_PREFIX = 'ai_chat_history_';
+    private const STATE_CACHE_PREFIX = 'ai_chat_state_';
     private const MAX_HISTORY_MESSAGES = 30; // Keep last N messages to stay within token limits
 
     public function __construct(User $user)
@@ -92,15 +93,19 @@ class AiChatService
             return "How can I help you? You can ask me about your finances, budgets, or send me an image of your bank transactions to extract them.";
         }
 
-        // Load existing conversation history
-        $history = $this->getHistory();
-
-        // Build the full message list: system + history + new user message
-        $messages = $this->buildMessagesWithHistory($message, $history, $imageFiles);
+        // Load existing conversation history (full state preferred, fallback to simple history)
+        $fullState = $this->getFullState();
+        if (!empty($fullState)) {
+            $messages = $this->buildMessagesFromFullState($message, $fullState, $imageFiles);
+        } else {
+            $history = $this->getHistory();
+            $messages = $this->buildMessagesWithHistory($message, $history, $imageFiles);
+        }
 
         // Track tool calls to detect and prevent infinite loops
         $calledTools = [];
         $lastToolResults = [];
+        $history = $this->getHistory();
 
         // Call AI with tool definitions (max 5 round-trips)
         $maxIterations = 5;
@@ -163,13 +168,20 @@ class AiChatService
                     ];
                 }
 
+                // Save intermediate state so context is preserved across API calls
+                $this->saveFullState($messages);
+
                 continue; // Back to the AI with tool results
             }
 
-            // Normal text response — save to history
+            // Normal text response — save to history and full state
             $assistantReply = $choice['message']['content'] ?? "I'm not sure how to answer that.";
 
-            // Append the exchange to history and persist
+            // Save final assistant message to full state
+            $messages[] = $choice['message'];
+            $this->saveFullState($messages);
+
+            // Append the exchange to simple history and persist
             $history[] = ['role' => 'user', 'content' => $message];
             $history[] = ['role' => 'assistant', 'content' => $assistantReply];
             $this->saveHistory($history);
@@ -208,6 +220,7 @@ class AiChatService
     public function clearHistory(): void
     {
         Cache::forget(self::HISTORY_CACHE_PREFIX . $this->user->id);
+        Cache::forget(self::STATE_CACHE_PREFIX . $this->user->id);
     }
 
     /**
@@ -233,7 +246,75 @@ class AiChatService
     }
 
     /**
+     * Get the full conversation state from cache (includes tool calls and results).
+     */
+    private function getFullState(): array
+    {
+        return Cache::get(self::STATE_CACHE_PREFIX . $this->user->id, []);
+    }
+
+    /**
+     * Save the full messages array (minus system prompt) to cache.
+     * This preserves tool calls and results across API calls.
+     */
+    private function saveFullState(array $messages): void
+    {
+        // Strip the system prompt (index 0) and keep the conversation messages
+        $state = array_values(array_filter($messages, fn($m) => ($m['role'] ?? '') !== 'system'));
+
+        // Trim to avoid unbounded growth (keep last 40 messages for tool call context)
+        if (count($state) > 40) {
+            $state = array_slice($state, -40);
+        }
+
+        Cache::put(self::STATE_CACHE_PREFIX . $this->user->id, $state, now()->addDay());
+    }
+
+    /**
+     * Build messages from the full conversation state with a fresh system prompt.
+     * This gives the AI full context including tool calls and results from previous API calls.
+     */
+    private function buildMessagesFromFullState(string $userMessage, array $fullState, array $imageFiles = []): array
+    {
+        $systemPrompt = $this->getSystemPrompt();
+
+        $messages = [
+            ['role' => 'system', 'content' => $systemPrompt],
+        ];
+
+        // Include the full conversation state (includes tool calls and results)
+        foreach ($fullState as $msg) {
+            $messages[] = $msg;
+        }
+
+        // Build the new user message content
+        if (!empty($imageFiles)) {
+            $content = [];
+            if (!empty(trim($userMessage))) {
+                $content[] = ['type' => 'text', 'text' => $userMessage];
+            } else {
+                $content[] = ['type' => 'text', 'text' => 'Please analyze this image and extract any financial transactions you can see.'];
+            }
+            foreach ($imageFiles as $image) {
+                $content[] = [
+                    'type' => 'image_url',
+                    'image_url' => [
+                        'url' => $image['base64'],
+                        'detail' => 'low',
+                    ],
+                ];
+            }
+            $messages[] = ['role' => 'user', 'content' => $content];
+        } else {
+            $messages[] = ['role' => 'user', 'content' => $userMessage];
+        }
+
+        return $messages;
+    }
+
+    /**
      * Build the messages array including conversation history and optional images.
+     * This is the fallback when no full state is available.
      */
     private function buildMessagesWithHistory(string $userMessage, array $history, array $imageFiles = []): array
     {
@@ -324,6 +405,10 @@ You have access to tools that let you query the user's real financial data in th
 Always use these tools to provide accurate, data-driven answers. Do NOT make up numbers — only report what the tools return.
 If a query returns no data, tell the user honestly.
 Be concise but friendly. Format currency amounts with the user's currency symbol.
+
+**CRITICAL — Conversation continuity:**
+- If there are previous messages in the conversation (user or assistant messages before the current one), you are in an ONGOING conversation. Do NOT greet or introduce yourself again. Continue the conversation naturally.
+- Only greet the user if the conversation history is completely empty (first message ever).
 
 **CRITICAL — Date handling:**
 - When the user says "this month", ALWAYS pass `from_date` as the first day of the current month.
