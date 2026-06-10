@@ -45,7 +45,8 @@ RUN chmod -R 775 storage bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache
 
 RUN chown www-data:www-data ./entrypoint.sh \
-    && chmod +x ./entrypoint.sh
+    && chmod +x ./entrypoint.sh \
+    && chown www-data:www-data .env
 
 # Change the user to www-data
 USER www-data

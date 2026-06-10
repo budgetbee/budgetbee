@@ -9,8 +9,11 @@ if [[ ! -z $APP_ENV ]]; then
     fi
 fi
 
+# Ensure .env is writable by www-data
+chown www-data:www-data .env 2>/dev/null
+
 # Run key:generate
-# php artisan key:generate
+php artisan key:generate
 
 # Run migrate --seed
 php artisan migrate --force --seed
