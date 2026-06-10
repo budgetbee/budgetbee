@@ -23,13 +23,13 @@ use App\Http\Controllers\UpcomingExpenseController;
 |--------------------------------------------------------------------------
 */
 
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 Route::get('/setup/check', [AuthController::class, 'setupCheck']);
-Route::post('/setup/register', [AuthController::class, 'setupRegister']);
+Route::post('/setup/register', [AuthController::class, 'setupRegister'])->middleware('throttle:3,1');
 
-Route::get('version', [AppVersionController::class, 'get'])->middleware('auth:sanctum');
+Route::get('version', [AppVersionController::class, 'get'])->middleware(['auth:sanctum', 'token.refresh']);
 
-Route::prefix('user')->middleware('auth:sanctum')->group(function () {
+Route::prefix('user')->middleware(['auth:sanctum', 'token.refresh'])->group(function () {
     Route::get('all', [UserController::class, 'getAll']);
     Route::get('isAdmin', [UserController::class, 'checkIfAdmin']);
     Route::get('settings', [UserController::class, 'getSettings']);
@@ -38,13 +38,14 @@ Route::prefix('user')->middleware('auth:sanctum')->group(function () {
     Route::get('{id?}', [UserController::class, 'get']);
     Route::post('register', [AuthController::class, 'register']);
     Route::post('logout', [AuthController::class, 'logout']);
+    Route::post('refresh', [AuthController::class, 'refresh']);
     Route::post('settings', [UserController::class, 'updateSettings']);
     Route::post('currencies', [UserController::class, 'createCurrency']);
     Route::post('currencies/{id}', [UserController::class, 'updateCurrency']);
     Route::post('{id}', [UserController::class, 'update']);
 });
 
-Route::prefix('account')->middleware('auth:sanctum')->group(function () {
+Route::prefix('account')->middleware(['auth:sanctum', 'token.refresh'])->group(function () {
     Route::get('', [AccountController::class, 'get']);
     Route::get('type', [AccountController::class, 'getTypes']);
     Route::get('{id}/stocks', [AccountController::class, 'getStocks']);
@@ -59,7 +60,7 @@ Route::prefix('account')->middleware('auth:sanctum')->group(function () {
     Route::delete('{id}', [AccountController::class, 'delete']);
 });
 
-Route::prefix('record')->middleware('auth:sanctum')->group(function () {
+Route::prefix('record')->middleware(['auth:sanctum', 'token.refresh'])->group(function () {
     Route::get('', [RecordController::class, 'get']);
     Route::get('last', [RecordController::class, 'getLastRecords']);
     Route::get('category/{id}', [RecordController::class, 'getRecordsByCategory']);
@@ -69,7 +70,7 @@ Route::prefix('record')->middleware('auth:sanctum')->group(function () {
     Route::delete('{id}', [RecordController::class, 'delete']);
 });
 
-Route::prefix('category')->middleware('auth:sanctum')->group(function () {
+Route::prefix('category')->middleware(['auth:sanctum', 'token.refresh'])->group(function () {
     Route::get('', [CategoryController::class, 'get']);
     Route::get('parent', [CategoryController::class, 'getParent']);
     Route::get('{id}', [CategoryController::class, 'getById']);
@@ -79,7 +80,7 @@ Route::prefix('category')->middleware('auth:sanctum')->group(function () {
     Route::post('{id}', [CategoryController::class, 'update']);
 });
 
-Route::prefix('balance')->middleware('auth:sanctum')->group(function () {
+Route::prefix('balance')->middleware(['auth:sanctum', 'token.refresh'])->group(function () {
     Route::get('', [BalanceController::class, 'getBalance']);
     Route::get('all', [BalanceController::class, 'getAll']);
     Route::get('expenses', [BalanceController::class, 'getExpensesBalance']);
@@ -92,11 +93,11 @@ Route::prefix('balance')->middleware('auth:sanctum')->group(function () {
     Route::get('subcategories/{id}/account/{accountId}', [BalanceController::class, 'getBySubcategoriesAndAccount']);
 });
 
-Route::prefix('import')->middleware('auth:sanctum')->group(function () {
+Route::prefix('import')->middleware(['auth:sanctum', 'token.refresh'])->group(function () {
     Route::post('', [ImportController::class, 'import']);
 });
 
-Route::prefix('budget')->middleware('auth:sanctum')->group(function () {
+Route::prefix('budget')->middleware(['auth:sanctum', 'token.refresh'])->group(function () {
     Route::get('', [BudgetController::class, 'getAll']);
     Route::get('{id}', [BudgetController::class, 'getById']);
     Route::post('', [BudgetController::class, 'create']);
@@ -105,17 +106,17 @@ Route::prefix('budget')->middleware('auth:sanctum')->group(function () {
 });
 
 
-Route::prefix('ai')->middleware('auth:sanctum')->group(function () {
+Route::prefix('ai')->middleware(['auth:sanctum', 'token.refresh'])->group(function () {
     Route::post('/predict-category', [AiController::class, 'predictCategoryRequest']);
 });
 
-Route::prefix('api-keys')->middleware('auth:sanctum')->group(function () {
+Route::prefix('api-keys')->middleware(['auth:sanctum', 'token.refresh'])->group(function () {
     Route::get('', [ApiKeyController::class, 'index']);
     Route::post('', [ApiKeyController::class, 'store']);
     Route::delete('{id}', [ApiKeyController::class, 'destroy']);
 });
 
-Route::prefix('upcoming-expenses')->middleware('auth:sanctum')->group(function () {
+Route::prefix('upcoming-expenses')->middleware(['auth:sanctum', 'token.refresh'])->group(function () {
     Route::get('', [UpcomingExpenseController::class, 'getAll']);
     Route::get('{id}', [UpcomingExpenseController::class, 'getById']);
     Route::post('', [UpcomingExpenseController::class, 'create']);

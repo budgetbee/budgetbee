@@ -96,4 +96,20 @@ class AuthController extends Controller
             'message' => 'Successfully logged out'
         ]);
     }
+
+    public function refresh(Request $request)
+    {
+        $user = $request->user();
+
+        // Delete all existing tokens
+        $user->tokens()->delete();
+
+        // Create a fresh token
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'Bearer'
+        ]);
+    }
 }

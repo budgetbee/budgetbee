@@ -36,6 +36,14 @@ class Record extends Model
     {
         parent::boot();
 
+        // Security: ensure user_id is always set from the authenticated user,
+        // preventing mass-assignment attacks that could assign records to other users.
+        static::saving(function ($record) {
+            if (auth()->check() && empty($record->user_id)) {
+                $record->user_id = auth()->id();
+            }
+        });
+
         static::created(function ($record) {
             Cache::clear();
 

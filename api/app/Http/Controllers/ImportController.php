@@ -15,7 +15,7 @@ class ImportController extends Controller
     public function import(Request $request)
     {
         $this->validate($request, [
-            'file' => 'required|file'
+            'file' => 'required|file|max:10240'
         ]);
 
         $file = $request->file('file');
