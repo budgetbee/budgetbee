@@ -71,7 +71,7 @@ export default function ChatBot() {
         }
     }, [isOpen]);
 
-    // Cleanup object URLs on unmount to prevent memory leaks
+    // Cleanup object URLs on unmount to prevent memory leaks 
     useEffect(() => {
         return () => {
             files.forEach((f) => {

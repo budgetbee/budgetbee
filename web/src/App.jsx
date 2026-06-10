@@ -1,5 +1,5 @@
 import * as React from "react";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, useLocation } from "react-router-dom";
 import { NextUIProvider } from "@nextui-org/react";
 import "./App.css";
 
@@ -17,6 +17,16 @@ const iconList = Object.keys(Icons)
 
 library.add(...iconList);
 
+/** Only renders ChatBot on authenticated pages (not login/register/setup) */
+function ConditionalChatBot() {
+    const location = useLocation();
+    const authPaths = ["/login", "/register", "/setup"];
+    if (authPaths.some((p) => location.pathname.startsWith(p))) {
+        return null;
+    }
+    return <ChatBot />;
+}
+
 function App() {
     useSessionManager();
 
@@ -25,7 +35,7 @@ function App() {
             <div className="App select-none">
                 <BrowserRouter>
                     <AppRoutes />
-                    <ChatBot />
+                    <ConditionalChatBot />
                 </BrowserRouter>
             </div>
         </NextUIProvider>
