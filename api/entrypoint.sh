@@ -9,8 +9,14 @@ if [[ ! -z $APP_ENV ]]; then
     fi
 fi
 
-# Run key:generate
-php artisan key:generate
+# Generate APP_KEY only if not already set
+CURRENT_KEY=$(grep "^APP_KEY=" .env | cut -d= -f2)
+if [ -z "$CURRENT_KEY" ]; then
+    echo "No APP_KEY found, generating a new one..."
+    php artisan key:generate
+else
+    echo "APP_KEY already set, skipping key:generate"
+fi
 
 # Run migrate --seed
 php artisan migrate --force --seed
