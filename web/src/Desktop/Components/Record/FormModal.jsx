@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import moment from "moment";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -8,14 +8,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     Modal,
     ModalContent,
-    ModalHeader,
     ModalBody,
     ModalFooter,
     Select,
     SelectItem,
     Input,
     Button,
-    Textarea,
 } from "@nextui-org/react";
 
 const CustomDateInput = React.forwardRef(({ value, onClick, placeholder }, ref) => (
@@ -27,6 +25,7 @@ const CustomDateInput = React.forwardRef(({ value, onClick, placeholder }, ref) 
         onClick={onClick}
         readOnly
         className="w-full cursor-pointer"
+        size="sm"
     />
 ));
 CustomDateInput.displayName = "CustomDateInput";
@@ -45,9 +44,9 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
     const [name, setName] = useState('');
     const [date, setDate] = useState(null);
     const [amount, setAmount] = useState('');
-    const [saveAndNew, setSaveAndNew] = useState(false);
     const [typeError, setTypeError] = useState(false);
     const formRef = useRef();
+    const amountRef = useRef();
 
     useEffect(() => {
         async function getData() {
@@ -71,6 +70,16 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
         getData();
     }, [isOpen]);
 
+    // Auto-focus amount field when modal opens for a new record
+    useEffect(() => {
+        if (isOpen && !record_id && amountRef.current) {
+            const timer = setTimeout(() => {
+                amountRef.current?.focus();
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen, record_id]);
+
     useEffect(() => {
         async function getCategories() {
             const categories = await Api.getCategoriesByParent(
@@ -84,39 +93,28 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
     }, [parentCategory]);
 
     const handleConceptChange = (e) => {
-        const value = e.target.value;
-        setName(value);
-    
-        // Clear the previous timeout if it exists
-        if (debounceTimeout.current) {
-            clearTimeout(debounceTimeout.current);
-        }
-    
-        // Set a new timeout to call the API after 1 second
-        debounceTimeout.current = setTimeout(async () => {
-            const predict = await Api.predictCategory(value);
-            setCategory(predict.category);
-            setParentCategory(predict.parent_category);
-        }, 1000);
+        setName(e.target.value);
     };
-
-    const debounceTimeout = useRef(null);
 
     const resetForm = () => {
+        const currentDate = date;
+        const currentFromAccount = fromAccount;
+        const currentParentCategory = parentCategory;
+        const currentCategory = category;
         setType("");
-        setFromAccount('');
+        setFromAccount(currentFromAccount);
         setToAccount('');
-        setParentCategory(null);
-        setCategory(null);
+        setParentCategory(currentParentCategory);
+        setCategory(currentCategory);
         setName('');
-        setDate(null);
+        setDate(currentDate);
         setAmount('');
         setCategories([]);
+        // Re-focus amount after reset
+        setTimeout(() => amountRef.current?.focus(), 50);
     };
 
-    const handleSaveForm = async (e) => {
-        e.preventDefault();
-
+    const doSave = useCallback(async (isSaveAndNew) => {
         if (!type) {
             setTypeError(true);
             return;
@@ -124,14 +122,13 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
         setTypeError(false);
 
         const currentForm = formRef.current;
-
         if (!currentForm) {
             console.error("Form reference not found");
             return;
         }
 
         setLoading(true);
-        const formData = new FormData(formRef.current);
+        const formData = new FormData(currentForm);
         const formObject = Object.fromEntries(formData.entries());
         await Api.createRecord(formObject, record_id);
 
@@ -145,12 +142,17 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
 
         setLoading(false);
 
-        if (saveAndNew) {
+        if (isSaveAndNew) {
             resetForm();
-            setSaveAndNew(false);
         } else {
             onOpenChange();
         }
+    }, [type, record_id, record, fetchAgain, onRecordChange, onOpenChange, resetForm]);
+
+    // Enter key always triggers Save & New
+    const handleFormSubmit = (e) => {
+        e.preventDefault();
+        doSave(true);
     };
 
     const handleDeleteRecord = async () => {
@@ -167,213 +169,249 @@ export default function FormModal({ isOpen, onOpenChange, record_id, fetchAgain,
         setIsRemoved(true);
     };
 
+    const fromCurrency = accounts.find(a => a.id === Number(fromAccount))?.currency_code;
+    const toCurrency = accounts.find(a => a.id === Number(toAccount))?.currency_code;
+    const showExchangeRate = type === "transfer" && fromAccount && toAccount && fromCurrency && toCurrency && fromCurrency !== toCurrency;
+    const isEditing = !!record;
+
     return (
         <Modal
             isOpen={isOpen}
             onOpenChange={onOpenChange}
             placement="top-center"
-            size="xl"
+            size="lg"
+            classNames={{ base: "max-w-[520px] overflow-visible", body: "overflow-visible", content: "overflow-visible" }}
         >
             <ModalContent>
-                <form onSubmit={handleSaveForm} ref={formRef} id="recordForm" className="block">
-                    <ModalHeader className="flex flex-col gap-1"></ModalHeader>
-                    <ModalBody>
-                        <>
-                            <SelectType onChange={e => { setType(e.target.value); setTypeError(false); }} value={type} />
-                            {typeError && <p className="text-danger text-xs pl-1">Please select a type (Income, Expense or Transfer)</p>}
-                            <div className="flex flex-row gap-x-3">
+                <form
+                    onSubmit={handleFormSubmit}
+                    ref={formRef}
+                    id="recordForm"
+                    className="block"
+                >
+                    <ModalBody className="gap-3 pt-6 pb-2 overflow-visible">
+                        <SelectType
+                            onChange={e => { setType(e.target.value); setTypeError(false); }}
+                            value={type}
+                        />
+                        {typeError && (
+                            <p className="text-danger text-xs -mt-1">Select a type: Income, Expense or Transfer</p>
+                        )}
+
+                        <div className="flex flex-row gap-x-3">
+                            <Select
+                                isRequired
+                                label="Account"
+                                placeholder="Select"
+                                name="from_account_id"
+                                className="flex-1"
+                                size="sm"
+                                items={accounts}
+                                selectionMode="single"
+                                selectedKeys={fromAccount ? [fromAccount.toString()] : []}
+                                onChange={e => setFromAccount(e.target.value)}
+                            >
+                                {(item) => (
+                                    <SelectItem key={item.id} value={item.id}
+                                        startContent={
+                                            <span
+                                                className="inline-block w-3 h-3 rounded-full flex-shrink-0"
+                                                style={{ backgroundColor: item.color || '#666' }}
+                                            />
+                                        }
+                                        endContent={
+                                            <span className="text-default-400 text-xs">{item.currency_symbol}</span>
+                                        }
+                                    >
+                                        {item.name}
+                                    </SelectItem>
+                                )}
+                            </Select>
+
+                            {type === "transfer" && (
                                 <Select
                                     isRequired
-                                    label="Account"
-                                    placeholder="Select account"
-                                    name="from_account_id"
-                                    className="max-w-xs"
-                                    items={accounts}
+                                    label="To account"
+                                    placeholder="Select"
+                                    name="to_account_id"
+                                    className="flex-1"
+                                    size="sm"
                                     selectionMode="single"
-                                    selectedKeys={fromAccount?.toString()}
-                                    onChange={e => setFromAccount(e.target.value)}
+                                    selectedKeys={toAccount ? [toAccount.toString()] : []}
+                                    onChange={e => setToAccount(e.target.value)}
                                 >
-                                    {(item) => (
-                                        <SelectItem key={item.id} value={item.id}>
-                                            {item.name}
+                                    {accounts.map((account) => (
+                                        <SelectItem key={account.id} value={account.id}
+                                            startContent={
+                                                <span
+                                                    className="inline-block w-3 h-3 rounded-full flex-shrink-0"
+                                                    style={{ backgroundColor: account.color || '#666' }}
+                                                />
+                                            }
+                                            endContent={
+                                                <span className="text-default-400 text-xs">{account.currency_symbol}</span>
+                                            }
+                                        >
+                                            {account.name}
                                         </SelectItem>
-                                    )}
+                                    ))}
                                 </Select>
+                            )}
+                        </div>
 
-                                {type === "transfer" && (
-                                    <Select
-                                        isRequired
-                                        label="To account"
-                                        placeholder="Select account"
-                                        name="to_account_id"
-                                        className="max-w-xs"
-                                        selectionMode="single"
-                                        selectedKeys={toAccount?.toString()}
-                                        onChange={e => setToAccount(e.target.value)}
-                                    >
-                                        {accounts.map((account) => (
-                                            <SelectItem
-                                                key={account.id}
-                                                value={account.id}
-                                            >
-                                                {account.name}
-                                            </SelectItem>
-                                        ))}
-                                    </Select>
-                                )}
-                            </div>
-                            <Textarea
-                                label="Description"
-                                name="name"
-                                labelPlacement="outside"
-                                placeholder="Enter your description"
-                                className="w-full"
-                                value={name}
-                                onChange={handleConceptChange}
-                            />
-                            {type !== "transfer" && (
-                                <div className="flex flex-row gap-x-3">
-                                    <Select
-                                        className="max-w-xs"
-                                        label="Category"
-                                        name="parent_category_id"
-                                        isRequired
-                                        selectedKeys={[parentCategory?.toString()]}
-                                        onChange={e => setParentCategory(e.target.value)}
-                                    >
-                                        {parentCategories.map((parent_category) => (
-                                            <SelectItem
-                                                key={parent_category.id}
-                                                value={parent_category.id}
-                                                startContent={
-                                                    <FontAwesomeIcon
-                                                        icon={parent_category.icon}
-                                                        className="text-white rounded-full p-3 flex items-center justify-center"
-                                                        style={{
-                                                            background:
-                                                                parent_category.color,
-                                                        }}
-                                                    />
-                                                }
-                                            >
-                                                {parent_category.name}
-                                            </SelectItem>
-                                        ))}
-                                    </Select>
-                                    <Select
-                                        className="max-w-xs"
-                                        label="Sub category"
-                                        name="category_id"
-                                        isRequired
-                                        selectedKeys={[category?.toString()]}
-                                        onChange={e => setCategory(e.target.value)}
-                                    >
-                                        {categories.map((category) => (
-                                            <SelectItem
-                                                key={category.id}
-                                                value={category.id}
-                                                startContent={
-                                                    <FontAwesomeIcon
-                                                        icon={category.icon}
-                                                        className="text-white rounded-full p-3 flex items-center justify-center"
-                                                        style={{
-                                                            background:
-                                                                category.color,
-                                                        }}
-                                                    />
-                                                }
-                                            >
-                                                {category.name}
-                                            </SelectItem>
-                                        ))}
-                                    </Select>
-                                </div>
-                            )}
-                            {type === "transfer" && (
-                                <Input
+                        {type !== "transfer" && (
+                            <div className="flex flex-row gap-x-3">
+                                <Select
+                                    className="flex-1"
+                                    label="Category"
+                                    name="parent_category_id"
+                                    size="sm"
                                     isRequired
-                                    name="rate"
-                                    type="number"
-                                    label="Exchange rate"
-                                    placeholder=""
-                                    className="max-w-xs"
-                                    step="any"
-                                    defaultValue={record?.rate}
-                                />
-                            )}
-                            <div className="flex flex-row gap-x-3 w-full">
-                                <div className="w-full">
-                                    <DatePicker
-                                        selected={date ? new Date(date) : null}
-                                        onChange={(d) => setDate(d ? moment(d).format("YYYY-MM-DD") : null)}
-                                        customInput={<CustomDateInput placeholder="Select date" />}
-                                        wrapperClassName="w-full"
-                                        dateFormat="yyyy-MM-dd"
-                                    />
-                                    <input type="hidden" name="date" value={date ?? ""} />
-                                </div>
-                                <Input
-                                    isRequired
-                                    name="amount"
-                                    type="number"
-                                    label="Amount"
-                                    placeholder=""
-                                    className="max-w-xs"
-                                    step="any"
-                                    value={amount}
-                                    onChange={e => setAmount(e.target.value)}
-                                />
-                            </div>
-                        </>
-                    </ModalBody>
-                    <ModalFooter className="items-center justify-between flex-row-reverse">
-                        <div className="flex flex-row gap-x-2">
-                            {!record && (
-                                <Button
-                                    type="submit"
-                                    form="recordForm"
-                                    color="primary"
-                                    isLoading={loading}
-                                    onClick={() => setSaveAndNew(true)}
-                                    endContent={
-                                        !loading && (
-                                            <FontAwesomeIcon icon="fa-solid fa-plus" />
-                                        )
-                                    }
+                                    selectedKeys={parentCategory ? [parentCategory.toString()] : []}
+                                    onChange={e => setParentCategory(e.target.value)}
                                 >
-                                    Save &amp; New
+                                    {parentCategories.map((pc) => (
+                                        <SelectItem
+                                            key={pc.id}
+                                            value={pc.id}
+                                            startContent={
+                                                <FontAwesomeIcon
+                                                    icon={pc.icon}
+                                                    className="text-white rounded-full p-1.5 text-xs flex items-center justify-center"
+                                                    style={{ background: pc.color }}
+                                                />
+                                            }
+                                        >
+                                            {pc.name}
+                                        </SelectItem>
+                                    ))}
+                                </Select>
+                                <Select
+                                    className="flex-1"
+                                    label="Subcategory"
+                                    name="category_id"
+                                    size="sm"
+                                    isRequired
+                                    selectedKeys={category ? [category.toString()] : []}
+                                    onChange={e => setCategory(e.target.value)}
+                                >
+                                    {categories.map((cat) => (
+                                        <SelectItem
+                                            key={cat.id}
+                                            value={cat.id}
+                                            startContent={
+                                                <FontAwesomeIcon
+                                                    icon={cat.icon}
+                                                    className="text-white rounded-full p-1.5 text-xs flex items-center justify-center"
+                                                    style={{ background: cat.color }}
+                                                />
+                                            }
+                                        >
+                                            {cat.name}
+                                        </SelectItem>
+                                    ))}
+                                </Select>
+                            </div>
+                        )}
+
+                        <div className="flex flex-row gap-x-4 items-end my-3">
+                            <Input
+                                ref={amountRef}
+                                isRequired
+                                name="amount"
+                                type="number"
+                                label="Amount"
+                                placeholder="0.00"
+                                className="flex-[2]"
+                                size="sm"
+                                step="any"
+                                value={amount}
+                                onChange={e => setAmount(e.target.value)}
+                                classNames={{
+                                    input: "text-base font-semibold",
+                                }}
+                            />
+                            <div className="flex-1 min-w-[130px]">
+                                <DatePicker
+                                    selected={date ? new Date(date) : null}
+                                    onChange={(d) => setDate(d ? moment(d).format("YYYY-MM-DD") : null)}
+                                    customInput={<CustomDateInput placeholder="Date" />}
+                                    wrapperClassName="w-full"
+                                    dateFormat="yyyy-MM-dd"
+                                    popperPlacement="bottom"
+                                    popperModifiers={[
+                                        { name: "preventOverflow", options: { boundary: "viewport", padding: 8 } },
+                                        { name: "flip", enabled: false },
+                                    ]}
+                                />
+                                <input type="hidden" name="date" value={date ?? ""} />
+                            </div>
+                        </div>
+
+                        <Input
+                            label="Description"
+                            name="name"
+                            placeholder="Optional note..."
+                            className="w-full"
+                            size="sm"
+                            value={name}
+                            onChange={handleConceptChange}
+                        />
+
+                        {showExchangeRate && (
+                            <Input
+                                isRequired
+                                name="rate"
+                                type="number"
+                                label={`Exchange rate (1 ${fromCurrency} = ? ${toCurrency})`}
+                                placeholder="1.00"
+                                className="w-full"
+                                size="sm"
+                                step="any"
+                                defaultValue={record?.rate}
+                            />
+                        )}
+                    </ModalBody>
+
+                    <ModalFooter className="justify-between pt-0 pb-4">
+                        <div>
+                            {isEditing && (
+                                <Button
+                                    type="button"
+                                    color="danger"
+                                    variant="light"
+                                    size="sm"
+                                    isLoading={loading}
+                                    onClick={handleDeleteRecord}
+                                    startContent={!loading && <FontAwesomeIcon icon="fa-solid fa-trash" />}
+                                >
+                                    Delete
+                                </Button>
+                            )}
+                        </div>
+                        <div className="flex flex-row gap-x-2">
+                            {!isEditing && (
+                                <Button
+                                    type="button"
+                                    color="default"
+                                    variant="flat"
+                                    size="sm"
+                                    onClick={() => doSave(false)}
+                                >
+                                    {'Save & Close'}
                                 </Button>
                             )}
                             <Button
-                                type="submit"
-                                form="recordForm"
-                                color="success"
+                                type="button"
+                                color="primary"
+                                size="sm"
                                 isLoading={loading}
-                                onClick={() => setSaveAndNew(false)}
-                                endContent={
-                                    !loading && (
-                                        <FontAwesomeIcon icon="fa-solid fa-check" />
-                                    )
-                                }
+                                onClick={() => doSave(true)}
+                                endContent={!loading && <FontAwesomeIcon icon="fa-solid fa-plus" />}
                             >
-                                Save
+                                {isEditing ? 'Save' : 'Save & New'}
                             </Button>
                         </div>
-                        {record && (
-                            <Button
-                                type="button"
-                                color="danger"
-                                isLoading={loading}
-                                onClick={handleDeleteRecord}
-                                endContent={
-                                    !loading && (
-                                        <FontAwesomeIcon icon="fa-solid fa-trash" />
-                                    )
-                                }
-                            >
-                                Delete
-                            </Button>
-                        )}
                     </ModalFooter>
                 </form>
             </ModalContent>
