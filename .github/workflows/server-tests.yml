@@ -36,5 +36,13 @@ jobs:
     - name: Execute seeders
       run: docker exec server-container php artisan db:seed
 
+    - name: Copy test files into container (excluded by .dockerignore)
+      run: |
+        docker cp ./api/phpunit.xml server-container:/var/www/html/phpunit.xml
+        docker cp ./api/tests server-container:/var/www/html/tests
+
+    - name: Install dev dependencies (phpunit)
+      run: docker exec server-container composer install
+
     - name: Run tests
       run: docker exec server-container vendor/bin/phpunit -c phpunit.xml
