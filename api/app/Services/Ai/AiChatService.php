@@ -458,6 +458,8 @@ Here's your spending breakdown for this month:
 
 **Be concise. One table, one question. No repetition.**
 
+**DOCUMENTATION: When the user asks about how BudgetBee works, how to configure something, or how to use a feature, use the `read_documentation` tool to find the answer.** The documentation covers: accounts, records/transactions, categories, budgets, AI chat setup, data import, API keys, and FAQ. Do NOT make up answers about app functionality — always check the documentation first.
+
 **MEMORY: You have persistent memory per user. Use the `save_memory` tool to remember important facts:**
 - If the user consistently speaks a language (Spanish, English, etc.), save it as `language`.
 - If the user mentions their preferred account, save it as `preferred_account`.
@@ -676,6 +678,23 @@ PROMPT;
                     ],
                 ],
             ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'read_documentation',
+                    'description' => 'Read BudgetBee documentation to answer user questions about how the app works, how to configure features, how to use specific functionality, or troubleshooting. Use this when the user asks "how do I...", "how does X work?", "how do I configure...?", or any question about using BudgetBee itself (not about their personal financial data).',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'query' => [
+                                'type' => 'string',
+                                'description' => 'The topic or question to search for in the documentation. Use keywords like "accounts", "categories", "budgets", "import", "AI setup", "API", "FAQ", etc.',
+                            ],
+                        ],
+                        'required' => ['query'],
+                    ],
+                ],
+            ],
         ];
     }
 
@@ -763,6 +782,7 @@ PROMPT;
             'get_categories' => $this->toolGetCategories(),
             'create_records_batch' => $this->toolCreateRecordsBatch($arguments),
             'save_memory' => $this->toolSaveMemory($arguments),
+            'read_documentation' => $this->toolReadDocumentation($arguments),
             default => ['error' => "Unknown tool: {$name}"],
         };
     }
@@ -1133,6 +1153,103 @@ PROMPT;
             'total' => count($records),
             'details' => $details,
             'currency' => $this->user->currency_symbol,
+        ];
+    }
+
+    /**
+     * Read BudgetBee documentation files to answer user questions about app functionality.
+     * Searches through Markdown doc files in storage/app/documentation/.
+     */
+    private function toolReadDocumentation(array $args): array
+    {
+        $query = mb_strtolower(trim($args['query'] ?? ''));
+        if (empty($query)) {
+            return ['error' => 'No query provided. Please specify a topic to search for.'];
+        }
+
+        $docsDir = base_path('docs');
+        if (!is_dir($docsDir)) {
+            return ['error' => 'Documentation directory not found.'];
+        }
+
+        $files = glob($docsDir . '/*.md');
+        if (empty($files)) {
+            return ['error' => 'No documentation files found.'];
+        }
+
+        $results = [];
+        $keywords = explode(' ', $query);
+        // Also add the full query as a phrase
+        $keywords[] = $query;
+
+        foreach ($files as $file) {
+            $filename = basename($file);
+            $content = file_get_contents($file);
+            $contentLower = mb_strtolower($content);
+
+            // Calculate relevance score: count keyword matches
+            $score = 0;
+            foreach ($keywords as $keyword) {
+                if (mb_strlen($keyword) < 2) continue;
+                $score += substr_count($contentLower, $keyword);
+            }
+
+            // Bonus for title match (first # heading)
+            if (preg_match('/^#\s+(.+)$/m', $content, $titleMatch)) {
+                $title = trim($titleMatch[1]);
+                $titleLower = mb_strtolower($title);
+                foreach ($keywords as $keyword) {
+                    if (mb_strlen($keyword) >= 3 && str_contains($titleLower, $keyword)) {
+                        $score += 10;
+                    }
+                }
+            } else {
+                $title = $filename;
+            }
+
+            if ($score > 0) {
+                $results[] = [
+                    'file' => $filename,
+                    'title' => $title,
+                    'score' => $score,
+                    'content' => $content,
+                ];
+            }
+        }
+
+        if (empty($results)) {
+            return [
+                'query' => $args['query'],
+                'found' => false,
+                'message' => 'No documentation found for "' . $args['query'] . '". Try different keywords or ask a more specific question.',
+            ];
+        }
+
+        // Sort by relevance score descending
+        usort($results, fn($a, $b) => $b['score'] <=> $a['score']);
+
+        // Return top 3 most relevant docs (trimmed to avoid token overflow)
+        $topDocs = array_slice($results, 0, 3);
+        $documents = [];
+        foreach ($topDocs as $doc) {
+            // Trim content to ~2000 chars max per doc to avoid token issues
+            $trimmed = mb_strlen($doc['content']) > 2000
+                ? mb_substr($doc['content'], 0, 2000) . "\n\n[... content truncated ...]"
+                : $doc['content'];
+            $documents[] = [
+                'file' => $doc['file'],
+                'title' => $doc['title'],
+                'relevance_score' => $doc['score'],
+                'content' => $trimmed,
+            ];
+        }
+
+        return [
+            'query' => $args['query'],
+            'found' => true,
+            'documents_count' => count($documents),
+            'total_matches' => count($results),
+            'documents' => $documents,
         ];
     }
 
