@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   nginx:
     image: ghcr.io/budgetbee/budgetbee/proxy:latest

@@ -60,7 +60,6 @@ If you want to support this project, you can!
 BudgetBee is installed via Docker Compose. Copy the snippet below, fill in the environment variables, and run `docker-compose up -d`.
 
 ```yaml
-version: '3.8'
 services:
   nginx:
     image: ghcr.io/budgetbee/budgetbee/proxy:latest
@@ -86,6 +85,8 @@ services:
       db:
         condition: service_healthy
     restart: unless-stopped
+    volumes:
+      - budgetbee_config:/config
     networks:
       - skynet
   web:
@@ -95,7 +96,6 @@ services:
       - skynet
   db:
     image: mysql:8.2.0
-    command: --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD} # MySQL root password - keep this secret
       MYSQL_DATABASE: ${DB_DATABASE}           # Must match DB_DATABASE above
@@ -113,6 +113,7 @@ services:
 networks:
   skynet:
 volumes:
+  budgetbee_config:
   db_data:
 ```
 
