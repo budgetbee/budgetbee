@@ -17,6 +17,7 @@ services:
       dockerfile: ../api/Dockerfile.dev
     volumes:
       - ../api:/var/www/html
+      - ./config/:/config
     working_dir: /var/www/html
     command: /bin/sh -c "sh entrypoint.sh"
     environment:
