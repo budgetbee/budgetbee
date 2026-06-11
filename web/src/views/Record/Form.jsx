@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import moment from "moment";
+import numeral from "numeral";
 import Api from "../../Api/Endpoints";
 import Calculator from "./Components/Calculator";
 import CategoryPicker from "./Components/CategoryPicker";
 import TopNav from "../../layout/TopNav";
-import { faCheck, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCheck, faTrash, faChevronRight, faArrowRightArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
 export default function Form() {
     const [isLoading, setIsLoading] = useState(true);
@@ -19,6 +21,8 @@ export default function Form() {
     const [accounts, setAccounts] = useState(null);
     const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
     const [category, setCategory] = useState({ id: 0, name: "" });
+    const [showAccountPicker, setShowAccountPicker] = useState(false);
+    const [showToAccountPicker, setShowToAccountPicker] = useState(false);
 
     const { record_id } = useParams();
 
@@ -92,18 +96,103 @@ export default function Form() {
         }
     };
 
+    const selectedAccount = accounts?.find((a) => a.id === Number(account));
+    const selectedToAccount = accounts?.find((a) => a.id === Number(toAccount));
+
+    const typeLabel =
+        type === "income"
+            ? "Income"
+            : type === "expense"
+            ? "Expense"
+            : "Transfer";
+
+    const typeColor =
+        type === "income"
+            ? "text-green-400"
+            : type === "expense"
+            ? "text-red-400"
+            : "text-blue-400";
+
+    const typeBg =
+        type === "income"
+            ? "bg-green-500/20"
+            : type === "expense"
+            ? "bg-red-500/20"
+            : "bg-blue-500/20";
+
+    const typeAccent =
+        type === "income"
+            ? "bg-green-500"
+            : type === "expense"
+            ? "bg-red-500"
+            : "bg-blue-500";
+
+    const buttonLabel =
+        type === "income"
+            ? "Add Income"
+            : type === "expense"
+            ? "Add Expense"
+            : "Add Transfer";
+
+    const amountSign =
+        type === "transfer"
+            ? ""
+            : type === "income"
+            ? "+"
+            : "-";
+
+    const formatDisplayAmount = (val) => {
+        const str = String(val);
+        if (str.includes(".")) {
+            const dotIndex = str.indexOf(".");
+            const intPart = str.slice(0, dotIndex);
+            const decPart = str.slice(dotIndex + 1);
+            return numeral(intPart).format("0,0") + "." + decPart;
+        }
+        return numeral(val).format("0,0");
+    };
+
     if (isLoading) {
         return <></>;
     }
 
     return (
-        <div className="">
+        <div className="bg-[#0a0a0f] min-h-screen">
             {categoryPickerOpen && (
                 <CategoryPicker
                     setOpen={setCategoryPickerOpen}
                     setCategory={setCategory}
                 />
             )}
+
+            {/* Account picker modal */}
+            {showAccountPicker && (
+                <AccountPickerModal
+                    accounts={accounts}
+                    selectedId={account}
+                    onSelect={(id) => {
+                        setAccount(id);
+                        setShowAccountPicker(false);
+                    }}
+                    onClose={() => setShowAccountPicker(false)}
+                    title="Select account"
+                />
+            )}
+
+            {/* To Account picker modal */}
+            {showToAccountPicker && (
+                <AccountPickerModal
+                    accounts={accounts}
+                    selectedId={toAccount}
+                    onSelect={(id) => {
+                        setToAccount(id);
+                        setShowToAccountPicker(false);
+                    }}
+                    onClose={() => setShowToAccountPicker(false)}
+                    title="Select destination"
+                />
+            )}
+
             <form>
                 <TopNav
                     leftFunction={handleBackFunction}
@@ -114,240 +203,431 @@ export default function Form() {
                         right2Icon: faTrash,
                     })}
                 />
-                <div className="flex flex-col h-screen max-w-full">
-                    <div className="basis-[6%]"></div>
-                    <div
-                        className={`basis-6/12 flex flex-col text-white ${
-                            type === "income"
-                                ? "bg-[#4a883b]"
-                                : type === "expense"
-                                ? "bg-[#ab3a3a]"
-                                : "bg-[#3f45a3]"
-                        }`}
-                    >
+
+                <div className="fixed top-14 bottom-0 left-0 right-0 flex flex-col max-w-full overflow-hidden">
+                    {/* Type selector tabs */}
+                    <div className="flex flex-row items-center justify-center gap-x-1 px-4 py-3 shrink-0">
                         <div
-                            className="basis-2/12 flex flex-row items-center text-center font-bold divide-x cursor-pointer"
+                            data-type="income"
                             onClick={handleRecordType}
+                            className={`flex-1 text-center py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-all ${
+                                type === "income"
+                                    ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                                    : "text-gray-500"
+                            }`}
                         >
-                            <div
-                                data-type="income"
-                                className={`type-btn basis-1/3 py-5 ${
-                                    type === "income" ? "bg-black/20" : ""
-                                }`}
-                            >
-                                Income
+                            Income
+                        </div>
+                        <div
+                            data-type="expense"
+                            onClick={handleRecordType}
+                            className={`flex-1 text-center py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-all ${
+                                type === "expense"
+                                    ? "bg-red-500/20 text-red-400 border border-red-500/30"
+                                    : "text-gray-500"
+                            }`}
+                        >
+                            Expense
+                        </div>
+                        <div
+                            data-type="transfer"
+                            onClick={handleRecordType}
+                            className={`flex-1 text-center py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-all ${
+                                type === "transfer"
+                                    ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                                    : "text-gray-500"
+                            }`}
+                        >
+                            Transfer
+                        </div>
+                        <input type="hidden" name="type" value={type} />
+                    </div>
+
+                    {/* Amount display */}
+                    <div className="flex flex-col items-center py-4 shrink-0">
+                        <div className="text-gray-500 text-xs uppercase tracking-wider mb-2">
+                            {typeLabel}
+                        </div>
+                        <div className={`flex flex-row items-baseline ${typeColor}`}>
+                            <span className="text-2xl font-light mr-1">
+                                {amountSign}
+                            </span>
+                            <span className="text-5xl font-bold tracking-tight">
+                                {formatDisplayAmount(amount)}
+                            </span>
+                        </div>
+                        {selectedAccount && (
+                            <div className="text-gray-500 text-sm mt-2">
+                                Available: {selectedAccount.currency_symbol}{" "}
+                                {numeral(selectedAccount.balance).format("0,0.00")}
                             </div>
+                        )}
+                        <input type="hidden" name="amount" value={amount} />
+                    </div>
+
+                    {/* Account card */}
+                    {type !== "transfer" ? (
+                        <div className="px-4 mb-2 shrink-0">
                             <div
-                                data-type="expense"
-                                className={`type-btn basis-1/3 py-5 ${
-                                    type === "expense" ? "bg-black/20" : ""
-                                }`}
+                                className="bg-[#1a1a2e] rounded-2xl p-4 cursor-pointer border border-gray-800"
+                                onClick={() => setShowAccountPicker(true)}
                             >
-                                Expense
-                            </div>
-                            <div
-                                data-type="transfer"
-                                className={`type-btn basis-1/3 py-5 ${
-                                    type === "transfer" ? "bg-black/20" : ""
-                                }`}
-                            >
-                                Transfer
+                                <div className="text-gray-500 text-xs uppercase tracking-wider mb-1">
+                                    Account
+                                </div>
+                                {selectedAccount ? (
+                                    <div className="flex flex-row items-center justify-between">
+                                        <div className="flex flex-row items-center gap-x-3">
+                                            <div
+                                                className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold"
+                                                style={{
+                                                    backgroundColor: selectedAccount.color,
+                                                }}
+                                            >
+                                                {selectedAccount.name.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <div className="text-white font-medium">
+                                                    {selectedAccount.name}
+                                                </div>
+                                                <div className="text-gray-500 text-sm">
+                                                    {selectedAccount.currency_symbol}{" "}
+                                                    {numeral(
+                                                        selectedAccount.balance
+                                                    ).format("0,0.00")}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <FontAwesomeIcon
+                                            icon={faChevronRight}
+                                            className="text-gray-600"
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="text-gray-500">
+                                        Select an account...
+                                    </div>
+                                )}
                             </div>
                             <input
                                 type="hidden"
-                                name="type"
-                                value={type}
-                            ></input>
+                                name="from_account_id"
+                                value={account ?? ""}
+                            />
                         </div>
-                        <div className="basis-5/12 flex flex-row text-7xl text-center items-center gap-x-4 px-5">
-                            <div className="basis-1/12 text-4xl">
-                                {type === "transfer"
-                                    ? ""
-                                    : type === "income"
-                                    ? "+"
-                                    : type === "expense"
-                                    ? "-"
-                                    : ""}
-                            </div>
-                            <div className="2/12 text-4xl">$</div>
-                            <div className="basis-9/12 text-right">
-                                {amount}
-                            </div>
-                            <input type="hidden" name="amount" value={amount} />
-                        </div>
-                        <div className="basis-2/12 flex flex-row text-center items-center">
-                            <div className="basis-1/2 flex flex-col">
-                                <div className="text-sm text-gray-300">
-                                    Account
+                    ) : (
+                        /* Transfer: From → To accounts */
+                        <div className="px-4 mb-2 flex flex-col gap-y-1.5 shrink-0">
+                            <div
+                                className="bg-[#1a1a2e] rounded-2xl p-4 cursor-pointer border border-gray-800"
+                                onClick={() => setShowAccountPicker(true)}
+                            >
+                                <div className="text-gray-500 text-xs uppercase tracking-wider mb-1">
+                                    From
                                 </div>
-                                <div>
-                                    <select
-                                        name="from_account_id"
-                                        id="from_account_id"
-                                        required="required"
-                                        onChange={handleInputChange}
-                                        className="text-center cursor-pointer appearance-none bg-transparent"
-                                    >
-                                        <option value="">
-                                            Select account...
-                                        </option>
-                                        {accounts.map((acc, index) => {
-                                            return (
-                                                <option
-                                                    className="text-black p-5"
-                                                    value={acc.id}
-                                                    selected={
-                                                        account === acc.id
-                                                    }
-                                                >
-                                                    {acc.name}
-                                                </option>
-                                            );
-                                        })}
-                                    </select>
-                                </div>
-                            </div>
-                            {type === "transfer" ? (
-                                <div className="basis-1/2 flex flex-col">
-                                    <div className="text-sm text-gray-300">
-                                        To account
-                                    </div>
-                                    <div>
-                                        <select
-                                            name="to_account_id"
-                                            id="to_account_id"
-                                            required="required"
-                                            onChange={handleInputChange}
-                                            className="text-center cursor-pointer appearance-none bg-transparent"
-                                        >
-                                            <option value="">
-                                                Select account...
-                                            </option>
-                                            {accounts.map((acc, index) => {
-                                                return (
-                                                    <option
-                                                        className="text-black"
-                                                        value={acc.id}
-                                                        selected={
-                                                            toAccount === acc.id
-                                                        }
-                                                    >
-                                                        {acc.name}
-                                                    </option>
-                                                );
-                                            })}
-                                        </select>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div
-                                    className="basis-1/2 flex flex-col cursor-pointer"
-                                    onClick={handleOpenCategory}
-                                >
-                                    <div className="text-sm text-gray-300">
-                                        Category
-                                    </div>
-                                    <div>{category.name}</div>
-                                    <input
-                                        type="hidden"
-                                        name="category_id"
-                                        onChange={handleInputChange}
-                                        value={category.id}
-                                    />
-                                </div>
-                            )}
-                        </div>
-                        <div className="basis-2/12 flex flex-row text-center items-center">
-                            <div className="basis-1/2 flex flex-col">
-                                <div className="text-sm text-gray-300">
-                                    Date
-                                </div>
-                                <div>
-                                    <input
-                                        type="date"
-                                        name="date"
-                                        className="w-3/4 text-center cursor-pointer appearance-none bg-transparent"
-                                        onChange={handleInputDate}
-                                        value={
-                                            date
-                                                ? moment(date).format(
-                                                      "YYYY-MM-DD"
-                                                  )
-                                                : moment(new Date()).format(
-                                                      "YYYY-MM-DD"
-                                                  )
-                                        }
-                                    />
-                                </div>
-                            </div>
-                            {record?.from_account_id &&
-                                record?.to_account_id &&
-                                accounts?.find(a => a.id === Number(record?.from_account_id))?.currency_code !==
-                                    accounts?.find(a => a.id === Number(record?.to_account_id))?.currency_code && (
-                                    <div className="basis-1/2">
-                                        <label
-                                            for="rate"
-                                            className="text-sm text-gray-300"
-                                        >
-                                            Exchange rate
-                                        </label>
-                                        <div className="relative">
-                                            <input
-                                                type="number"
-                                                step="any"
-                                                name="rate"
-                                                id="rate"
-                                                onChange={handleInputChange}
-                                                defaultValue={record?.rate ?? 1}
-                                                className="w-3/4 text-center cursor-pointer appearance-none bg-transparent"
-                                                required
-                                            ></input>
-                                            {accounts.length &&
-                                                record.from_account_id &&
-                                                record.to_account_id && (
-                                                    <div class="w-full mt-2 absolute left-1/2 transform -translate-x-1/2 text-xs">
-                                                        1.00{" "}
-                                                        {
-                                                            accounts.find(
-                                                                (item) =>
-                                                                    item.id ===
-                                                                    Number(
-                                                                        record.from_account_id
-                                                                    )
-                                                            ).currency_code
-                                                        }{" "}
-                                                        = {record?.rate ?? 1}{" "}
-                                                        {
-                                                            accounts.find(
-                                                                (item) =>
-                                                                    item.id ===
-                                                                    Number(
-                                                                        record.to_account_id
-                                                                    )
-                                                            ).currency_code
-                                                        }
-                                                    </div>
-                                                )}
+                                {selectedAccount ? (
+                                    <div className="flex flex-row items-center justify-between">
+                                        <div className="flex flex-row items-center gap-x-3">
+                                            <div
+                                                className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold"
+                                                style={{
+                                                    backgroundColor: selectedAccount.color,
+                                                }}
+                                            >
+                                                {selectedAccount.name.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <div className="text-white font-medium">
+                                                    {selectedAccount.name}
+                                                </div>
+                                                <div className="text-gray-500 text-sm">
+                                                    {selectedAccount.currency_symbol}{" "}
+                                                    {numeral(
+                                                        selectedAccount.balance
+                                                    ).format("0,0.00")}
+                                                </div>
+                                            </div>
                                         </div>
+                                        <FontAwesomeIcon
+                                            icon={faChevronRight}
+                                            className="text-gray-600"
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="text-gray-500">
+                                        Select source account...
                                     </div>
                                 )}
+                            </div>
+                            <input
+                                type="hidden"
+                                name="from_account_id"
+                                value={account ?? ""}
+                            />
+
+                            {/* <div className="flex justify-center">
+                                <div className="w-8 h-8 rounded-full bg-[#1a1a2e] border border-gray-700 flex items-center justify-center">
+                                    <FontAwesomeIcon
+                                        icon={faArrowRightArrowLeft}
+                                        className="text-gray-400 text-sm"
+                                    />
+                                </div>
+                            </div> */}
+
+                            <div
+                                className="bg-[#1a1a2e] rounded-2xl p-4 cursor-pointer border border-gray-800"
+                                onClick={() => setShowToAccountPicker(true)}
+                            >
+                                <div className="text-gray-500 text-xs uppercase tracking-wider mb-1">
+                                    To
+                                </div>
+                                {selectedToAccount ? (
+                                    <div className="flex flex-row items-center justify-between">
+                                        <div className="flex flex-row items-center gap-x-3">
+                                            <div
+                                                className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold"
+                                                style={{
+                                                    backgroundColor: selectedToAccount.color,
+                                                }}
+                                            >
+                                                {selectedToAccount.name.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <div className="text-white font-medium">
+                                                    {selectedToAccount.name}
+                                                </div>
+                                                <div className="text-gray-500 text-sm">
+                                                    {selectedToAccount.currency_symbol}{" "}
+                                                    {numeral(
+                                                        selectedToAccount.balance
+                                                    ).format("0,0.00")}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <FontAwesomeIcon
+                                            icon={faChevronRight}
+                                            className="text-gray-600"
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="text-gray-500">
+                                        Select destination...
+                                    </div>
+                                )}
+                            </div>
+                            <input
+                                type="hidden"
+                                name="to_account_id"
+                                value={toAccount ?? ""}
+                            />
+                        </div>
+                    )}
+
+                    {/* Category (non-transfer) */}
+                    {type !== "transfer" && (
+                        <div className="px-4 mb-2 shrink-0">
+                            <div
+                                className="bg-[#1a1a2e] rounded-2xl p-4 cursor-pointer border border-gray-800 flex flex-row items-center justify-between"
+                                onClick={handleOpenCategory}
+                            >
+                                <div className="flex flex-row items-center gap-x-3">
+                                    <div
+                                        className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                                            category.id
+                                                ? "text-white"
+                                                : "bg-gray-800 text-gray-500"
+                                        }`}
+                                        style={
+                                            category.id
+                                                ? {
+                                                      backgroundColor:
+                                                          category.color || "#4b5563",
+                                                  }
+                                                : {}
+                                        }
+                                    >
+                                        {category.id ? (
+                                            category.icon ? (
+                                                <FontAwesomeIcon
+                                                    icon={category.icon}
+                                                />
+                                            ) : (
+                                                category.name.charAt(0)
+                                            )
+                                        ) : (
+                                            <span>?</span>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <div className="text-gray-500 text-xs uppercase tracking-wider">
+                                            Category
+                                        </div>
+                                        <div className="text-white font-medium">
+                                            {category.name || "Select category"}
+                                        </div>
+                                    </div>
+                                </div>
+                                <FontAwesomeIcon
+                                    icon={faChevronRight}
+                                    className="text-gray-600"
+                                />
+                            </div>
+                            <input
+                                type="hidden"
+                                name="category_id"
+                                value={category.id}
+                            />
+                        </div>
+                    )}
+
+                    {/* Date and Description row */}
+                    <div className="px-4 mb-2 flex flex-row gap-x-3 shrink-0">
+                        <div className="flex-1 bg-[#1a1a2e] rounded-2xl p-4 border border-gray-800">
+                            <div className="text-gray-500 text-xs uppercase tracking-wider mb-1">
+                                Date
+                            </div>
+                            <input
+                                type="date"
+                                name="date"
+                                className="w-full bg-transparent text-white outline-none cursor-pointer [color-scheme:dark]"
+                                onChange={handleInputDate}
+                                value={
+                                    date
+                                        ? moment(date).format("YYYY-MM-DD")
+                                        : moment(new Date()).format("YYYY-MM-DD")
+                                }
+                            />
+                        </div>
+                        <div className="flex-[2] bg-[#1a1a2e] rounded-2xl p-4 border border-gray-800">
+                            <input
+                                type="text"
+                                name="name"
+                                className="w-full bg-transparent text-white outline-none placeholder-gray-500"
+                                placeholder="Description..."
+                                onChange={handleInputName}
+                                value={name ?? ""}
+                            />
                         </div>
                     </div>
-                    <div className="basis-1/12">
-                        <textarea
-                            type="text"
-                            name="name"
-                            className="w-full h-full bg-gray-900 text-gray-200 p-4"
-                            placeholder="Description..."
-                            onChange={handleInputName}
-                            value={name ?? ""}
-                        />
-                    </div>
-                    <div className="basis-5/12">
+
+                    {/* Exchange rate (transfer with different currencies) */}
+                    {record?.from_account_id &&
+                        record?.to_account_id &&
+                        accounts?.find(
+                            (a) => a.id === Number(record?.from_account_id)
+                        )?.currency_code !==
+                            accounts?.find(
+                                (a) => a.id === Number(record?.to_account_id)
+                            )?.currency_code && (
+                            <div className="px-4 mb-2 shrink-0">
+                                <div className="bg-[#1a1a2e] rounded-2xl p-4 border border-gray-800">
+                                    <div className="text-gray-500 text-xs uppercase tracking-wider mb-1">
+                                        Exchange rate
+                                    </div>
+                                    <div className="flex flex-row items-center gap-x-2">
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            name="rate"
+                                            id="rate"
+                                            onChange={handleInputChange}
+                                            defaultValue={record?.rate ?? 1}
+                                            className="flex-1 bg-transparent text-white outline-none [color-scheme:dark]"
+                                            required
+                                        />
+                                        {accounts.length &&
+                                            record.from_account_id &&
+                                            record.to_account_id && (
+                                                <span className="text-gray-500 text-xs">
+                                                    1.00{" "}
+                                                    {
+                                                        accounts.find(
+                                                            (item) =>
+                                                                item.id ===
+                                                                Number(
+                                                                    record.from_account_id
+                                                                )
+                                                        ).currency_code
+                                                    }{" "}
+                                                    = {record?.rate ?? 1}{" "}
+                                                    {
+                                                        accounts.find(
+                                                            (item) =>
+                                                                item.id ===
+                                                                Number(
+                                                                    record.to_account_id
+                                                                )
+                                                        ).currency_code
+                                                    }
+                                                </span>
+                                            )}
+                                    </div>
+                                </div>
+                            </div>
+                    )}
+
+                    {/* Keypad */}
+                    <div className="flex-1">
                         <Calculator value={amount} setValue={setAmount} />
+                    </div>
+
+                    {/* Send button */}
+                    <div className="px-4 py-3 shrink-0">
+                        <button
+                            type="button"
+                            onClick={handleSaveForm}
+                            className={`w-full py-3.5 rounded-2xl text-white font-semibold text-lg transition-all ${typeAccent} active:scale-[0.98]`}
+                        >
+                            {buttonLabel}
+                        </button>
                     </div>
                 </div>
             </form>
+        </div>
+    );
+}
+
+/* Account Picker Modal */
+function AccountPickerModal({ accounts, selectedId, onSelect, onClose, title }) {
+    return (
+        <div className="fixed inset-0 z-50 bg-black/80 flex flex-col">
+            <TopNav leftFunction={onClose} />
+            <div className="h-full mt-14 bg-[#0a0a0f] flex flex-col gap-y-2 text-lg p-5">
+                <div className="text-gray-400 text-sm uppercase tracking-wider mb-2">
+                    {title}
+                </div>
+                {accounts?.map((acc) => (
+                    <div
+                        key={acc.id}
+                        className={`flex flex-row items-center gap-x-4 p-4 rounded-2xl cursor-pointer transition-all ${
+                            Number(selectedId) === acc.id
+                                ? "bg-[#1a1a2e] border border-gray-600"
+                                : "bg-[#12121f] border border-transparent"
+                        }`}
+                        onClick={() => onSelect(acc.id)}
+                    >
+                        <div
+                            className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold"
+                            style={{ backgroundColor: acc.color }}
+                        >
+                            {acc.name.charAt(0)}
+                        </div>
+                        <div className="flex-1">
+                            <div className="text-white font-medium">{acc.name}</div>
+                            <div className="text-gray-500 text-sm">
+                                {acc.currency_symbol}{" "}
+                                {numeral(acc.balance).format("0,0.00")}
+                            </div>
+                        </div>
+                        {Number(selectedId) === acc.id && (
+                            <FontAwesomeIcon
+                                icon={faCheck}
+                                className="text-blue-400"
+                            />
+                        )}
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }

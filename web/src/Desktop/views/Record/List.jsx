@@ -460,7 +460,7 @@ export default function List() {
                 <div className="flex flex-col divide-y divide-gray-600/50 rounded-3xl overflow-hidden bg-gray-700">
                     {data.map((record) => (
                         <div key={record.id}>
-                            <RecordCard record={record} showName={true} />
+                            <RecordCard record={record} showName={true} accounts={accounts} parentCategories={parentCategories} />
                         </div>
                     ))}
 
