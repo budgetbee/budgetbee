@@ -37,4 +37,4 @@ jobs:
       run: docker exec server-container php artisan db:seed
 
     - name: Run tests
-      run: docker exec server-container vendor/bin/phpunit
+      run: docker exec server-container vendor/bin/phpunit -c phpunit.xml
