@@ -275,8 +275,6 @@ class GenerateTestDataCommand extends Command
         }
 
         $recordCount = (int) $this->option('records');
-        Record::disableAiControllerProcessing();
-
         $progressBar = $this->output->createProgressBar($recordCount);
         $progressBar->start();
 
@@ -332,7 +330,6 @@ class GenerateTestDataCommand extends Command
             $progressBar->advance();
         }
 
-        Record::enableAiControllerProcessing();
         $progressBar->finish();
         $this->newLine();
         $this->info('✓ ' . $recordCount . ' records created');

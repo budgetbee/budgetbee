@@ -44,9 +44,7 @@ class ImportController extends Controller
                 foreach ($records as $record) {
                     try {
                         $record->import_id = $importModel->id;
-                        Record::disableAiControllerProcessing();
                         $record->save();
-                        Record::enableAiControllerProcessing();
                     } catch (Exception $e) {
                         foreach ($records as $record) {
                             $record->forceDelete();
@@ -54,10 +52,6 @@ class ImportController extends Controller
                         $importModel->forceDelete();
                         return response()->json(['error' => 'Error to save records, check file and try again'], 500);
                     }
-                }
-                try {
-                    AiController::trainModel();
-                } catch (Exception $e) {
                 }
                 return response()->json(['message' => 'File uploaded successfully']);
             }
@@ -88,8 +82,7 @@ class ImportController extends Controller
                 }
 
                 if (!array_key_exists('category_id', $row) || is_null($row['category_id']) || empty($row['category_id'])) {
-                    $category = AiController::predictCategory($row['name']);
-                    $row['category_id'] = $category->id;
+                    $row['category_id'] = 44;
                 }
 
                 $row['rate'] = $row['rate'] ?? 1;
@@ -152,8 +145,7 @@ class ImportController extends Controller
                 $name = $worksheet->getCell([6, $row])->getValue();
 
                 if (empty($categoryId)) {
-                    $category = AiController::predictCategory($name);
-                    $categoryId = $category->id;
+                    $categoryId = 44;
                 }
 
                 $rate = $worksheet->getCell([8, $row])->getValue();

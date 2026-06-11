@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use App\Services\CurrencyConverter;
 use Database\Factories\RecordFactory;
 use Illuminate\Support\Facades\Cache;
-use App\Http\Controllers\AiController;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -30,8 +29,6 @@ class Record extends Model
 
     protected $hidden = ['category', 'account', 'toAccount', 'import'];
 
-    protected static $disableAiControllerProcessing = false;
-
     public static function boot()
     {
         parent::boot();
@@ -46,10 +43,6 @@ class Record extends Model
 
         static::created(function ($record) {
             Cache::clear();
-
-            if (!static::$disableAiControllerProcessing) {
-                AiController::trainModelWithRecord($record);
-            }
 
             if ($record->type === 'transfer') {
                 static::withoutEvents(function () use ($record) {
@@ -91,10 +84,6 @@ class Record extends Model
         
         static::updating(function ($record) {
             Cache::clear();
-
-            if (!static::$disableAiControllerProcessing) {
-                AiController::trainModelWithRecord($record);
-            }
 
             if ($record->type === 'transfer' || (!empty($record->original['type']) && $record->original['type'] === 'transfer')) {
                 static::withoutEvents(function () use ($record) {
@@ -231,13 +220,4 @@ class Record extends Model
         return $query;
     }
 
-    public static function disableAiControllerProcessing()
-    {
-        static::$disableAiControllerProcessing = true;
-    }
-
-    public static function enableAiControllerProcessing()
-    {
-        static::$disableAiControllerProcessing = false;
-    }
 }

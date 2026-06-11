@@ -25,15 +25,6 @@ RUN set -xe \
     && rm -rf /tmp/* \
     && apk del .memcached-deps .phpize-deps
 
-# Install Python, pip, and build dependencies
-RUN apk add --no-cache python3 py3-pip python3-dev build-base \
-    && apk add --no-cache gcc g++ musl-dev libffi-dev make \
-    && apk add --no-cache openblas-dev lapack-dev \
-    && apk add --no-cache gfortran
-
-# Install Python dependencies
-RUN pip3 install --no-cache-dir scikit-learn joblib
-
 # Set working directory
 WORKDIR /var/www/html
 
@@ -46,9 +37,6 @@ RUN chmod -R 775 storage bootstrap/cache \
 
 RUN chown www-data:www-data ./entrypoint.sh \
     && chmod +x ./entrypoint.sh
-
-# Change the user to www-data
-USER www-data
 
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader

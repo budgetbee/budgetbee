@@ -1,0 +1,16 @@
+vendor/
+node_modules/
+.git/
+.env
+storage/logs/
+storage/framework/cache/
+storage/framework/sessions/
+storage/framework/views/
+storage/framework/testing/
+storage/debugbar/
+.phpunit.result.cache
+phpunit.xml
+tests/
+Dockerfile*
+docker-compose*
+*.md
