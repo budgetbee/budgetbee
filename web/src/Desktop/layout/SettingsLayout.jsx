@@ -21,6 +21,10 @@ const SettingsLayout = ({ children }) => {
             name: "Currency",
             href: "/settings/currency",
         },
+        "api-keys": {
+            name: "API Keys",
+            href: "/settings/api-keys",
+        },
     };
 
     const linkArray = Object.entries(links);
