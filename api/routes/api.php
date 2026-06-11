@@ -23,9 +23,9 @@ use App\Http\Controllers\UpcomingExpenseController;
 |--------------------------------------------------------------------------
 */
 
-Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:20,1');
 Route::get('/setup/check', [AuthController::class, 'setupCheck']);
-Route::post('/setup/register', [AuthController::class, 'setupRegister'])->middleware('throttle:3,1');
+Route::post('/setup/register', [AuthController::class, 'setupRegister']);
 
 Route::get('version', [AppVersionController::class, 'get'])->middleware(['auth:sanctum', 'token.refresh']);
 
