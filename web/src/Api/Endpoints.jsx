@@ -72,11 +72,10 @@ async function call(method, endpoint, data = null) {
     };
 
     if (method.toLowerCase() === "post" && data) {
-        options.data = data;
-
-        if (data.file) {
-            options.headers["Content-Type"] = "multipart/form-data";
+        if (data instanceof FormData) {
+            options.data = data;
         } else {
+            options.data = data;
             options.headers["Content-Type"] = "application/json";
         }
     }
@@ -373,6 +372,22 @@ const Endpoints = {
         return post('ai/predict-category', {name: text})
     },
 
+    chatMessage: async (message, files = null) => {
+        if (files && files.length > 0) {
+            const formData = new FormData();
+            formData.append('message', message || '');
+            files.forEach((f) => {
+                formData.append('files[]', f.file, f.name);
+            });
+            return post('ai/chat', formData);
+        }
+        return post('ai/chat', { message });
+    },
+
+    clearChatHistory: async () => {
+        return post('ai/clear-history');
+    },
+
     getApiKeys: async () => {
         return get('api-keys');
     },
@@ -403,6 +418,18 @@ const Endpoints = {
 
     deleteUpcomingExpense: async (id) => {
         return del(`upcoming-expenses/${id}`);
+    },
+
+    getAiProviderKeys: async () => {
+        return get('ai-provider-keys');
+    },
+
+    saveAiProviderKey: async (data) => {
+        return post('ai-provider-keys', data);
+    },
+
+    deleteAiProviderKey: async (id) => {
+        return del(`ai-provider-keys/${id}`);
     },
 }
 
