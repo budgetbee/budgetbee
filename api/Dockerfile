@@ -47,8 +47,5 @@ RUN chmod -R 775 storage bootstrap/cache \
 RUN chown www-data:www-data ./entrypoint.sh \
     && chmod +x ./entrypoint.sh
 
-# Change the user to www-data
-USER www-data
-
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader

@@ -14,10 +14,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Copy .env.staging to .env in API folder
-      run: |
-        cp ./api/.env.staging ./api/.env
-
     - name: Build the Docker images
       run: |
         docker build -t ghcr.io/budgetbee/budgetbee/proxy:staging ./docker/nginx
