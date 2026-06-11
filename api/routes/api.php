@@ -11,7 +11,6 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\AiController;
 use App\Http\Controllers\ApiKeyController;
 use App\Http\Controllers\ExternalApiController;
 use App\Http\Controllers\UpcomingExpenseController;
@@ -104,10 +103,6 @@ Route::prefix('budget')->middleware('auth:sanctum')->group(function () {
     Route::delete('{id}', [BudgetController::class, 'delete']);
 });
 
-
-Route::prefix('ai')->middleware('auth:sanctum')->group(function () {
-    Route::post('/predict-category', [AiController::class, 'predictCategoryRequest']);
-});
 
 Route::prefix('api-keys')->middleware('auth:sanctum')->group(function () {
     Route::get('', [ApiKeyController::class, 'index']);
