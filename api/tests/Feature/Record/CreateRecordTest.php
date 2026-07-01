@@ -135,4 +135,33 @@ class CreateRecordTest extends TestCase
         $record->delete();
         $assocRecord->delete();
     }
+
+    /**
+     * Create a transfer record without rate (same-currency accounts)
+     */
+    public function testCreateTransferWithoutRateSuccess(): void
+    {
+        $recordData = Record::factory()->make()->toArray();
+        $recordData['type'] = 'transfer';
+        $recordData['to_account_id'] = Account::whereNot('id', $recordData['from_account_id'])->inRandomOrder()->first()->id;
+        unset($recordData['rate']);
+
+        $response = $this->post('/api/record', $recordData);
+
+        $response->assertStatus(200);
+
+        $id = json_decode($response->getContent())->id;
+        $record = Record::find($id);
+
+        $this->assertEquals(1, $record->rate);
+        $this->assertIsInt($record->link_record_id);
+
+        $assocRecord = Record::find($record->link_record_id);
+
+        $this->assertIsObject($assocRecord);
+        $this->assertEquals($record->id, $assocRecord->link_record_id);
+
+        $record->delete();
+        $assocRecord->delete();
+    }
 }

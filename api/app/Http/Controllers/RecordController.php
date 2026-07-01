@@ -106,8 +106,8 @@ class RecordController extends Controller
         if ($data['type'] === 'transfer') {
             $this->validate($request, [
                 'to_account_id' => 'required',
-                'rate' => 'required'
             ]);
+            $data['rate'] = $data['rate'] ?? 1;
         }
 
         $data['amount'] = abs($data['amount']);
@@ -147,8 +147,8 @@ class RecordController extends Controller
         if ($data['type'] === 'transfer') {
             $this->validate($request, [
                 'to_account_id' => 'required',
-                'rate' => 'required'
             ]);
+            $data['rate'] = $data['rate'] ?? 1;
         }
 
         $data['amount'] = abs($data['amount']);
