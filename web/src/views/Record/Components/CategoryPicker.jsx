@@ -57,9 +57,9 @@ export default function Form({ setOpen, setCategory }) {
         : handleOpen;
 
     return (
-        <div className="absolute flex flex-col w-full h-screen">
+        <div className="fixed inset-0 z-50 bg-[#0a0a0f] flex flex-col overflow-hidden">
             <TopNav leftFunction={backFunction} />
-            <div className="h-full mt-14 bg-gray-900 flex flex-col gap-y-5 text-xl p-5">
+            <div className="flex-1 overflow-y-auto bg-gray-900 flex flex-col gap-y-5 text-xl p-5 mt-14">
                 {categoryList.map((category, index) => {
                     return (
                         <div
