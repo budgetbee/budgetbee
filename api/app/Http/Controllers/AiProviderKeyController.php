@@ -20,7 +20,11 @@ class AiProviderKeyController extends Controller
             return [
                 'id' => $key->id,
                 'provider' => $key->provider,
+                'provider_name' => $key->getProviderDisplayName(),
                 'masked_key' => $key->getMaskedKeyAttribute(),
+                'base_url' => $key->base_url,
+                'model' => $key->model,
+                'supports_vision' => (bool) $key->supports_vision,
                 'updated_at' => $key->updated_at,
             ];
         });
@@ -39,10 +43,35 @@ class AiProviderKeyController extends Controller
         $request->validate([
             'provider' => 'required|string|in:' . implode(',', AiProviderKey::PROVIDERS),
             'api_key' => 'required|string|min:1|max:500',
+            // Custom OpenAI-compatible providers need at least a base URL.
+            'base_url' => [
+                'nullable',
+                'string',
+                'max:500',
+                'required_if:provider,custom',
+                function ($attribute, $value, $fail) {
+                    if ($value !== null && $value !== '') {
+                        $value = rtrim($value, '/');
+                        if (!preg_match('#^https?://#i', $value)) {
+                            $fail('The base URL must start with http:// or https://');
+                        }
+                    }
+                },
+            ],
+            'model' => [
+                'nullable',
+                'string',
+                'max:200',
+                'required_if:provider,custom',
+            ],
+            'supports_vision' => 'nullable|boolean',
         ]);
 
         $provider = $request->input('provider');
         $apiKey = $request->input('api_key');
+        $baseUrl = $request->filled('base_url') ? rtrim($request->input('base_url'), '/') : null;
+        $model = $request->input('model');
+        $supportsVision = $request->boolean('supports_vision');
 
         // Upsert: update if exists, otherwise create
         AiProviderKey::updateOrCreate(
@@ -52,6 +81,9 @@ class AiProviderKeyController extends Controller
             ],
             [
                 'api_key' => $apiKey,
+                'base_url' => $baseUrl,
+                'model' => $model,
+                'supports_vision' => $supportsVision,
             ]
         );
 

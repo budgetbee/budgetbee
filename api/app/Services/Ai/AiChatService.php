@@ -19,6 +19,9 @@ class AiChatService
     private User $user;
     private ?string $provider;
     private ?string $apiKey;
+    private ?string $baseUrl;
+    private ?string $model;
+    private bool $supportsVision = false;
 
     private const HISTORY_CACHE_PREFIX = 'ai_chat_history_';
     private const STATE_CACHE_PREFIX = 'ai_chat_state_';
@@ -32,20 +35,26 @@ class AiChatService
 
     /**
      * Find the user's configured AI provider and API key.
-     * Priority: OpenAI first, then DeepSeek.
+     * Priority: OpenAI first, then DeepSeek, then a custom OpenAI-compatible provider.
      */
     private function resolveProvider(): void
     {
         $key = AiProviderKey::where('user_id', $this->user->id)
-            ->orderByRaw("FIELD(provider, 'openai', 'deepseek')")
+            ->orderByRaw("FIELD(provider, 'openai', 'deepseek', 'custom')")
             ->first();
 
         if ($key) {
             $this->provider = $key->provider;
             $this->apiKey = $key->api_key;
+            $this->baseUrl = $key->base_url;
+            $this->model = $key->model;
+            $this->supportsVision = $key->supportsVision();
         } else {
             $this->provider = null;
             $this->apiKey = null;
+            $this->baseUrl = null;
+            $this->model = null;
+            $this->supportsVision = false;
         }
     }
 
@@ -62,11 +71,7 @@ class AiChatService
      */
     public function getProviderName(): string
     {
-        return match ($this->provider) {
-            'openai' => 'OpenAI',
-            'deepseek' => 'DeepSeek',
-            default => 'Unknown',
-        };
+        return AiProviderKey::PROVIDER_NAMES[$this->provider] ?? 'Unknown';
     }
 
     /**
@@ -76,16 +81,18 @@ class AiChatService
     public function chat(string $message, array $files = []): string
     {
         if (!$this->isConfigured()) {
-            return "I'm not configured yet. Please add an OpenAI or DeepSeek API key in Settings → Main Settings to enable AI features.";
+            return "I'm not configured yet. Please add an OpenAI, DeepSeek or custom OpenAI-compatible API key in Settings → Main Settings to enable AI features.";
         }
 
         // Detect images and determine if vision is needed
         $imageFiles = $this->filterImageFiles($files);
         $hasImages = !empty($imageFiles);
 
-        // Image analysis requires OpenAI (GPT-4o-mini with vision)
-        if ($hasImages && $this->provider !== 'openai') {
-            return "📷 **Image analysis** is only available with **OpenAI**. Please configure an OpenAI API key in Settings → Main Settings to analyze images. DeepSeek does not currently support vision capabilities.";
+        // Image analysis requires a vision-capable provider (OpenAI, or a custom
+        // provider explicitly marked as supporting vision)
+        if ($hasImages && !$this->supportsVision) {
+            $providerName = $this->getProviderName();
+            return "📷 **Image analysis** is only available with a vision-capable model. Your current provider (**{$providerName}**) does not support vision. Please configure a vision-capable model (e.g. OpenAI, or a custom OpenAI-compatible provider with vision enabled) in Settings → Main Settings to analyze images.";
         }
 
         // If no message and no images, prompt the user
@@ -703,11 +710,15 @@ PROMPT;
      */
     private function callProvider(array $messages, bool $includeTools = true): ?array
     {
-        $apiUrl = match ($this->provider) {
-            'openai' => 'https://api.openai.com/v1/chat/completions',
-            'deepseek' => 'https://api.deepseek.com/v1/chat/completions',
-            default => null,
-        };
+        // Resolve the endpoint from the stored config (custom base_url) or the
+        // provider's built-in default.
+        $apiUrl = null;
+        if ($this->baseUrl) {
+            $url = rtrim($this->baseUrl, '/');
+            $apiUrl = str_contains($url, '/chat/completions') ? $url : $url . '/chat/completions';
+        } else {
+            $apiUrl = AiProviderKey::DEFAULT_ENDPOINTS[$this->provider] ?? null;
+        }
 
         if (!$apiUrl) {
             return null;
@@ -725,12 +736,17 @@ PROMPT;
             $payload['tool_choice'] = 'auto';
         }
 
+        // Local/custom providers (Ollama, Open WebUI, vLLM...) may take a long
+        // time to process the context on modest hardware. Give them a generous
+        // timeout; cloud providers (OpenAI/DeepSeek) are fast and keep 60s.
+        $timeout = $this->provider === 'custom' ? 300 : 60;
+
         try {
             $httpResponse = Http::withHeaders([
                 'Authorization' => "Bearer {$this->apiKey}",
                 'Content-Type' => 'application/json',
             ])
-                ->timeout(60)
+                ->timeout($timeout)
                 ->post($apiUrl, $payload);
 
             if ($httpResponse->successful()) {
@@ -755,15 +771,17 @@ PROMPT;
     }
 
     /**
-     * Get the appropriate model name for each provider.
+     * Get the appropriate model name for the configured provider.
+     * Uses the per-provider stored model override when set, otherwise the
+     * provider's built-in default model.
      */
     private function getModelName(): string
     {
-        return match ($this->provider) {
-            'openai' => 'gpt-4o-mini',
-            'deepseek' => 'deepseek-chat',
-            default => 'gpt-4o-mini',
-        };
+        if ($this->model) {
+            return $this->model;
+        }
+
+        return AiProviderKey::DEFAULT_MODELS[$this->provider] ?? '';
     }
 
     /**
