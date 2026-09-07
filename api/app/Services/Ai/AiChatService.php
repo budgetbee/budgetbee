@@ -736,12 +736,17 @@ PROMPT;
             $payload['tool_choice'] = 'auto';
         }
 
+        // Local/custom providers (Ollama, Open WebUI, vLLM...) may take a long
+        // time to process the context on modest hardware. Give them a generous
+        // timeout; cloud providers (OpenAI/DeepSeek) are fast and keep 60s.
+        $timeout = $this->provider === 'custom' ? 300 : 60;
+
         try {
             $httpResponse = Http::withHeaders([
                 'Authorization' => "Bearer {$this->apiKey}",
                 'Content-Type' => 'application/json',
             ])
-                ->timeout(60)
+                ->timeout($timeout)
                 ->post($apiUrl, $payload);
 
             if ($httpResponse->successful()) {
