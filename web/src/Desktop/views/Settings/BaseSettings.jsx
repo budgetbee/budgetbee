@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Endpoints from "../../../Api/Endpoints";
 
+import SettingsLayout from "../../layout/SettingsLayout";
+
 export default function BaseSettings() {
     const [aiKeys, setAiKeys] = useState({});
     const [openaiKey, setOpenaiKey] = useState("");
