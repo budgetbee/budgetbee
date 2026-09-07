@@ -13,19 +13,110 @@ class AiProviderKey extends Model
         'user_id',
         'provider',
         'api_key',
+        'base_url',
+        'model',
+        'supports_vision',
     ];
 
     protected $hidden = [
         'api_key',
     ];
 
+    protected $casts = [
+        'supports_vision' => 'boolean',
+    ];
+
     /**
      * The supported AI providers.
+     * "custom" is a generic OpenAI-compatible provider (Ollama, Open WebUI, vLLM, ...).
      */
     public const PROVIDERS = [
         'openai',
         'deepseek',
+        'custom',
     ];
+
+    /**
+     * Display names for providers.
+     */
+    public const PROVIDER_NAMES = [
+        'openai' => 'OpenAI',
+        'deepseek' => 'DeepSeek',
+        'custom' => 'Custom (OpenAI-compatible)',
+    ];
+
+    /**
+     * Built-in chat completion endpoints per provider.
+     */
+    public const DEFAULT_ENDPOINTS = [
+        'openai' => 'https://api.openai.com/v1/chat/completions',
+        'deepseek' => 'https://api.deepseek.com/v1/chat/completions',
+    ];
+
+    /**
+     * Built-in default models per provider.
+     */
+    public const DEFAULT_MODELS = [
+        'openai' => 'gpt-4o-mini',
+        'deepseek' => 'deepseek-chat',
+        'custom' => '',
+    ];
+
+    /**
+     * Resolve the chat completion endpoint for this provider key.
+     *
+     * A configured base_url may either be a full endpoint (ending in
+     * "/chat/completions") or a base URL — in the latter case the standard
+     * suffix is appended, so users can paste either
+     * "http://localhost:11434/v1" or "https://host/api/chat/completions".
+     */
+    public function getEndpointUrl(): string
+    {
+        if (!empty($this->base_url)) {
+            $url = rtrim($this->base_url, '/');
+            if (!str_contains($url, '/chat/completions')) {
+                $url .= '/chat/completions';
+            }
+            return $url;
+        }
+
+        return self::DEFAULT_ENDPOINTS[$this->provider] ?? '';
+    }
+
+    /**
+     * Resolve the model name for this provider key, falling back to the
+     * provider's built-in default model when none is configured.
+     */
+    public function getModelName(): string
+    {
+        if (!empty($this->model)) {
+            return $this->model;
+        }
+
+        return self::DEFAULT_MODELS[$this->provider] ?? '';
+    }
+
+    /**
+     * Resolve the display name for this provider key.
+     */
+    public function getProviderDisplayName(): string
+    {
+        return self::PROVIDER_NAMES[$this->provider] ?? ucfirst($this->provider ?? 'Unknown');
+    }
+
+    /**
+     * Whether this provider key can analyse images.
+     * OpenAI is vision-capable by default; custom providers must opt in via
+     * the supports_vision flag (the configured model decides).
+     */
+    public function supportsVision(): bool
+    {
+        if ($this->provider === 'openai') {
+            return true;
+        }
+
+        return (bool) $this->supports_vision;
+    }
 
     /**
      * Encrypt the API key before storing it in the database.
