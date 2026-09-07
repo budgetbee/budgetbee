@@ -7,6 +7,7 @@ use App\Http\Controllers\AppVersionController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BalanceController;
 use App\Http\Controllers\BudgetController;
+use App\Http\Controllers\LoanController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\RecordController;
@@ -104,6 +105,16 @@ Route::prefix('budget')->middleware(['auth:sanctum', 'token.refresh'])->group(fu
     Route::post('', [BudgetController::class, 'create']);
     Route::post('{id}', [BudgetController::class, 'update']);
     Route::delete('{id}', [BudgetController::class, 'delete']);
+});
+
+
+Route::prefix('loan')->middleware(['auth:sanctum', 'token.refresh'])->group(function () {
+    Route::get('', [LoanController::class, 'getAll']);
+    Route::get('{id}', [LoanController::class, 'getById']);
+    Route::post('', [LoanController::class, 'create']);
+    Route::post('{id}', [LoanController::class, 'update']);
+    Route::delete('{id}', [LoanController::class, 'delete']);
+    Route::post('{id}/payment', [LoanController::class, 'storePayment']);
 });
 
 

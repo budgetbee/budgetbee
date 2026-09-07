@@ -13,6 +13,9 @@ import CategoryList from "./views/Category/List";
 import Settings from "./views/Settings/Settings";
 import SettingsUserForm from "./views/User/UserForm";
 import UpcomingExpenseDashboard from "./views/UpcomingExpense/Dashboard";
+import LoanList from "./views/Loan/LoanList";
+import LoanForm from "./views/Loan/LoanForm";
+import LoanDetail from "./views/Loan/LoanDetail";
 
 import DashboardDesktop from "./Desktop/views/Dashboard/View";
 import AccountsDesktop from "./Desktop/views/Account/View";
@@ -26,6 +29,9 @@ import SettingsUserFormDesktop from "./Desktop/views/Settings/Components/UserFor
 import CurrencySettingsDesktop from "./Desktop/views/Settings/CurrencySettings";
 import ApiKeySettingsDesktop from "./Desktop/views/Settings/ApiKeySettings";
 import UpcomingExpenseDashboardDesktop from "./Desktop/views/UpcomingExpense/Dashboard";
+import LoanListDesktop from "./Desktop/views/Loan/LoanListDesktop";
+import LoanFormDesktop from "./Desktop/views/Loan/LoanFormDesktop";
+import LoanDetailDesktop from "./Desktop/views/Loan/LoanDetailDesktop";
 import ReportsDashboard from "./views/Reports/View";
 import ReportsDashboardDesktop from "./Desktop/views/Reports/View";
 
@@ -42,6 +48,10 @@ function AppRoutes() {
                 <Route exact path="/register" element={<Register />} />
                 <Route path="/dashboard" element={isMobile ? <Dashboard /> : <DashboardDesktop />} />
                 <Route path="/budget" element={isMobile ? <Budget /> : <BudgetDesktop />} />
+                <Route path="/loans" element={isMobile ? <LoanList /> : <LoanListDesktop />} />
+                <Route path="/loan/create" element={isMobile ? <LoanForm /> : <LoanFormDesktop />} />
+                <Route path="/loan/:loan_id/edit" element={isMobile ? <LoanForm /> : <LoanFormDesktop />} />
+                <Route path="/loan/:loan_id" element={isMobile ? <LoanDetail /> : <LoanDetailDesktop />} />
                 <Route path="/upcoming" element={isMobile ? <UpcomingExpenseDashboard /> : <UpcomingExpenseDashboardDesktop />} />
                 <Route path="/accounts/" element={isMobile ? <AccountList /> : <AccountsDesktop />} />
                 <Route path="/account" element={<AccountForm />} />
