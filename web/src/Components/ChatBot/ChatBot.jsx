@@ -40,7 +40,7 @@ function getFileIcon(file) {
     return isImageFile(file) ? faFileImage : faFile;
 }
 
-export default function ChatBot() {
+export default function ChatBot({ hidden = false }) {
     const [isOpen, setIsOpen] = useState(persistedOpen);
     const [messages, setMessages] = useState(persistedMessages);
     const [input, setInput] = useState("");
@@ -246,15 +246,28 @@ export default function ChatBot() {
         return () => document.removeEventListener("keydown", handleEsc);
     }, [isOpen]);
 
+    // When the page hides the chatbot (form/edit screens), close the panel so
+    // it never reopens unexpectedly when navigating back to a visible page.
+    useEffect(() => {
+        if (hidden && isOpen) {
+            setIsOpen(false);
+        }
+    }, [hidden, isOpen]);
+
     const canSend = (input.trim() || files.length > 0) && !loading;
+
+    if (hidden) {
+        return null;
+    }
 
     return (
         <>
-            {/* Floating toggle button — just above the FloatMenu (+) on mobile */}
+            {/* Floating toggle button — mobile: bottom-left (away from the
+                "+" FloatMenu at bottom-right); desktop: classic bottom-right */}
             {!isOpen && (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="fixed bottom-32 right-[3.2em] sm:bottom-6 sm:right-6 z-50 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
+                    className="fixed bottom-6 left-4 sm:bottom-6 sm:right-6 sm:left-auto z-50 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
                     title="Open AI Chat"
                 >
                     <FontAwesomeIcon icon={faCommentDots} className="text-xl" />
