@@ -18,6 +18,10 @@ RUN apk add --no-cache libpng-dev zlib-dev libzip-dev \
 # Install other extensions
 RUN docker-php-ext-install mysqli pdo_mysql
 
+# Upload limits: match the 10MB cap used by ImportController validation
+# (defaults are 2M upload / 8M post)
+RUN printf 'upload_max_filesize=20M\npost_max_size=20M\n' > /usr/local/etc/php/conf.d/99-uploads.ini
+
 # Install memcached
 ENV MEMCACHED_DEPS zlib-dev libmemcached-dev cyrus-sasl-dev
 RUN apk add --no-cache --update libmemcached-libs zlib
