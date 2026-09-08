@@ -1,5 +1,10 @@
 FROM php:8.2-fpm-alpine3.17
 
+# Release version baked into the image (docker-build.yml passes the tag).
+# Takes precedence over any APP_VERSION left in a persistent .env.
+ARG VERSION=dev
+ENV APP_VERSION=${VERSION}
+
 # Install cron
 RUN apk add --no-cache dcron
 
