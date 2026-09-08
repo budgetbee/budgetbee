@@ -183,12 +183,6 @@ class CategoryController extends Controller
 
     public function update(Request $request, $id)
     {
-        $category = Category::where('user_id', $request->user()->id)->find($id);
-
-        if (!$category) {
-            return response()->json(['message' => 'Category not found'], 404);
-        }
-
         $this->validate($request, [
             'parent_category_id' => 'sometimes|integer|exists:App\Models\ParentCategory,id',
             'name' => 'sometimes|string',
@@ -197,7 +191,14 @@ class CategoryController extends Controller
             'position' => 'sometimes|integer',
         ]);
 
+        $category = Category::find($id);
+
+        if (!$category) {
+            return response()->json(['message' => 'Category not found'], 404);
+        }
+
         $data = $request->only('icon', 'name', 'parent_category_id', 'enabled', 'position');
+        $data['user_id'] = $request->user()->id;
 
         $category->fill(array_filter($data, fn ($value) => $value !== null));
         $category->save();
