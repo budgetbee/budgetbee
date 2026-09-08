@@ -53,9 +53,6 @@ export default function Form() {
         const target = event.target;
         const type = target.getAttribute("data-type");
         setType(type);
-        // The category picker only offers categories coherent with the
-        // record type (income parents for income, expense for expense).
-        setCategory({ id: 0, name: "" });
     };
 
     const handleOpenCategory = () => {
@@ -165,7 +162,6 @@ export default function Form() {
                 <CategoryPicker
                     setOpen={setCategoryPickerOpen}
                     setCategory={setCategory}
-                    type={type}
                 />
             )}
 

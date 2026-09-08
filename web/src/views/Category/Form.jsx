@@ -224,25 +224,35 @@ export default function Form() {
                                     <p className="text-gray-500 text-sm leading-relaxed">
                                         {type === "income" ? (
                                             <>
-                                                Records you add under this
-                                                category count as{" "}
+                                                Income records you add under
+                                                this category count as{" "}
                                                 <span className="text-green-400">
                                                     income
                                                 </span>{" "}
-                                                in the charts, reports and
-                                                balances. Use it for salary,
-                                                sales, refunds, other earnings…
+                                                in charts, reports and
+                                                balances (salary, sales…). You
+                                                can still log an{" "}
+                                                <span className="text-red-400">
+                                                    expense
+                                                </span>{" "}
+                                                here (e.g. a salary they ask
+                                                back) — it will be deducted
+                                                from that income.
                                             </>
                                         ) : (
                                             <>
-                                                Records you add under this
-                                                category count as{" "}
+                                                Expense records you add under
+                                                this category count as{" "}
                                                 <span className="text-red-400">
                                                     expenses
                                                 </span>{" "}
-                                                in the charts, reports and
-                                                balances. This is the default
-                                                for everyday spending.
+                                                in charts, reports and
+                                                balances. You can still log an{" "}
+                                                <span className="text-green-400">
+                                                    income
+                                                </span>{" "}
+                                                here (e.g. a refund) — it will
+                                                be deducted from that expense.
                                             </>
                                         )}
                                     </p>

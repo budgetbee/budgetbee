@@ -3,7 +3,7 @@ import Api from "../../../../Api/Endpoints";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import TopNav from "../../../../layout/TopNav";
 
-export default function Form({ setOpen, setCategory, type }) {
+export default function Form({ setOpen, setCategory }) {
     const [parentCategories, setParentCategories] = useState(null);
     const [categories, setCategories] = useState(null);
     const [parentCategory, setParentCategory] = useState(null);
@@ -11,16 +11,13 @@ export default function Form({ setOpen, setCategory, type }) {
     useEffect(() => {
         async function getParentCategories() {
             const data = await Api.getParentCategories();
-            setParentCategories(
-                data.filter(
-                    (p) =>
-                        p.enabled !== false &&
-                        (!type || p.type === undefined || p.type === type)
-                )
-            );
+            // All categories are offered for any record type: the user can
+            // tag an income to an expense category (refund → reduces that
+            // expense) or an expense to an income category (reduces income).
+            setParentCategories(data.filter((p) => p.enabled !== false));
         }
         getParentCategories();
-    }, [type]);
+    }, []);
 
     useEffect(() => {
         if (parentCategory !== null) {

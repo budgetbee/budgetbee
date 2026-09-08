@@ -207,7 +207,7 @@ export default function List() {
                 type="button"
                 disabled={disabled}
                 onClick={() => onChange("expense")}
-                title="Expense category: records count as expenses in charts and reports"
+                title="Expense category: expenses appear in the expense charts. An income logged here (e.g. a refund) is deducted from that expense."
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${
                     type === "expense"
                         ? "bg-red-500/20 text-red-400 border-red-500/30"
@@ -220,7 +220,7 @@ export default function List() {
                 type="button"
                 disabled={disabled}
                 onClick={() => onChange("income")}
-                title="Income category: records count as income in charts and reports (salary, sales, refunds...)"
+                title="Income category: incomes appear in the income charts. An expense logged here (e.g. a salary paid back) is deducted from that income."
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${
                     type === "income"
                         ? "bg-green-500/20 text-green-400 border-green-500/30"
