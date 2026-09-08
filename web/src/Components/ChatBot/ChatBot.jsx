@@ -13,6 +13,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import Endpoints from "../../Api/Endpoints";
 import MarkdownRenderer from "./MarkdownRenderer";
+import { OPEN_AI_CHAT_EVENT } from "../../layout/BottomMenu";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
@@ -40,7 +41,7 @@ function getFileIcon(file) {
     return isImageFile(file) ? faFileImage : faFile;
 }
 
-export default function ChatBot() {
+export default function ChatBot({ hidden = false }) {
     const [isOpen, setIsOpen] = useState(persistedOpen);
     const [messages, setMessages] = useState(persistedMessages);
     const [input, setInput] = useState("");
@@ -246,30 +247,53 @@ export default function ChatBot() {
         return () => document.removeEventListener("keydown", handleEsc);
     }, [isOpen]);
 
+    // When the page hides the chatbot (form/edit screens), close the panel so
+    // it never reopens unexpectedly when navigating back to a visible page.
+    useEffect(() => {
+        if (hidden && isOpen) {
+            setIsOpen(false);
+        }
+    }, [hidden, isOpen]);
+
+    // Open the chat from the mobile bottom menu (BottomMenu dispatches this).
+    useEffect(() => {
+        const openFromMenu = () => setIsOpen(true);
+        window.addEventListener(OPEN_AI_CHAT_EVENT, openFromMenu);
+        return () => window.removeEventListener(OPEN_AI_CHAT_EVENT, openFromMenu);
+    }, []);
+
     const canSend = (input.trim() || files.length > 0) && !loading;
+
+    if (hidden) {
+        return null;
+    }
 
     return (
         <>
-            {/* Floating toggle button — just above the FloatMenu (+) on mobile */}
+            {/* Floating toggle button — desktop only: on mobile the chat entry
+                lives in the BottomMenu pill. Classic bottom-right corner. */}
             {!isOpen && (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="fixed bottom-32 right-[3.2em] sm:bottom-6 sm:right-6 z-50 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
+                    className="hidden sm:flex fixed bottom-6 right-6 z-50 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg items-center justify-center transition-all duration-200 hover:scale-110"
                     title="Open AI Chat"
                 >
                     <FontAwesomeIcon icon={faCommentDots} className="text-xl" />
                 </button>
             )}
 
-            {/* Modal overlay + centered chat panel — responsive on mobile */}
+            {/* Modal overlay + centered chat panel — responsive on mobile.
+                On mobile the panel fills the dynamic viewport (100dvh) so it
+                never sits under the browser/status bars, and the safe-area
+                padding keeps the header buttons visible below the notch. */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4"
+                    className="fixed inset-0 z-50 flex items-stretch sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4"
                     onClick={handleOverlayClick}
                 >
                     <div
                         ref={chatPanelRef}
-                        className="w-full sm:w-[700px] h-[85vh] sm:h-[600px] max-h-[90vh] bg-gray-800 rounded-t-xl sm:rounded-xl shadow-2xl flex flex-col border border-gray-600 overflow-hidden"
+                        className="w-full h-[100dvh] sm:w-[700px] sm:h-[600px] sm:max-h-[90vh] bg-gray-800 rounded-none sm:rounded-xl shadow-2xl flex flex-col border-0 sm:border border-gray-600 overflow-hidden pt-[env(safe-area-inset-top)] sm:pt-0"
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3 bg-gray-700 border-b border-gray-600 rounded-t-xl">
@@ -398,7 +422,7 @@ export default function ChatBot() {
                     )}
 
                     {/* Input */}
-                    <div className="px-2 sm:px-4 py-2 sm:py-3 bg-gray-700 border-t border-gray-600">
+                    <div className="px-2 sm:px-4 py-2 sm:py-3 bg-gray-700 border-t border-gray-600 pb-[max(env(safe-area-inset-bottom),0.5rem)] sm:pb-3">
                         <div className="hidden sm:flex gap-2 items-center text-xs text-gray-400 mb-1.5">
                             <span>Ctrl+V to paste images</span>
                         </div>
