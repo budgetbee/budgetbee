@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import Api from "../../Api/Endpoints";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faCheck } from "@fortawesome/free-solid-svg-icons";
@@ -10,29 +10,55 @@ export default function Form() {
     const [category, setCategory] = useState(null);
     const [parentCategories, setParentCategories] = useState(null);
     const [icon, setIcon] = useState("");
+    const [color, setColor] = useState("#1F839F");
 
-    const { category_id } = useParams();
+    const { category_id, parent_id } = useParams();
+    const location = useLocation();
+    // /category-parent(/:id) manages a parent category; /category(/:id) a subcategory
+    const isParentMode = location.pathname.includes("category-parent");
+    const editId = isParentMode ? parent_id : category_id;
 
     useEffect(() => {
         async function getData() {
-            const parentCategories = await Api.getParentCategories();
-            setParentCategories(parentCategories);
-            if (category_id !== undefined) {
-                const category = await Api.getCategory(category_id);
-                setCategory(category);
-                setIcon(category.icon || "");
+            if (isParentMode) {
+                if (editId !== undefined) {
+                    const parent = await Api.getParentCategoryById(editId);
+                    if (parent) {
+                        setCategory(parent);
+                        setIcon(parent.icon || "");
+                        setColor(parent.color || "#1F839F");
+                    }
+                }
+            } else {
+                const parentCategories = await Api.getParentCategories();
+                setParentCategories(parentCategories);
+                if (editId !== undefined) {
+                    const category = await Api.getCategory(editId);
+                    setCategory(category);
+                    setIcon(category.icon || "");
+                }
             }
             setIsLoading(false);
         }
         getData();
-    }, [category_id]);
+    }, [editId, isParentMode]);
 
     const handleSaveForm = async (e) => {
         e.preventDefault();
-        const formData = new FormData(e.target);
-        const formObject = Object.fromEntries(formData.entries());
-        formObject.icon = icon;
-        await Api.createOrUpdateCategory(formObject, category_id);
+
+        if (isParentMode) {
+            const data = { name: e.target.name.value, icon, color };
+            if (editId !== undefined) {
+                await Api.updateParentCategory(data, editId);
+            } else {
+                await Api.createParentCategory(data);
+            }
+        } else {
+            const formData = new FormData(e.target);
+            const formObject = Object.fromEntries(formData.entries());
+            formObject.icon = icon;
+            await Api.createOrUpdateCategory(formObject, editId);
+        }
         window.location = "/category/list/";
     };
 
@@ -82,34 +108,38 @@ export default function Form() {
                         ></input>
                     </div>
 
-                    <div className="mb-6">
-                        <label
-                            htmlFor="type_id"
-                            className="block mb-2 text-sm font-medium text-gray-900 text-white"
-                        >
-                            Parent category
-                        </label>
-                        <select
-                            name="parent_category_id"
-                            id="parent_category_id"
-                            className="block w-full px-4 py-4 text-base text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-                            defaultValue={
-                                category && category.parent_category_id
-                            }
-                        >
-                            {parentCategories.map((parentCategory, index) => {
-                                return (
-                                    <option
-                                        key={index}
-                                        className="text-black"
-                                        value={parentCategory.id}
-                                    >
-                                        {parentCategory.name}
-                                    </option>
-                                );
-                            })}
-                        </select>
-                    </div>
+                    {!isParentMode && (
+                        <div className="mb-6">
+                            <label
+                                htmlFor="parent_category_id"
+                                className="block mb-2 text-sm font-medium text-gray-900 text-white"
+                            >
+                                Parent category
+                            </label>
+                            <select
+                                name="parent_category_id"
+                                id="parent_category_id"
+                                className="block w-full px-4 py-4 text-base text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
+                                defaultValue={
+                                    category && category.parent_category_id
+                                }
+                            >
+                                {parentCategories.map(
+                                    (parentCategory, index) => {
+                                        return (
+                                            <option
+                                                key={index}
+                                                className="text-black"
+                                                value={parentCategory.id}
+                                            >
+                                                {parentCategory.name}
+                                            </option>
+                                        );
+                                    }
+                                )}
+                            </select>
+                        </div>
+                    )}
 
                     <div className="mb-6">
                         <label
@@ -135,6 +165,30 @@ export default function Form() {
                             </div>
                         </div>
                     </div>
+
+                    {isParentMode && (
+                        <div className="mb-6">
+                            <label
+                                htmlFor="color"
+                                className="block mb-2 text-sm font-medium text-gray-900 text-white"
+                            >
+                                Color
+                            </label>
+                            <div className="flex flex-row gap-x-5 items-center">
+                                <input
+                                    type="color"
+                                    name="color"
+                                    id="color"
+                                    value={color}
+                                    onChange={(e) => setColor(e.target.value)}
+                                    className="w-20 h-14 cursor-pointer rounded-lg border border-gray-300 bg-gray-50 p-1"
+                                />
+                                <span className="text-gray-500 text-sm">
+                                    {color}
+                                </span>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </form>
         </div>

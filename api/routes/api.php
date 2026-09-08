@@ -78,6 +78,10 @@ Route::prefix('category')->middleware(['auth:sanctum', 'token.refresh'])->group(
     Route::get('{id}', [CategoryController::class, 'getById']);
     Route::get('by-parent/{id}', [CategoryController::class, 'getByParentId']);
     Route::get('parent/{id}', [CategoryController::class, 'getParentById']);
+    Route::post('reorder-parents', [CategoryController::class, 'reorderParents']);
+    Route::post('reorder', [CategoryController::class, 'reorder']);
+    Route::post('parent', [CategoryController::class, 'createParent']);
+    Route::post('parent/{id}', [CategoryController::class, 'updateParent']);
     Route::post('', [CategoryController::class, 'create']);
     Route::post('{id}', [CategoryController::class, 'update']);
 });

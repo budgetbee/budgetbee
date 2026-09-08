@@ -11,7 +11,7 @@ export default function Form({ setOpen, setCategory }) {
     useEffect(() => {
         async function getParentCategories() {
             const data = await Api.getParentCategories();
-            setParentCategories(data);
+            setParentCategories(data.filter((p) => p.enabled !== false));
         }
         getParentCategories();
     }, []);
@@ -20,7 +20,7 @@ export default function Form({ setOpen, setCategory }) {
         if (parentCategory !== null) {
             async function getCategoriesByParent() {
                 const data = await Api.getCategoriesByParent(parentCategory);
-                setCategories(data);
+                setCategories(data.filter((c) => c.enabled !== false));
             }
             getCategoriesByParent();
         }

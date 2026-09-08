@@ -12,7 +12,11 @@ class Category extends Model
      * @var string[]
      */
     protected $fillable = [
-        'id', 'user_id', 'name', 'icon', 'parent_category_id'
+        'id', 'user_id', 'name', 'icon', 'parent_category_id', 'enabled', 'position'
+    ];
+
+    protected $casts = [
+        'enabled' => 'boolean',
     ];
 
     protected $appends = ['color', 'parent_name'];

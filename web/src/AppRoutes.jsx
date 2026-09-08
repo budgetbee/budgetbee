@@ -60,6 +60,7 @@ function AppRoutes() {
                 <Route path="/record/list/:account_id?" element={isMobile ? <RecordList /> : <RecordListDesktop />} />
                 <Route path="/record/:record_id" element={isMobile ? <RecordForm /> : <RecordFormDesktop />} />
                 <Route path="/category" element={isMobile ? <CategoryForm /> : <CategoryListDesktop />} />
+                <Route path="/category-parent/:parent_id?" element={isMobile ? <CategoryForm /> : <CategoryListDesktop />} />
                 <Route path="/category/list/:parent_id?" element={isMobile ? <CategoryList /> : <CategoryListDesktop />} />
                 <Route path="/category/:category_id" element={isMobile ? <CategoryForm /> : <CategoryListDesktop />} />
                 <Route path="/settings" element={isMobile ? <Settings /> : <BaseSettings />} />
