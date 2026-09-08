@@ -17,6 +17,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import Api from "../Api/Endpoints";
+import ReactMarkdown from "react-markdown";
 
 export default function LeftSidebarMenu({ open, setOpen, activePage }) {
     const menuRef = useRef();
@@ -146,8 +147,32 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
                 <div className="py-2 text-xl font-semibold border-b border-gray-700">
                     Release {releaseInfo?.name || appVersion}
                 </div>
-                <div className="py-3 overflow-auto whitespace-pre-wrap text-sm break-words">
-                    {releaseError || releaseInfo?.body || "No release notes."}
+                <div className="py-3 overflow-auto flex-1 text-sm">
+                    {releaseError ? (
+                        releaseError
+                    ) : (
+                        <ReactMarkdown
+                            components={{
+                                a: ({ node, ...props }) => (
+                                    <a
+                                        {...props}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="text-blue-400 underline"
+                                    />
+                                ),
+                                img: ({ node, ...props }) => (
+                                    <img
+                                        {...props}
+                                        className="max-w-full rounded my-2"
+                                        alt=""
+                                    />
+                                ),
+                            }}
+                        >
+                            {releaseInfo?.body || "No release notes."}
+                        </ReactMarkdown>
+                    )}
                 </div>
                 <div className="flex gap-2 py-2">
                     <a
@@ -204,7 +229,11 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
     const linkArray = Object.entries(links);
 
     return (
-        <div className={`fixed z-40 inset-0 flex ${open ? "" : "w-0"}`}>
+        <div
+            className={`fixed z-40 inset-0 flex overflow-hidden ${
+                open ? "" : "w-0"
+            }`}
+        >
             {showVersionModal && newVersionModal}
             {releaseModal}
             {/* Overlay */}
@@ -223,8 +252,8 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
                 } w-64`}
                 style={{ zIndex: open ? 1 : -1 }}
             >
-                {/* Sidebar Header */}
-                <div className="flex items-center justify-between p-4 bg-gray-900">
+                {/* Sidebar Header — fixed top */}
+                <div className="flex items-center justify-between p-4 bg-gray-900 shrink-0">
                     <h1 className="text-white text-xl font-semibold">
                         {userName}
                     </h1>
@@ -236,8 +265,8 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
                     </button>
                 </div>
 
-                {/* Menu Options */}
-                <nav className="py-4 text-white text-md">
+                {/* Menu Options — scrollable middle section */}
+                <nav className="flex-1 overflow-y-auto min-h-0 py-4 text-white text-md">
                     <ul>
                         {linkArray.map(([key, link]) => {
                             const activeClass =
@@ -260,7 +289,8 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
                         })}
                     </ul>
                 </nav>
-                <div className="flex flex-col gap-y-2 px-7 py-4 text-white absolute bottom-5 w-full">
+                {/* Footer — always visible, below the scrolling links */}
+                <div className="flex flex-col gap-y-2 px-7 py-4 text-white border-t border-gray-800 shrink-0">
                     <div className="flex gap-x-4">
                         <a
                             className="flex items-center gap-x-2 hover:text-pink-400"
