@@ -230,7 +230,7 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
 
     return (
         <div
-            className={`fixed z-40 inset-0 flex overflow-hidden ${
+            className={`fixed z-[60] inset-0 flex overflow-hidden ${
                 open ? "" : "w-0"
             }`}
         >
