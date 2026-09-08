@@ -115,6 +115,7 @@ Route::prefix('loan')->middleware(['auth:sanctum', 'token.refresh'])->group(func
     Route::post('{id}', [LoanController::class, 'update']);
     Route::delete('{id}', [LoanController::class, 'delete']);
     Route::post('{id}/payment', [LoanController::class, 'storePayment']);
+    Route::post('{id}/attach-record', [LoanController::class, 'attachRecord']);
 });
 
 

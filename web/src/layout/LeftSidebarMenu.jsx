@@ -11,7 +11,9 @@ import {
     faCalendarDays,
     faChartPie,
     faList,
-    faHandHoldingDollar
+    faHandHoldingDollar,
+    faHeart,
+    faBug
 } from "@fortawesome/free-solid-svg-icons";
 
 import Api from "../Api/Endpoints";
@@ -22,6 +24,29 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
     const [appVersion, setAppVersion] = useState("");
     const [appLatestVersion, setAppLatestVersion] = useState("");
     const [showVersionModal, setShowVersionModal] = useState(false);
+    const [showReleaseModal, setShowReleaseModal] = useState(false);
+    const [releaseInfo, setReleaseInfo] = useState(null);
+    const [releaseError, setReleaseError] = useState("");
+
+    const fetchReleaseInfo = async (version) => {
+        const tag = version?.startsWith("v") ? version : `v${version}`;
+        setReleaseError("");
+        setReleaseInfo(null);
+        try {
+            const res = await fetch(
+                `https://api.github.com/repos/budgetbee/budgetbee/releases/tags/${tag}`
+            );
+            if (!res.ok) {
+                setReleaseError("No release found for this version.");
+                return;
+            }
+            const data = await res.json();
+            setReleaseInfo({ name: data.name || tag, body: data.body || "" });
+        } catch (e) {
+            setReleaseError("Could not load the release notes.");
+        }
+        setShowReleaseModal(true);
+    };
 
     
     useEffect(() => {
@@ -115,6 +140,36 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
         await Api.userLogout();
     };
 
+    const releaseModal = showReleaseModal && (
+        <div className="fixed inset-0 flex flex-col items-center justify-center bg-black/50 z-50">
+            <div className="flex flex-col px-5 py-4 w-11/12 max-h-[80vh] bg-gray-900 text-white rounded">
+                <div className="py-2 text-xl font-semibold border-b border-gray-700">
+                    Release {releaseInfo?.name || appVersion}
+                </div>
+                <div className="py-3 overflow-auto whitespace-pre-wrap text-sm break-words">
+                    {releaseError || releaseInfo?.body || "No release notes."}
+                </div>
+                <div className="flex gap-2 py-2">
+                    <a
+                        className="text-white bg-indigo-700 hover:bg-indigo-600 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                        target="_blank"
+                        rel="noreferrer"
+                        href="https://github.com/budgetbee/budgetbee/releases"
+                    >
+                        View all versions
+                    </a>
+                    <button
+                        type="button"
+                        onClick={() => setShowReleaseModal(false)}
+                        className="text-white bg-gray-700 hover:bg-gray-600 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                    >
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+
     const handleCloseVersionModal = async () => {
         setShowVersionModal(false);
     };
@@ -151,6 +206,7 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
     return (
         <div className={`fixed z-40 inset-0 flex ${open ? "" : "w-0"}`}>
             {showVersionModal && newVersionModal}
+            {releaseModal}
             {/* Overlay */}
             {open && (
                 <div
@@ -205,6 +261,26 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
                     </ul>
                 </nav>
                 <div className="flex flex-col gap-y-2 px-7 py-4 text-white absolute bottom-5 w-full">
+                    <div className="flex gap-x-4">
+                        <a
+                            className="flex items-center gap-x-2 hover:text-pink-400"
+                            href="https://github.com/sponsors/Pelukosa"
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            <FontAwesomeIcon icon={faHeart} />
+                            <span>Support</span>
+                        </a>
+                        <a
+                            className="flex items-center gap-x-2 hover:text-yellow-400"
+                            href="https://github.com/budgetbee/budgetbee/issues/new"
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            <FontAwesomeIcon icon={faBug} />
+                            <span>Feedback</span>
+                        </a>
+                    </div>
                     <button
                         className="flex items-center gap-x-2"
                         onClick={handleLogout}
@@ -212,9 +288,14 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
                         <FontAwesomeIcon icon="fa-solid fa-arrow-right-from-bracket" />
                         <span>Logout</span>
                     </button>
-                    <small className="text-gray-300">
+                    <button
+                        type="button"
+                        onClick={() => fetchReleaseInfo(appVersion)}
+                        className="text-left text-gray-300 underline decoration-dotted underline-offset-4 hover:text-white"
+                        title="View release notes"
+                    >
                         Version: {appVersion}
-                    </small>
+                    </button>
                 </div>
             </div>
         </div>

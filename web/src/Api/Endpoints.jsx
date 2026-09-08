@@ -455,6 +455,10 @@ const Endpoints = {
     addLoanPayment: async (data, id) => {
         return post(`loan/${id}/payment`, data);
     },
+
+    attachRecordToLoan: async (record_id, id) => {
+        return post(`loan/${id}/attach-record`, { record_id });
+    },
 }
 
 export default Endpoints;

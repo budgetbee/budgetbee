@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Api from "../../../Api/Endpoints";
 import Layout from "../../layout/Layout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faPen, faTrash, faLink, faSearch } from "@fortawesome/free-solid-svg-icons";
 import numeral from "numeral";
 
 export default function LoanDetailDesktop() {
@@ -18,6 +18,42 @@ export default function LoanDetailDesktop() {
         new Date().toISOString().split("T")[0]
     );
     const [error, setError] = useState(null);
+    const [showAttachModal, setShowAttachModal] = useState(false);
+    const [attachSearch, setAttachSearch] = useState("");
+    const [attachResults, setAttachResults] = useState([]);
+    const [attachLoading, setAttachLoading] = useState(false);
+    const [attachMsg, setAttachMsg] = useState(null);
+
+    const searchRecords = async (term) => {
+        if (!loan) return;
+        const expectedType = loan.direction === "owed" ? "expense" : "income";
+        setAttachLoading(true);
+        const response = await Api.getPaginateRecords(0, 1, {
+            search_term: term,
+            type: expectedType,
+        });
+        setAttachLoading(false);
+        if (Array.isArray(response)) {
+            setAttachResults(response);
+        } else {
+            setAttachResults([]);
+        }
+    };
+
+    const handleAttachRecord = async (recordId) => {
+        setAttachMsg(null);
+        const response = await Api.attachRecordToLoan(recordId, loan_id);
+        if (response?.error || (response && !response.message)) {
+            const errs = response?.errors || {};
+            const first = Object.values(errs)[0];
+            setAttachMsg(first?.[0] || "Could not assign the record.");
+            return;
+        }
+        setShowAttachModal(false);
+        setAttachSearch("");
+        setAttachResults([]);
+        await loadLoan();
+    };
 
     async function loadLoan() {
         const response = await Api.getLoan(loan_id);
@@ -154,12 +190,24 @@ export default function LoanDetailDesktop() {
                 <div className="flex flex-row items-center justify-between mb-4">
                     <h2 className="text-xl font-bold">Payments</h2>
                     {!showPaymentForm && Number(loan.remaining) > 0 && (
-                        <button
-                            onClick={() => setShowPaymentForm(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"
-                        >
-                            <FontAwesomeIcon icon={faPlus} /> Register payment
-                        </button>
+                        <div className="flex flex-row gap-2">
+                            <button
+                                onClick={() => {
+                                    setShowAttachModal(true);
+                                    setAttachMsg(null);
+                                    searchRecords("");
+                                }}
+                                className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium"
+                            >
+                                <FontAwesomeIcon icon={faLink} /> Assign record
+                            </button>
+                            <button
+                                onClick={() => setShowPaymentForm(true)}
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"
+                            >
+                                <FontAwesomeIcon icon={faPlus} /> Register payment
+                            </button>
+                        </div>
                     )}
                 </div>
 
@@ -224,6 +272,90 @@ export default function LoanDetailDesktop() {
                     </div>
                 )}
             </div>
+
+            {showAttachModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+                    <div className="w-full max-w-xl bg-background border border-gray-700 rounded-xl p-5 max-h-[80vh] flex flex-col">
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-xl font-bold">
+                                Assign an existing record
+                            </h3>
+                            <button
+                                onClick={() => setShowAttachModal(false)}
+                                className="text-gray-400 hover:text-white px-2"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                        <div className="flex items-center gap-2 bg-background border border-gray-700 rounded-lg px-3 mb-3">
+                            <FontAwesomeIcon
+                                icon={faSearch}
+                                className="text-gray-500"
+                            />
+                            <input
+                                type="text"
+                                value={attachSearch}
+                                onChange={(e) => {
+                                    setAttachSearch(e.target.value);
+                                    searchRecords(e.target.value);
+                                }}
+                                placeholder={`Search ${
+                                    loan.direction === "owed"
+                                        ? "expenses"
+                                        : "incomes"
+                                }...`}
+                                className="w-full bg-transparent py-3 text-white placeholder-gray-600 focus:outline-none"
+                            />
+                        </div>
+                        {attachMsg && (
+                            <div className="bg-red-800 text-red-100 p-3 rounded-lg mb-3 text-sm">
+                                {attachMsg}
+                            </div>
+                        )}
+                        <div className="overflow-y-auto flex-1">
+                            {attachLoading ? (
+                                <div className="text-center text-gray-500 text-sm py-6">
+                                    Searching...
+                                </div>
+                            ) : attachResults.length === 0 ? (
+                                <div className="text-center text-gray-500 text-sm py-6">
+                                    No records found.
+                                </div>
+                            ) : (
+                                attachResults.map((record) => (
+                                    <button
+                                        key={record.id}
+                                        onClick={() =>
+                                            handleAttachRecord(record.id)
+                                        }
+                                        className="w-full flex flex-row items-center justify-between bg-background border border-gray-700 rounded-lg px-4 py-3 mb-2 hover:border-blue-500 text-left"
+                                    >
+                                        <div className="min-w-0">
+                                            <div className="text-white font-medium truncate">
+                                                {record.name || "(no name)"}
+                                            </div>
+                                            <div className="text-sm text-gray-500">
+                                                {record.date
+                                                    ? String(
+                                                          record.date
+                                                      ).slice(0, 10)
+                                                    : ""}{" "}
+                                                · {record.category_name || ""}
+                                            </div>
+                                        </div>
+                                        <span className="text-white font-semibold ml-3">
+                                            {numeral(
+                                                Math.abs(record.amount)
+                                            ).format("0,0.00")}
+                                            €
+                                        </span>
+                                    </button>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </Layout>
     );
 }
