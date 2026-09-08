@@ -118,7 +118,16 @@ export default function FormModal({ isOpen, onOpenChange, record_id, recordData,
     useEffect(() => {
         async function getCategories() {
             const data = await fetchCategoriesByParentOnce(parentCategory);
-            setCategories(data);
+            // Disabled subcategories are hidden when picking a category for
+            // a record, except the one already assigned to the record being
+            // edited (its name/icon must keep showing).
+            setCategories(
+                data.filter(
+                    (c) =>
+                        c.enabled !== false ||
+                        (category && Number(c.id) === Number(category))
+                )
+            );
         }
         if (parentCategory) {
             getCategories();
@@ -188,6 +197,14 @@ export default function FormModal({ isOpen, onOpenChange, record_id, recordData,
     const selectedAccount = accounts.find(a => a.id === Number(fromAccount));
     const selectedToAccount = accounts.find(a => a.id === Number(toAccount));
     const selectedParentCategory = parentCategories.find(pc => pc.id === Number(parentCategory));
+
+    // Disabled parents are hidden when picking a category for a record,
+    // except the one already assigned to the record being edited.
+    const visibleParentCategories = parentCategories.filter(
+        (p) =>
+            p.enabled !== false ||
+            (parentCategory && Number(p.id) === Number(parentCategory))
+    );
     const selectedCategory = categories.find(c => c.id === Number(category));
 
     const fromCurrency = selectedAccount?.currency_code;
@@ -414,7 +431,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, recordData,
                                                 placeholder="Parent"
                                                 name="parent_category_id"
                                                 size="sm"
-                                                items={parentCategories}
+                                                items={visibleParentCategories}
                                                 selectionMode="single"
                                                 selectedKeys={parentCategory ? [parentCategory.toString()] : []}
                                                 onChange={e => setParentCategory(e.target.value)}
