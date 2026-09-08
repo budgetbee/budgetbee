@@ -268,4 +268,88 @@ class LoanController extends Controller
             'record_id' => $record->id,
         ]);
     }
+
+    /**
+     * Assign an existing record to a loan, so money already tracked in an
+     * account counts as a loan payment without duplicating the record.
+     *
+     * The record must belong to the user and match the loan direction
+     * (expense for "owed" loans — money you paid out; income for
+     * "receivable" ones — money you received). A record can only back a
+     * single payment.
+     */
+    public function attachRecord(Request $request, $id)
+    {
+        if (!is_numeric($id)) {
+            return response()->json(['errors' => 'The loan id is not correct'], 400);
+        }
+
+        $loan = Loan::where('user_id', auth()->user()->id)->find($id);
+
+        if (!$loan) {
+            return response()->json(['message' => 'Loan not found'], 400);
+        }
+
+        try {
+            Validator::make($request->all(), [
+                'record_id' => 'required|integer',
+            ], [
+                'record_id.required' => 'The record is required',
+                'record_id.integer' => 'The record is not valid',
+            ])->validate();
+        } catch (ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 400);
+        }
+
+        $record = Record::where('user_id', auth()->id())->find($request->input('record_id'));
+
+        if (!$record) {
+            return response()->json(['errors' => ['record_id' => ['The record does not exist']]], 400);
+        }
+
+        $expectedType = $loan->direction === 'owed' ? 'expense' : 'income';
+        if ($record->type !== $expectedType) {
+            return response()->json([
+                'errors' => ['record_id' => [
+                    'This record is an ' . $record->type . ' but this loan (' . $loan->direction_label . ') tracks ' . $expectedType . ' payments.'
+                ]],
+            ], 400);
+        }
+
+        if (LoanPayment::where('record_id', $record->id)->exists()) {
+            return response()->json([
+                'errors' => ['record_id' => ['This record is already assigned to a loan payment']],
+            ], 400);
+        }
+
+        $amount = round(abs((float) $record->amount), 2);
+        $remaining = round((float) $loan->total_amount - (float) $loan->total_paid, 2);
+        if ($amount > $remaining) {
+            return response()->json([
+                'errors' => ['record_id' => ['The record amount exceeds the remaining balance of ' . number_format($remaining, 2) . '.']],
+            ], 400);
+        }
+
+        try {
+            $payment = DB::transaction(function () use ($loan, $record, $amount) {
+                $payment = new LoanPayment();
+                $payment->fill([
+                    'loan_id' => $loan->id,
+                    'record_id' => $record->id,
+                    'amount' => $amount,
+                    'payment_date' => substr((string) $record->date, 0, 10),
+                ]);
+                $payment->save();
+
+                return $payment;
+            });
+        } catch (\Exception $e) {
+            return response()->json(['errors' => ['record_id' => ['Could not assign the record: ' . $e->getMessage()]]], 500);
+        }
+
+        return response()->json([
+            'message' => 'Record has been assigned to the loan successfully',
+            'payment_id' => $payment->id,
+        ]);
+    }
 }

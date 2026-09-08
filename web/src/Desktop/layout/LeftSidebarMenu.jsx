@@ -11,9 +11,12 @@ import {
     faCalendarDays,
     faChartPie,
     faList,
-    faHandHoldingDollar
+    faHandHoldingDollar,
+    faHeart,
+    faBug
 } from "@fortawesome/free-solid-svg-icons";
 import Api from "../../Api/Endpoints";
+import ReactMarkdown from "react-markdown";
 import RecordModalButton from "../Components/Record/RecordModalButton";
 import ImportModal from "../Components/Import/ImportModal";
 import logo from "../../assets/images/logo_color_1.svg";
@@ -22,6 +25,29 @@ export default function LeftSidebarMenu({ onRecordChange }) {
     const [appVersion, setAppVersion] = useState("");
     const [appLatestVersion, setAppLatestVersion] = useState("");
     const [showVersionModal, setShowVersionModal] = useState(false);
+    const [showReleaseModal, setShowReleaseModal] = useState(false);
+    const [releaseInfo, setReleaseInfo] = useState(null);
+    const [releaseError, setReleaseError] = useState("");
+
+    const fetchReleaseInfo = async (version) => {
+        const tag = version?.startsWith("v") ? version : `v${version}`;
+        setReleaseError("");
+        setReleaseInfo(null);
+        try {
+            const res = await fetch(
+                `https://api.github.com/repos/budgetbee/budgetbee/releases/tags/${tag}`
+            );
+            if (!res.ok) {
+                setReleaseError("No release found for this version.");
+                return;
+            }
+            const data = await res.json();
+            setReleaseInfo({ name: data.name || tag, body: data.body || "" });
+        } catch (e) {
+            setReleaseError("Could not load the release notes.");
+        }
+        setShowReleaseModal(true);
+    };
 
     
     const currentPath = window.location.pathname;
@@ -121,6 +147,60 @@ export default function LeftSidebarMenu({ onRecordChange }) {
         setShowVersionModal(false);
     };
 
+    const releaseModal = showReleaseModal && (
+        <div className="fixed z-50 inset-0 flex flex-col items-center justify-center bg-black/50">
+            <div className="flex flex-col px-5 py-4 w-1/2 max-h-[80vh] bg-gray-900 text-white rounded">
+                <div className="py-2 text-xl font-semibold border-b border-gray-700">
+                    Release {releaseInfo?.name || appVersion}
+                </div>
+                <div className="py-3 overflow-auto flex-1 text-sm">
+                    {releaseError ? (
+                        releaseError
+                    ) : (
+                        <ReactMarkdown
+                            components={{
+                                a: ({ node, ...props }) => (
+                                    <a
+                                        {...props}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="text-blue-400 underline"
+                                    />
+                                ),
+                                img: ({ node, ...props }) => (
+                                    <img
+                                        {...props}
+                                        className="max-w-full rounded my-2"
+                                        alt=""
+                                    />
+                                ),
+                            }}
+                        >
+                            {releaseInfo?.body || "No release notes."}
+                        </ReactMarkdown>
+                    )}
+                </div>
+                <div className="flex gap-2 py-2">
+                    <a
+                        className="text-white bg-indigo-700 hover:bg-indigo-600 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                        target="_blank"
+                        rel="noreferrer"
+                        href="https://github.com/budgetbee/budgetbee/releases"
+                    >
+                        View all versions
+                    </a>
+                    <button
+                        type="button"
+                        onClick={() => setShowReleaseModal(false)}
+                        className="text-white bg-gray-700 hover:bg-gray-600 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                    >
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+
     const newVersionModal = (
         <div className="fixed z-50 inset-0 flex flex-col items-center justify-center bg-black/50">
             <div className="flex flex-col divide-y px-5 py-3 w-11/12 bg-gray-900 text-white rounded">
@@ -153,6 +233,7 @@ export default function LeftSidebarMenu({ onRecordChange }) {
     return (
         <div className={`flex h-screen relative block`}>
             {showVersionModal && newVersionModal}
+            {releaseModal}
 
             <div className="relative h-screen w-72"></div>
 
@@ -160,12 +241,12 @@ export default function LeftSidebarMenu({ onRecordChange }) {
             <div
                 className={`fixed flex flex-col transform h-screen duration-300 ease-in-out bg-gray-900 w-72`}
             >
-                <div className="px-4 pt-10 pb-5">
+                <div className="px-4 pt-10 pb-5 shrink-0">
                     <img className="px-5" src={logo} alt="logo" />
                 </div>
 
-                {/* Menu Options */}
-                <nav className="py-4 text-white text-md">
+                {/* Menu Options — scrollable middle section */}
+                <nav className="flex-1 overflow-y-auto min-h-0 py-4 text-white text-md">
                     <div className="flex flex-col gap-y-3 mx-14 my-4">
                         <div className="w-full">
                             <RecordModalButton onRecordChange={onRecordChange} />
@@ -196,7 +277,28 @@ export default function LeftSidebarMenu({ onRecordChange }) {
                         })}
                     </ul>
                 </nav>
-                <div className="flex flex-col gap-y-2 px-7 py-4 text-white absolute bottom-5 w-full">
+                {/* Footer — always visible, below the scrolling links */}
+                <div className="flex flex-col gap-y-2 px-7 py-4 text-white border-t border-gray-800 shrink-0">
+                    <div className="flex gap-x-4">
+                        <a
+                            className="flex items-center gap-x-2 hover:text-pink-400"
+                            href="https://github.com/sponsors/Pelukosa"
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            <FontAwesomeIcon icon={faHeart} />
+                            <span>Support</span>
+                        </a>
+                        <a
+                            className="flex items-center gap-x-2 hover:text-yellow-400"
+                            href="https://github.com/budgetbee/budgetbee/issues/new"
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            <FontAwesomeIcon icon={faBug} />
+                            <span>Feedback</span>
+                        </a>
+                    </div>
                     <button
                         className="flex items-center gap-x-2"
                         onClick={handleLogout}
@@ -204,9 +306,14 @@ export default function LeftSidebarMenu({ onRecordChange }) {
                         <FontAwesomeIcon icon="fa-solid fa-arrow-right-from-bracket" />
                         <span>Logout</span>
                     </button>
-                    <small className="text-gray-300">
+                    <button
+                        type="button"
+                        onClick={() => fetchReleaseInfo(appVersion)}
+                        className="text-left text-gray-300 underline decoration-dotted underline-offset-4 hover:text-white"
+                        title="View release notes"
+                    >
                         Version: {appVersion}
-                    </small>
+                    </button>
                 </div>
             </div>
         </div>

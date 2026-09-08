@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import Endpoints from "../../../Api/Endpoints";
 
 import SettingsLayout from "../../layout/SettingsLayout";
+import ApiDocs from "./ApiDocs";
 
 export default function ApiKeySettings() {
     const [apiKeys, setApiKeys] = useState([]);
@@ -12,6 +13,7 @@ export default function ApiKeySettings() {
     const [isLoading, setIsLoading] = useState(true);
     const [message, setMessage] = useState(null);
     const [deleteConfirm, setDeleteConfirm] = useState(null);
+    const [activeTab, setActiveTab] = useState("keys");
 
     const loadApiKeys = useCallback(async () => {
         try {
@@ -69,6 +71,31 @@ export default function ApiKeySettings() {
 
     return (
         <SettingsLayout>
+            {/* Tabs */}
+            <div className="flex gap-2 mb-6">
+                <button
+                    onClick={() => setActiveTab("keys")}
+                    className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                        activeTab === "keys"
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                    }`}
+                >
+                    API Keys
+                </button>
+                <button
+                    onClick={() => setActiveTab("docs")}
+                    className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                        activeTab === "docs"
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                    }`}
+                >
+                    API Documentation
+                </button>
+            </div>
+
+            {activeTab === "keys" && (
             <div className="space-y-8">
                 <h2 className="text-2xl font-bold">API Keys</h2>
 
@@ -135,7 +162,12 @@ export default function ApiKeySettings() {
                     )}
                 </div>
             </div>
+            )}
 
+            {activeTab === "docs" && <ApiDocs />}
+
+            {activeTab === "keys" && (
+                <>
             {/* Create Key Modal */}
             {showCreateModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -256,6 +288,8 @@ export default function ApiKeySettings() {
                         </div>
                     </div>
                 </div>
+            )}
+                </>
             )}
         </SettingsLayout>
     );
