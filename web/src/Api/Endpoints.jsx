@@ -479,6 +479,18 @@ const Endpoints = {
     attachRecordToLoan: async (record_id, id) => {
         return post(`loan/${id}/attach-record`, { record_id });
     },
+
+    getInsights: async () => {
+        return get('insight');
+    },
+
+    markInsightRead: async (id) => {
+        return post(`insight/${id}/read`);
+    },
+
+    dismissInsight: async (id) => {
+        return post(`insight/${id}/dismiss`);
+    },
 }
 
 export default Endpoints;

@@ -10,6 +10,7 @@ use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ImportController;
+use App\Http\Controllers\InsightController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AiController;
@@ -101,6 +102,12 @@ Route::prefix('balance')->middleware(['auth:sanctum', 'token.refresh'])->group(f
 
 Route::prefix('import')->middleware(['auth:sanctum', 'token.refresh'])->group(function () {
     Route::post('', [ImportController::class, 'import']);
+});
+
+Route::prefix('insight')->middleware(['auth:sanctum', 'token.refresh'])->group(function () {
+    Route::get('', [InsightController::class, 'index']);
+    Route::post('{id}/read', [InsightController::class, 'read']);
+    Route::post('{id}/dismiss', [InsightController::class, 'dismiss']);
 });
 
 Route::prefix('budget')->middleware(['auth:sanctum', 'token.refresh'])->group(function () {

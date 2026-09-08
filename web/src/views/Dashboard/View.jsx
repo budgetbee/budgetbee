@@ -5,6 +5,7 @@ import LastRecords from "./Components/LastRecords";
 import BalanceChart from "./Components/BalanceChart";
 import CategoryRecords from "./Components/CategoryRecords";
 import CategoryChart from "./Components/CategoryChart";
+import Insights from "../../Components/Insights";
 import TopNav from "../../layout/TopNav";
 
 export default function Dashboard() {
@@ -19,6 +20,7 @@ export default function Dashboard() {
         <div>
             <TopNav menu={true} />
             <div className="flex flex-col gap-y-4 bg-black px-3 py-5 mt-14 pt-4">
+                <Insights variant="mobile" refreshKey={refreshKey} />
                 <div>
                     <Accounts
                         activeAccount={activeAccount}

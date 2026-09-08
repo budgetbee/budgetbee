@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import moment from "moment";
 
 import Layout from "../../layout/Layout";
+import Insights from "../../../Components/Insights";
 import Accounts from "./Components/Accounts";
 import LastRecords from "./Components/LastRecords";
 import BalanceCard from "./Components/BalanceCard";
@@ -28,6 +29,9 @@ export default function Dashboard() {
     return (
         <Layout onRecordChange={handleRecordChange}>
             <TopNav setSearchData={setSearchData} />
+            <div className="flex flex-col gap-y-4 px-10 py-5">
+                <Insights variant="desktop" refreshKey={lastRecordsRefreshKey} />
+            </div>
             <div className="flex flex-row min-h-screen">
                 <div className="flex flex-col gap-y-10 basis-9/12 px-10 py-5">
                     <div className="flex flex-row gap-x-10">
