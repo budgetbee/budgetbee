@@ -26,8 +26,9 @@ export default function ImportModal() {
         setErrorMsg(null);
         const formData = new FormData(e.target);
         formData.append("file", selectedFile, selectedFile.name);
-        const formObject = Object.fromEntries(formData.entries());
-        const response = await Api.importRecords(formObject);
+        // Send the real FormData so axios uses multipart/form-data — a plain
+        // object would be JSON-serialized and the file would never arrive.
+        const response = await Api.importRecords(formData);
 
         if (response.error) {
             setErrorMsg(response.error);
