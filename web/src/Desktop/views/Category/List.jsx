@@ -9,10 +9,66 @@ import {
     faPenToSquare,
     faEye,
     faEyeSlash,
-    faChevronUp,
-    faChevronDown,
+    faGripVertical,
 } from "@fortawesome/free-solid-svg-icons";
 import IconPicker from "../../../Components/IconPicker";
+
+// Drag & drop
+import {
+    DndContext,
+    closestCenter,
+    PointerSensor,
+    TouchSensor,
+    useSensor,
+    useSensors,
+} from "@dnd-kit/core";
+import {
+    SortableContext,
+    verticalListSortingStrategy,
+    useSortable,
+    arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
+function SortableRow({ id, children, className = "" }) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id: String(id) });
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={{
+                transform: CSS.Transform.toString(transform),
+                transition,
+            }}
+            className={`${className} ${
+                isDragging ? "opacity-50 relative z-10" : ""
+            }`}
+        >
+            {children({ handleProps: { ...attributes, ...listeners } })}
+        </div>
+    );
+}
+
+function DragHandle({ handleProps, enabled = true }) {
+    if (!enabled) return null;
+    return (
+        <button
+            type="button"
+            {...handleProps}
+            className="text-gray-400 hover:text-white cursor-grab active:cursor-grabbing touch-none"
+            title="Drag to reorder"
+        >
+            <FontAwesomeIcon icon={faGripVertical} />
+        </button>
+    );
+}
 
 export default function List() {
     const [parentCategories, setParentCategories] = useState([]);
@@ -22,6 +78,13 @@ export default function List() {
     const [categoryToEdit, setCategoryToEdit] = useState(null);
     const [newParent, setNewParent] = useState(null);
     const [parentToEdit, setParentToEdit] = useState(null);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+        useSensor(TouchSensor, {
+            activationConstraint: { delay: 200, tolerance: 10 },
+        })
+    );
 
     useEffect(() => {
         async function fetchParentCategories() {
@@ -36,12 +99,14 @@ export default function List() {
             if (parentCategory) {
                 const data = await Api.getCategoriesByParent(parentCategory.id);
                 setCategories(data);
+            } else {
+                setCategories([]);
             }
         }
         fetchCategoriesByParent();
     }, [parentCategory]);
 
-    // ---- shared ordering helpers ----
+    // ---- ordering helpers ----
     const persistOrder = async (list, isParent) => {
         const items = list.map((el, i) => ({ id: el.id, position: i + 1 }));
         try {
@@ -55,12 +120,13 @@ export default function List() {
         }
     };
 
-    const move = (list, setList, index, dir, isParent) => {
-        const target = index + dir;
-        if (target < 0 || target >= list.length) return;
-        const reordered = [...list];
-        const [item] = reordered.splice(index, 1);
-        reordered.splice(target, 0, item);
+    const onDragEnd = (event, list, setList, isParent) => {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+        const oldIndex = list.findIndex((el) => String(el.id) === active.id);
+        const newIndex = list.findIndex((el) => String(el.id) === over.id);
+        if (oldIndex === -1 || newIndex === -1) return;
+        const reordered = arrayMove(list, oldIndex, newIndex);
         setList(reordered);
         persistOrder(reordered, isParent);
     };
@@ -132,7 +198,7 @@ export default function List() {
         setParentToEdit(null);
     };
 
-    // ---- sub category actions (existing behaviour + order/enable) ----
+    // ---- sub category actions ----
     const handleCreateCategory = (parentCat) => {
         setNewCategory({
             parent_category_id: parentCat.id,
@@ -163,36 +229,6 @@ export default function List() {
         setCategories(data);
         setCategoryToEdit(null);
     };
-
-    const parentActionButtons = (item, index) => (
-        <div className="flex flex-row items-center gap-x-3 text-gray-400 shrink-0">
-            <button type="button" onClick={() => toggleEnabled(item, true)} title={item.enabled ? "Disable" : "Enable"}>
-                <FontAwesomeIcon icon={item.enabled ? faEye : faEyeSlash} />
-            </button>
-            <button type="button" onClick={() => move(parentCategories, setParentCategories, index, -1, true)} disabled={index === 0} className={index === 0 ? "opacity-25 cursor-not-allowed" : "hover:text-white"} title="Move up">
-                <FontAwesomeIcon icon={faChevronUp} />
-            </button>
-            <button type="button" onClick={() => move(parentCategories, setParentCategories, index, 1, true)} disabled={index === parentCategories.length - 1} className={index === parentCategories.length - 1 ? "opacity-25 cursor-not-allowed" : "hover:text-white"} title="Move down">
-                <FontAwesomeIcon icon={faChevronDown} />
-            </button>
-        </div>
-    );
-
-    const subActionButtons = (item, index) => (
-        <div className="flex flex-row items-center gap-x-3 text-gray-400 shrink-0">
-            <button type="button" onClick={() => toggleEnabled(item, false)} title={item.enabled ? "Disable" : "Enable"}>
-                <FontAwesomeIcon icon={item.enabled ? faEye : faEyeSlash} />
-            </button>
-            <button type="button" onClick={() => move(categories, setCategories, index, -1, false)} disabled={index === 0} className={index === 0 ? "opacity-25 cursor-not-allowed" : "hover:text-white"} title="Move up">
-                <FontAwesomeIcon icon={faChevronUp} />
-            </button>
-            <button type="button" onClick={() => move(categories, setCategories, index, 1, false)} disabled={index === categories.length - 1} className={index === categories.length - 1 ? "opacity-25 cursor-not-allowed" : "hover:text-white"} title="Move down">
-                <FontAwesomeIcon icon={faChevronDown} />
-            </button>
-        </div>
-    );
-
-    const rowDisabled = (enabled) => (enabled ? "" : "opacity-50");
 
     return (
         <Layout>
@@ -236,68 +272,122 @@ export default function List() {
                         </div>
                     )}
 
-                    {parentCategories.map((pCat, index) => (
-                        <div
-                            key={index}
-                            className={`flex flex-row items-center justify-between gap-x-5 py-3 cursor-pointer px-10 transition ${
-                                pCat.enabled ? "hover:bg-gray-400/10" : "opacity-60"
-                            } ${parentCategory?.id === pCat.id ? "bg-gray-600/60" : ""}`}
+                    <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={(event) =>
+                            onDragEnd(
+                                event,
+                                parentCategories,
+                                setParentCategories,
+                                true
+                            )
+                        }
+                    >
+                        <SortableContext
+                            items={parentCategories.map((el) => String(el.id))}
+                            strategy={verticalListSortingStrategy}
                         >
-                            {parentToEdit?.id === pCat.id ? (
-                                <>
-                                    <div className="flex flex-row items-center gap-x-3 min-w-0">
-                                        <IconPicker
-                                            value={parentToEdit.icon}
-                                            onChange={(i) => setParentToEdit((p) => ({ ...p, icon: i }))}
-                                            className="w-10 h-10 shrink-0"
-                                        />
-                                        <input
-                                            type="text"
-                                            value={parentToEdit.name}
-                                            onChange={(e) => setParentToEdit((p) => ({ ...p, name: e.target.value }))}
-                                            className="block w-40 p-2 border border-gray-700 rounded-lg bg-background text-white text-sm"
-                                        />
-                                        <input
-                                            type="color"
-                                            value={parentToEdit.color}
-                                            onChange={(e) => setParentToEdit((p) => ({ ...p, color: e.target.value }))}
-                                            className="w-9 h-9 cursor-pointer rounded-lg bg-transparent p-0 border border-gray-700"
-                                            title="Color"
-                                        />
-                                    </div>
-                                    <div className="flex flex-row gap-x-4 shrink-0">
-                                        <button type="button" onClick={saveEditParent}>
-                                            <FontAwesomeIcon icon={faCheck} className="text-xl text-green-400" />
-                                        </button>
-                                        <button type="button" onClick={() => setParentToEdit(null)}>
-                                            <FontAwesomeIcon icon={faXmark} className="text-xl text-gray-400" />
-                                        </button>
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <div
-                                        className="flex flex-row items-center gap-x-5 min-w-0"
-                                        onClick={() => handleParentCategoryClick(pCat)}
-                                    >
+                            {parentCategories.map((pCat, index) => (
+                                <SortableRow key={index} id={pCat.id}>
+                                    {({ handleProps }) => (
                                         <div
-                                            className={`w-12 h-12 rounded-full flex items-center justify-center ${rowDisabled(pCat.enabled)}`}
-                                            style={{ background: pCat.color }}
+                                            className={`flex flex-row items-center justify-between gap-x-5 py-3 px-10 transition ${
+                                                pCat.enabled
+                                                    ? ""
+                                                    : "opacity-60"
+                                            } ${
+                                                parentCategory?.id === pCat.id
+                                                    ? "bg-gray-600/60 cursor-pointer"
+                                                    : "hover:bg-gray-400/10"
+                                            }`}
+                                            onClick={() =>
+                                                parentToEdit?.id !== pCat.id &&
+                                                handleParentCategoryClick(pCat)
+                                            }
                                         >
-                                            <FontAwesomeIcon icon={pCat.icon} />
+                                            {parentToEdit?.id === pCat.id ? (
+                                                <>
+                                                    <div className="flex flex-row items-center gap-x-3 min-w-0">
+                                                        <IconPicker
+                                                            value={parentToEdit.icon}
+                                                            onChange={(i) =>
+                                                                setParentToEdit(
+                                                                    (p) => ({
+                                                                        ...p,
+                                                                        icon: i,
+                                                                    })
+                                                                )
+                                                            }
+                                                            className="w-10 h-10 shrink-0"
+                                                        />
+                                                        <input
+                                                            type="text"
+                                                            value={parentToEdit.name}
+                                                            onChange={(e) =>
+                                                                setParentToEdit(
+                                                                    (p) => ({
+                                                                        ...p,
+                                                                        name: e.target.value,
+                                                                    })
+                                                                )
+                                                            }
+                                                            className="block w-40 p-2 border border-gray-700 rounded-lg bg-background text-white text-sm"
+                                                        />
+                                                        <input
+                                                            type="color"
+                                                            value={parentToEdit.color}
+                                                            onChange={(e) =>
+                                                                setParentToEdit(
+                                                                    (p) => ({
+                                                                        ...p,
+                                                                        color: e.target.value,
+                                                                    })
+                                                                )
+                                                            }
+                                                            className="w-9 h-9 cursor-pointer rounded-lg bg-transparent p-0 border border-gray-700"
+                                                            title="Color"
+                                                        />
+                                                    </div>
+                                                    <div className="flex flex-row gap-x-4 shrink-0">
+                                                        <button type="button" onClick={saveEditParent}>
+                                                            <FontAwesomeIcon icon={faCheck} className="text-xl text-green-400" />
+                                                        </button>
+                                                        <button type="button" onClick={() => setParentToEdit(null)}>
+                                                            <FontAwesomeIcon icon={faXmark} className="text-xl text-gray-400" />
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div className="flex flex-row items-center gap-x-5 min-w-0">
+                                                        <div
+                                                            className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                                                                pCat.enabled ? "" : "opacity-40"
+                                                            }`}
+                                                            style={{ background: pCat.color }}
+                                                        >
+                                                            <FontAwesomeIcon icon={pCat.icon} />
+                                                        </div>
+                                                        <div className="text-white">{pCat.name}</div>
+                                                    </div>
+                                                    <div className="flex flex-row items-center gap-x-5 shrink-0">
+                                                        <button type="button" onClick={() => startEditParent(pCat)} className="text-gray-400 hover:text-white" title="Edit">
+                                                            <FontAwesomeIcon icon={faPenToSquare} />
+                                                        </button>
+                                                        <button type="button" onClick={() => toggleEnabled(pCat, true)} className="text-gray-400 hover:text-white" title={pCat.enabled ? "Disable" : "Enable"}>
+                                                            <FontAwesomeIcon icon={pCat.enabled ? faEye : faEyeSlash} />
+                                                        </button>
+                                                        <DragHandle handleProps={handleProps} enabled />
+                                                    </div>
+                                                </>
+                                            )}
                                         </div>
-                                        <div className="text-white">{pCat.name}</div>
-                                    </div>
-                                    <div className="flex flex-row items-center gap-x-5 shrink-0">
-                                        <button type="button" onClick={() => startEditParent(pCat)} className="text-gray-400 hover:text-white" title="Edit">
-                                            <FontAwesomeIcon icon={faPenToSquare} />
-                                        </button>
-                                        {parentActionButtons(pCat, index)}
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    ))}
+                                    )}
+                                </SortableRow>
+                            ))}
+                        </SortableContext>
+                    </DndContext>
                 </div>
 
                 {/* Right panel: sub categories of the selected parent */}
@@ -340,55 +430,105 @@ export default function List() {
                         </div>
                     )}
 
-                    {categories.map((category, index) => (
-                        <div key={index} className={`flex flex-row items-center justify-between gap-x-5 px-10 transition hover:bg-gray-400/10 ${category.enabled ? "" : "opacity-60"}`}>
-                            <div className="flex flex-row gap-x-5 py-3 items-center text-white min-w-0">
-                                <div className="text-gray-500">#{category.id}</div>
-                                {category.id === categoryToEdit?.id ? (
-                                    <>
-                                        <IconPicker
-                                            value={categoryToEdit.icon}
-                                            onChange={(newIcon) =>
-                                                setCategoryToEdit((prev) => ({ ...prev, icon: newIcon }))
-                                            }
-                                            className="w-10 h-10 shrink-0"
-                                        />
-                                        <input
-                                            type="text"
-                                            value={categoryToEdit.name}
-                                            onChange={(e) => setCategoryToEdit((prev) => ({ ...prev, name: e.target.value }))}
-                                            className="block w-44 p-2 border border-gray-700 rounded-lg bg-background text-white text-sm"
-                                        />
-                                    </>
-                                ) : (
-                                    <>
-                                        <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: category.color }}>
-                                            <FontAwesomeIcon icon={category.icon} />
-                                        </div>
-                                        <div>{category.name}</div>
-                                    </>
-                                )}
-                            </div>
-                            <div className="flex flex-row items-center gap-x-5 shrink-0">
-                                {category.id === categoryToEdit?.id && (
-                                    <>
-                                        <button type="button" onClick={saveEditCategory}>
-                                            <FontAwesomeIcon icon={faCheck} className="text-2xl text-green-400" />
-                                        </button>
-                                        <button type="button" onClick={() => setCategoryToEdit(null)}>
-                                            <FontAwesomeIcon icon={faXmark} className="text-2xl text-gray-400" />
-                                        </button>
-                                    </>
-                                )}
-                                {category.id !== categoryToEdit?.id && (
-                                    <button type="button" onClick={() => handleCategoryEditMode(category)} className="text-gray-400 hover:text-white" title="Edit">
-                                        <FontAwesomeIcon icon={faPenToSquare} />
-                                    </button>
-                                )}
-                                {subActionButtons(category, index)}
-                            </div>
-                        </div>
-                    ))}
+                    <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={(event) =>
+                            onDragEnd(event, categories, setCategories, false)
+                        }
+                    >
+                        <SortableContext
+                            items={categories.map((el) => String(el.id))}
+                            strategy={verticalListSortingStrategy}
+                        >
+                            {categories.map((category, index) => (
+                                <SortableRow key={index} id={category.id}>
+                                    {({ handleProps }) => {
+                                        const isEditing =
+                                            category.id === categoryToEdit?.id;
+                                        return (
+                                            <div
+                                                className={`flex flex-row items-center justify-between gap-x-5 px-10 transition hover:bg-gray-400/10 ${
+                                                    category.enabled
+                                                        ? ""
+                                                        : "opacity-60"
+                                                }`}
+                                            >
+                                                <div className="flex flex-row gap-x-5 py-3 items-center text-white min-w-0">
+                                                    <div className="text-gray-500">#{category.id}</div>
+                                                    {isEditing ? (
+                                                        <>
+                                                            <IconPicker
+                                                                value={categoryToEdit.icon}
+                                                                onChange={(newIcon) =>
+                                                                    setCategoryToEdit(
+                                                                        (prev) => ({
+                                                                            ...prev,
+                                                                            icon: newIcon,
+                                                                        })
+                                                                    )
+                                                                }
+                                                                className="w-10 h-10 shrink-0"
+                                                            />
+                                                            <input
+                                                                type="text"
+                                                                value={categoryToEdit.name}
+                                                                onChange={(e) =>
+                                                                    setCategoryToEdit(
+                                                                        (prev) => ({
+                                                                            ...prev,
+                                                                            name: e.target.value,
+                                                                        })
+                                                                    )
+                                                                }
+                                                                className="block w-44 p-2 border border-gray-700 rounded-lg bg-background text-white text-sm"
+                                                            />
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <div
+                                                                className="w-12 h-12 rounded-full flex items-center justify-center"
+                                                                style={{ background: category.color }}
+                                                            >
+                                                                <FontAwesomeIcon icon={category.icon} />
+                                                            </div>
+                                                            <div>{category.name}</div>
+                                                        </>
+                                                    )}
+                                                </div>
+                                                <div className="flex flex-row items-center gap-x-5 shrink-0">
+                                                    {isEditing && (
+                                                        <>
+                                                            <button type="button" onClick={saveEditCategory}>
+                                                                <FontAwesomeIcon icon={faCheck} className="text-2xl text-green-400" />
+                                                            </button>
+                                                            <button type="button" onClick={() => setCategoryToEdit(null)}>
+                                                                <FontAwesomeIcon icon={faXmark} className="text-2xl text-gray-400" />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                    {!isEditing && (
+                                                        <button type="button" onClick={() => handleCategoryEditMode(category)} className="text-gray-400 hover:text-white" title="Edit">
+                                                            <FontAwesomeIcon icon={faPenToSquare} />
+                                                        </button>
+                                                    )}
+                                                    {!isEditing && (
+                                                        <button type="button" onClick={() => toggleEnabled(category, false)} className="text-gray-400 hover:text-white" title={category.enabled ? "Disable" : "Enable"}>
+                                                            <FontAwesomeIcon icon={category.enabled ? faEye : faEyeSlash} />
+                                                        </button>
+                                                    )}
+                                                    <DragHandle
+                                                        handleProps={handleProps}
+                                                        enabled={!isEditing}
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    }}
+                                </SortableRow>
+                            ))}
+                        </SortableContext>
+                    </DndContext>
                 </div>
             </div>
         </Layout>

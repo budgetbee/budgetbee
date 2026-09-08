@@ -11,15 +11,82 @@ import {
     faPenToSquare,
     faEye,
     faEyeSlash,
-    faChevronUp,
-    faChevronDown,
+    faGripVertical,
 } from "@fortawesome/free-solid-svg-icons";
+
+// Drag & drop
+import {
+    DndContext,
+    closestCenter,
+    PointerSensor,
+    TouchSensor,
+    useSensor,
+    useSensors,
+} from "@dnd-kit/core";
+import {
+    SortableContext,
+    verticalListSortingStrategy,
+    useSortable,
+    arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
+// Sortable wrapper: renders the row with DnD plumbing. The row content is a
+// function that receives handleProps to attach to the drag handle button.
+function SortableRow({ id, children, className = "" }) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id: String(id) });
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={{
+                transform: CSS.Transform.toString(transform),
+                transition,
+            }}
+            className={`${className} ${
+                isDragging ? "opacity-50 relative z-10" : ""
+            }`}
+        >
+            {children({
+                handleProps: { ...attributes, ...listeners },
+            })}
+        </div>
+    );
+}
+
+function DragHandle({ handleProps, enabled }) {
+    if (!enabled) return null;
+    return (
+        <button
+            type="button"
+            {...handleProps}
+            className="text-gray-500 hover:text-white px-1 py-1 cursor-grab active:cursor-grabbing touch-none"
+            title="Drag to reorder"
+        >
+            <FontAwesomeIcon icon={faGripVertical} />
+        </button>
+    );
+}
 
 export default function List() {
     const [isLoading, setIsLoading] = useState(true);
     const [parentCategories, setParentCategories] = useState(null);
     const [categories, setCategories] = useState(null);
     const [parentCategory, setParentCategory] = useState(null);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+        useSensor(TouchSensor, {
+            activationConstraint: { delay: 200, tolerance: 10 },
+        })
+    );
 
     useEffect(() => {
         async function getParentCategories() {
@@ -50,19 +117,8 @@ export default function List() {
         setParentCategory(null);
     };
 
-    // ---- actions ----
-
-    const moveItem = async (list, setList, index, dir, isParent) => {
-        const target = index + dir;
-        if (target < 0 || target >= list.length) return;
-        const reordered = [...list];
-        const [item] = reordered.splice(index, 1);
-        reordered.splice(target, 0, item);
-        setList(reordered);
-        const items = reordered.map((el, i) => ({
-            id: el.id,
-            position: i + 1,
-        }));
+    const persistOrder = async (list, isParent) => {
+        const items = list.map((el, i) => ({ id: el.id, position: i + 1 }));
         try {
             if (isParent) {
                 await Api.reorderParentCategories(items);
@@ -70,8 +126,19 @@ export default function List() {
                 await Api.reorderCategories(items);
             }
         } catch {
-            // keep local order; server order will apply on next load
+            // server order will apply on next load
         }
+    };
+
+    const onDragEnd = (event, list, setList, isParent) => {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+        const oldIndex = list.findIndex((el) => String(el.id) === active.id);
+        const newIndex = list.findIndex((el) => String(el.id) === over.id);
+        if (oldIndex === -1 || newIndex === -1) return;
+        const reordered = arrayMove(list, oldIndex, newIndex);
+        setList(reordered);
+        persistOrder(reordered, isParent);
     };
 
     const toggleEnabled = async (item, isParent) => {
@@ -101,51 +168,38 @@ export default function List() {
         }
     };
 
-    const actionsFor = (item, index, list, setList, isParent) => {
-        const btn =
-            "text-gray-500 hover:text-white px-1 py-1 text-base";
-        return (
-            <div className="flex flex-row items-center gap-x-1 shrink-0">
-                <button
-                    type="button"
-                    onClick={() =>
-                        toggleEnabled(item, isParent)
-                    }
-                    className={btn}
-                    title={item.enabled ? "Disable" : "Enable"}
-                >
-                    <FontAwesomeIcon
-                        icon={item.enabled ? faEye : faEyeSlash}
-                        className={item.enabled ? "" : "text-gray-600"}
-                    />
-                </button>
-                <button
-                    type="button"
-                    onClick={() => moveItem(list, setList, index, -1, isParent)}
-                    className={`${btn} ${index === 0 ? "invisible" : ""}`}
-                    title="Move up"
-                >
-                    <FontAwesomeIcon icon={faChevronUp} />
-                </button>
-                <button
-                    type="button"
-                    onClick={() =>
-                        moveItem(list, setList, index, 1, isParent)
-                    }
-                    className={`${btn} ${
-                        index === list.length - 1 ? "invisible" : ""
-                    }`}
-                    title="Move down"
-                >
-                    <FontAwesomeIcon icon={faChevronDown} />
-                </button>
-            </div>
-        );
-    };
-
     if (isLoading) {
         return <></>;
     }
+
+    const renderSortableList = (list, setList, isParent, renderItem) => (
+        <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={(event) => onDragEnd(event, list, setList, isParent)}
+        >
+            <SortableContext
+                items={list.map((el) => String(el.id))}
+                strategy={verticalListSortingStrategy}
+            >
+                <div className="flex flex-col gap-y-5 text-xl p-5 mt-14 pt-4">
+                    {list.map((item, index) => (
+                        <SortableRow
+                            key={item.id}
+                            id={item.id}
+                            className="flex flex-row gap-x-3 items-center justify-between"
+                        >
+                            {({ handleProps }) => (
+                                <>
+                                    {renderItem(item, index, handleProps)}
+                                </>
+                            )}
+                        </SortableRow>
+                    ))}
+                </div>
+            </SortableContext>
+        </DndContext>
+    );
 
     let body;
 
@@ -168,50 +222,62 @@ export default function List() {
                         </Link>
                     </div>
                 </div>
-                <div className="flex flex-col gap-y-5 text-xl p-5 mt-14 pt-4">
-                    {categories.map((category, index) => {
-                        return (
+                {renderSortableList(categories, setCategories, false, (category, index, handleProps) => (
+                    <>
+                        <Link
+                            to={"/category/" + category.id}
+                            className="flex flex-row gap-x-5 items-center text-white min-w-0"
+                        >
                             <div
-                                key={category.id}
-                                className="flex flex-row gap-x-3 items-center justify-between"
-                                index={index}
+                                className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                                    !category.enabled ? "opacity-40" : ""
+                                }`}
+                                style={{ background: category.color }}
                             >
-                                <Link
-                                    to={"/category/" + category.id}
-                                    className="flex flex-row gap-x-5 items-center text-white min-w-0"
-                                >
-                                    <div
-                                        className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                                            !category.enabled ? "opacity-40" : ""
-                                        }`}
-                                        style={{ background: category.color }}
-                                    >
-                                        <FontAwesomeIcon icon={category.icon} />
-                                    </div>
-                                    <div className={!category.enabled ? "text-gray-500" : ""}>
-                                        {category.name}
-                                    </div>
-                                </Link>
-                                <div className="flex flex-row items-center gap-x-3 shrink-0">
-                                    <Link
-                                        to={"/category/" + category.id}
-                                        className="text-gray-500 hover:text-white"
-                                        title="Edit"
-                                    >
-                                        <FontAwesomeIcon icon={faPenToSquare} />
-                                    </Link>
-                                    {actionsFor(
-                                        category,
-                                        index,
-                                        categories,
-                                        setCategories,
-                                        false
-                                    )}
-                                </div>
+                                <FontAwesomeIcon icon={category.icon} />
                             </div>
-                        );
-                    })}
-                </div>
+                            <div
+                                className={
+                                    !category.enabled
+                                        ? "text-gray-500"
+                                        : ""
+                                }
+                            >
+                                {category.name}
+                            </div>
+                        </Link>
+                        <div className="flex flex-row items-center gap-x-3 shrink-0">
+                            <Link
+                                to={"/category/" + category.id}
+                                className="text-gray-500 hover:text-white"
+                                title="Edit"
+                            >
+                                <FontAwesomeIcon icon={faPenToSquare} />
+                            </Link>
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    toggleEnabled(category, false)
+                                }
+                                className="text-gray-500 hover:text-white px-1 py-1"
+                                title={
+                                    category.enabled
+                                        ? "Disable"
+                                        : "Enable"
+                                }
+                            >
+                                <FontAwesomeIcon
+                                    icon={
+                                        category.enabled
+                                            ? faEye
+                                            : faEyeSlash
+                                    }
+                                />
+                            </button>
+                            <DragHandle handleProps={handleProps} enabled />
+                        </div>
+                    </>
+                ))}
             </div>
         );
     } else {
@@ -235,69 +301,73 @@ export default function List() {
                         </Link>
                     </div>
                 </div>
-                <div className="flex flex-col gap-y-5 text-xl p-5 mt-14 pt-4">
-                    {parentCategories.map((parentCategory, index) => {
-                        return (
+                {renderSortableList(parentCategories, setParentCategories, true, (parentCategory, index, handleProps) => (
+                    <>
+                        <div
+                            className="flex flex-row gap-x-5 items-center text-white min-w-0 cursor-pointer"
+                            onClick={() =>
+                                handleParentCategoryClick(parentCategory.id)
+                            }
+                        >
                             <div
-                                key={parentCategory.id}
-                                className="flex flex-row gap-x-3 items-center justify-between"
-                                index={index}
+                                className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                                    !parentCategory.enabled
+                                        ? "opacity-40"
+                                        : ""
+                                }`}
+                                style={{
+                                    background: parentCategory.color,
+                                }}
                             >
-                                <div
-                                    className="flex flex-row gap-x-5 items-center text-white min-w-0 cursor-pointer"
-                                    onClick={() =>
-                                        handleParentCategoryClick(
-                                            parentCategory.id
-                                        )
-                                    }
-                                >
-                                    <div
-                                        className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                                            !parentCategory.enabled
-                                                ? "opacity-40"
-                                                : ""
-                                        }`}
-                                        style={{
-                                            background: parentCategory.color,
-                                        }}
-                                    >
-                                        <FontAwesomeIcon
-                                            icon={parentCategory.icon}
-                                        />
-                                    </div>
-                                    <div
-                                        className={
-                                            !parentCategory.enabled
-                                                ? "text-gray-500"
-                                                : ""
-                                        }
-                                    >
-                                        {parentCategory.name}
-                                    </div>
-                                </div>
-                                <div className="flex flex-row items-center gap-x-3 shrink-0">
-                                    <Link
-                                        to={
-                                            "/category-parent/" +
-                                            parentCategory.id
-                                        }
-                                        className="text-gray-500 hover:text-white"
-                                        title="Edit"
-                                    >
-                                        <FontAwesomeIcon icon={faPenToSquare} />
-                                    </Link>
-                                    {actionsFor(
-                                        parentCategory,
-                                        index,
-                                        parentCategories,
-                                        setParentCategories,
-                                        true
-                                    )}
-                                </div>
+                                <FontAwesomeIcon
+                                    icon={parentCategory.icon}
+                                />
                             </div>
-                        );
-                    })}
-                </div>
+                            <div
+                                className={
+                                    !parentCategory.enabled
+                                        ? "text-gray-500"
+                                        : ""
+                                }
+                            >
+                                {parentCategory.name}
+                            </div>
+                        </div>
+                        <div className="flex flex-row items-center gap-x-3 shrink-0">
+                            <Link
+                                to={
+                                    "/category-parent/" +
+                                    parentCategory.id
+                                }
+                                className="text-gray-500 hover:text-white"
+                                title="Edit"
+                            >
+                                <FontAwesomeIcon icon={faPenToSquare} />
+                            </Link>
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    toggleEnabled(parentCategory, true)
+                                }
+                                className="text-gray-500 hover:text-white px-1 py-1"
+                                title={
+                                    parentCategory.enabled
+                                        ? "Disable"
+                                        : "Enable"
+                                }
+                            >
+                                <FontAwesomeIcon
+                                    icon={
+                                        parentCategory.enabled
+                                            ? faEye
+                                            : faEyeSlash
+                                    }
+                                />
+                            </button>
+                            <DragHandle handleProps={handleProps} enabled />
+                        </div>
+                    </>
+                ))}
             </div>
         );
     }
