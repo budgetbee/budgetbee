@@ -431,6 +431,30 @@ const Endpoints = {
     deleteAiProviderKey: async (id) => {
         return del(`ai-provider-keys/${id}`);
     },
+
+    getLoans: async () => {
+        return get('loan');
+    },
+
+    getLoan: async (id) => {
+        return get(`loan/${id}`);
+    },
+
+    createLoan: async (data) => {
+        return post('loan', data);
+    },
+
+    updateLoan: async (data, id) => {
+        return post(`loan/${id}`, data);
+    },
+
+    deleteLoan: async (id) => {
+        return del(`loan/${id}`);
+    },
+
+    addLoanPayment: async (data, id) => {
+        return post(`loan/${id}/payment`, data);
+    },
 }
 
 export default Endpoints;
