@@ -3,11 +3,13 @@ import { useParams } from "react-router-dom";
 import Api from "../../Api/Endpoints";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faCheck } from "@fortawesome/free-solid-svg-icons";
+import IconPicker from "../../Components/IconPicker";
 
 export default function Form() {
     const [isLoading, setIsLoading] = useState(true);
     const [category, setCategory] = useState(null);
     const [parentCategories, setParentCategories] = useState(null);
+    const [icon, setIcon] = useState("");
 
     const { category_id } = useParams();
 
@@ -18,6 +20,7 @@ export default function Form() {
             if (category_id !== undefined) {
                 const category = await Api.getCategory(category_id);
                 setCategory(category);
+                setIcon(category.icon || "");
             }
             setIsLoading(false);
         }
@@ -28,6 +31,7 @@ export default function Form() {
         e.preventDefault();
         const formData = new FormData(e.target);
         const formObject = Object.fromEntries(formData.entries());
+        formObject.icon = icon;
         await Api.createOrUpdateCategory(formObject, category_id);
         window.location = "/category/list/";
     };
@@ -114,17 +118,21 @@ export default function Form() {
                         >
                             Icon
                         </label>
-                        <div className="flex flex-row gap-x-5 justify-between items-center">
-                            <div>
-                                <FontAwesomeIcon icon={category && category.icon} className={"text-white text-2xl"} />
+                        <div className="flex flex-row gap-x-5 items-center">
+                            <IconPicker
+                                value={icon}
+                                onChange={setIcon}
+                                className="w-20 h-20"
+                            />
+                            <div className="text-gray-500 text-sm break-all">
+                                {icon ? (
+                                    icon
+                                ) : (
+                                    <span className="italic">
+                                        Tap the icon to choose one
+                                    </span>
+                                )}
                             </div>
-                            <input
-                                type="text"
-                                name="icon"
-                                id="icon"
-                                className="block w-full p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500"
-                                defaultValue={category && category.icon}
-                            ></input>
                         </div>
                     </div>
                 </div>

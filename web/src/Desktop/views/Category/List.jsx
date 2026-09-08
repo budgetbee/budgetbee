@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Layout from "../../layout/Layout";
 import Api from "../../../Api/Endpoints";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import IconPicker from "../../../Components/IconPicker";
 
 export default function List() {
   const [parentCategories, setParentCategories] = useState([]);
@@ -138,9 +139,19 @@ export default function List() {
             <div key={index} className="flex flex-row justify-between hover:bg-gray-400/10 transition px-10">
               <div className="flex flex-row gap-x-5 py-3 items-center text-white" index={index}>
               <div className="text-gray-500">#{category.id}</div>
+                {category.id === categoryToEdit?.id ? (
+                  <IconPicker
+                    value={categoryToEdit.icon}
+                    onChange={(newIcon) =>
+                      setCategoryToEdit((prev) => ({ ...prev, icon: newIcon }))
+                    }
+                    className="w-12 h-12 shrink-0"
+                  />
+                ) : (
                 <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: category.color }}>
                   <FontAwesomeIcon icon={category.icon} />
                 </div>
+                )}
                 <div>
                   {category.id !== categoryToEdit?.id ? (
                     category.name
