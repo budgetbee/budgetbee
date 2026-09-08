@@ -65,6 +65,7 @@ export default function List() {
       id: category.id,
       parent_category_id: category.parent_category_id,
       icon: category.icon,
+      name: category.name,
     });
   };
 
