@@ -7,6 +7,7 @@ use App\Models\Import;
 use App\Models\Record;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date as SpreadsheetDate;
 
@@ -41,19 +42,38 @@ class ImportController extends Controller
                     ]
                 );
 
+                $imported = 0;
+                $skipped = 0;
+
                 foreach ($records as $record) {
                     try {
+                        // code is unique (records_code_unique) to prevent
+                        // duplicate imports — skip rows that already exist
+                        // instead of failing the whole file.
+                        if (Record::where('user_id', $record->user_id)->where('code', $record->code)->exists()) {
+                            $skipped++;
+                            continue;
+                        }
                         $record->import_id = $importModel->id;
                         $record->save();
+                        $imported++;
                     } catch (Exception $e) {
-                        foreach ($records as $record) {
-                            $record->forceDelete();
-                        }
-                        $importModel->forceDelete();
-                        return response()->json(['error' => 'Error to save records, check file and try again'], 500);
+                        // One bad row must not discard the whole file.
+                        Log::warning('Import row skipped: ' . $e->getMessage());
+                        $skipped++;
                     }
                 }
-                return response()->json(['message' => 'File uploaded successfully']);
+
+                if ($imported === 0) {
+                    $importModel->forceDelete();
+                    return response()->json(['error' => 'Error to save records, check file and try again'], 500);
+                }
+
+                $message = 'File uploaded successfully';
+                if ($skipped > 0) {
+                    $message .= " ($imported imported, $skipped duplicate or invalid row(s) skipped)";
+                }
+                return response()->json(['message' => $message]);
             }
         }
         return response()->json(['error' => 'Error, there is no records to upload'], 400);
