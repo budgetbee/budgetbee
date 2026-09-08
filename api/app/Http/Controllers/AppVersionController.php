@@ -10,7 +10,9 @@ class AppVersionController extends Controller
 {
     public function get()
     {
-        $version = config('app.version');
+        $version = (string) config('app.version');
+        // Normalize so "v0.15" and "0.15" compare equal.
+        $normalized = static fn (string $v): string => ltrim(trim($v), 'v');
         $repoOwner = 'budgetbee';
         $repoName = 'budgetbee';
         $cacheKey = 'latest_version';
@@ -38,9 +40,11 @@ class AppVersionController extends Controller
             }
         }
 
+        $hasNew = $normalized($version) !== $normalized((string) $latestVersion);
+
         return response()->json([
             'version' => $version,
-            'new_version' => $version != $latestVersion,
+            'new_version' => $hasNew,
             'latest_version' => $latestVersion
         ]);
     }
