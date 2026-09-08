@@ -164,7 +164,7 @@ export default function List() {
     };
 
     const startCreateParent = () => {
-        setNewParent({ name: "", icon: "fa-solid fa-folder", color: "#1F839F" });
+        setNewParent({ name: "", icon: "fa-solid fa-folder", color: "#1F839F", type: "expense" });
     };
 
     const saveNewParent = async () => {
@@ -181,22 +181,56 @@ export default function List() {
             name: pCat.name,
             icon: pCat.icon,
             color: pCat.color,
+            type: pCat.type || "expense",
         });
     };
 
     const saveEditParent = async () => {
-        await Api.updateParentCategory(
-            {
-                name: parentToEdit.name,
-                icon: parentToEdit.icon,
-                color: parentToEdit.color,
-            },
-            parentToEdit.id
-        );
-        const data = await Api.getParentCategories();
-        setParentCategories(data);
+        const data = {
+            name: parentToEdit.name,
+            icon: parentToEdit.icon,
+            color: parentToEdit.color,
+        };
+        // The technical transfer category keeps its type.
+        if (parentToEdit.type !== "transfer") {
+            data.type = parentToEdit.type;
+        }
+        await Api.updateParentCategory(data, parentToEdit.id);
+        const parents = await Api.getParentCategories();
+        setParentCategories(parents);
         setParentToEdit(null);
     };
+
+    const TypeToggle = ({ type, onChange, disabled }) => (
+        <div className={`flex flex-row gap-x-1 shrink-0 ${disabled ? "opacity-50" : ""}`}>
+            <button
+                type="button"
+                disabled={disabled}
+                onClick={() => onChange("expense")}
+                title="Expense category: records count as expenses in charts and reports"
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${
+                    type === "expense"
+                        ? "bg-red-500/20 text-red-400 border-red-500/30"
+                        : "text-gray-500 border-gray-700 hover:text-gray-300"
+                }`}
+            >
+                Expense
+            </button>
+            <button
+                type="button"
+                disabled={disabled}
+                onClick={() => onChange("income")}
+                title="Income category: records count as income in charts and reports (salary, sales, refunds...)"
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${
+                    type === "income"
+                        ? "bg-green-500/20 text-green-400 border-green-500/30"
+                        : "text-gray-500 border-gray-700 hover:text-gray-300"
+                }`}
+            >
+                Income
+            </button>
+        </div>
+    );
 
     // ---- sub category actions ----
     const handleCreateCategory = (parentCat) => {
@@ -243,32 +277,38 @@ export default function List() {
                     </div>
 
                     {newParent && (
-                        <div className="flex flex-row gap-x-5 py-3 items-center text-white px-10">
-                            <IconPicker
-                                value={newParent.icon}
-                                onChange={(i) => setNewParent((p) => ({ ...p, icon: i }))}
-                                className="w-12 h-12 shrink-0"
+                        <div className="flex flex-col gap-y-3 py-3 px-10">
+                            <div className="flex flex-row gap-x-5 items-center text-white">
+                                <IconPicker
+                                    value={newParent.icon}
+                                    onChange={(i) => setNewParent((p) => ({ ...p, icon: i }))}
+                                    className="w-12 h-12 shrink-0"
+                                />
+                                <input
+                                    type="text"
+                                    value={newParent.name}
+                                    onChange={(e) => setNewParent((p) => ({ ...p, name: e.target.value }))}
+                                    placeholder="Category name"
+                                    className="block w-64 p-3 border border-gray-700 rounded-lg bg-background focus:ring-blue-500 focus:border-blue-500 text-white placeholder-gray-500"
+                                />
+                                <input
+                                    type="color"
+                                    value={newParent.color}
+                                    onChange={(e) => setNewParent((p) => ({ ...p, color: e.target.value }))}
+                                    className="w-10 h-10 cursor-pointer rounded-lg bg-transparent p-0 border border-gray-700"
+                                    title="Color"
+                                />
+                                <button type="button" onClick={saveNewParent} disabled={!newParent.name.trim()}>
+                                    <FontAwesomeIcon icon={faCheck} className="text-2xl text-green-400" />
+                                </button>
+                                <button type="button" onClick={() => setNewParent(null)}>
+                                    <FontAwesomeIcon icon={faXmark} className="text-2xl text-gray-400" />
+                                </button>
+                            </div>
+                            <TypeToggle
+                                type={newParent.type}
+                                onChange={(t) => setNewParent((p) => ({ ...p, type: t }))}
                             />
-                            <input
-                                type="text"
-                                value={newParent.name}
-                                onChange={(e) => setNewParent((p) => ({ ...p, name: e.target.value }))}
-                                placeholder="Category name"
-                                className="block w-64 p-3 border border-gray-700 rounded-lg bg-background focus:ring-blue-500 focus:border-blue-500 text-white placeholder-gray-500"
-                            />
-                            <input
-                                type="color"
-                                value={newParent.color}
-                                onChange={(e) => setNewParent((p) => ({ ...p, color: e.target.value }))}
-                                className="w-10 h-10 cursor-pointer rounded-lg bg-transparent p-0 border border-gray-700"
-                                title="Color"
-                            />
-                            <button type="button" onClick={saveNewParent} disabled={!newParent.name.trim()}>
-                                <FontAwesomeIcon icon={faCheck} className="text-2xl text-green-400" />
-                            </button>
-                            <button type="button" onClick={() => setNewParent(null)}>
-                                <FontAwesomeIcon icon={faXmark} className="text-2xl text-gray-400" />
-                            </button>
                         </div>
                     )}
 
@@ -292,7 +332,11 @@ export default function List() {
                                 <SortableRow key={index} id={pCat.id}>
                                     {({ handleProps }) => (
                                         <div
-                                            className={`flex flex-row items-center justify-between gap-x-5 py-3 px-10 transition ${
+                                            className={`flex ${
+                                                parentToEdit?.id === pCat.id
+                                                    ? "flex-col gap-y-2"
+                                                    : "flex-row"
+                                            } items-center justify-between gap-x-5 py-3 px-10 transition ${
                                                 pCat.enabled
                                                     ? ""
                                                     : "opacity-60"
@@ -308,54 +352,74 @@ export default function List() {
                                         >
                                             {parentToEdit?.id === pCat.id ? (
                                                 <>
-                                                    <div className="flex flex-row items-center gap-x-3 min-w-0">
-                                                        <IconPicker
-                                                            value={parentToEdit.icon}
-                                                            onChange={(i) =>
-                                                                setParentToEdit(
-                                                                    (p) => ({
-                                                                        ...p,
-                                                                        icon: i,
-                                                                    })
-                                                                )
-                                                            }
-                                                            className="w-10 h-10 shrink-0"
-                                                        />
-                                                        <input
-                                                            type="text"
-                                                            value={parentToEdit.name}
-                                                            onChange={(e) =>
-                                                                setParentToEdit(
-                                                                    (p) => ({
-                                                                        ...p,
-                                                                        name: e.target.value,
-                                                                    })
-                                                                )
-                                                            }
-                                                            className="block w-40 p-2 border border-gray-700 rounded-lg bg-background text-white text-sm"
-                                                        />
-                                                        <input
-                                                            type="color"
-                                                            value={parentToEdit.color}
-                                                            onChange={(e) =>
-                                                                setParentToEdit(
-                                                                    (p) => ({
-                                                                        ...p,
-                                                                        color: e.target.value,
-                                                                    })
-                                                                )
-                                                            }
-                                                            className="w-9 h-9 cursor-pointer rounded-lg bg-transparent p-0 border border-gray-700"
-                                                            title="Color"
-                                                        />
+                                                    <div className="flex flex-row items-center justify-between gap-x-5 w-full">
+                                                        <div className="flex flex-row items-center gap-x-3 min-w-0">
+                                                            <IconPicker
+                                                                value={parentToEdit.icon}
+                                                                onChange={(i) =>
+                                                                    setParentToEdit(
+                                                                        (p) => ({
+                                                                            ...p,
+                                                                            icon: i,
+                                                                        })
+                                                                    )
+                                                                }
+                                                                className="w-10 h-10 shrink-0"
+                                                            />
+                                                            <input
+                                                                type="text"
+                                                                value={parentToEdit.name}
+                                                                onChange={(e) =>
+                                                                    setParentToEdit(
+                                                                        (p) => ({
+                                                                            ...p,
+                                                                            name: e.target.value,
+                                                                        })
+                                                                    )
+                                                                }
+                                                                className="block w-40 p-2 border border-gray-700 rounded-lg bg-background text-white text-sm"
+                                                            />
+                                                            <input
+                                                                type="color"
+                                                                value={parentToEdit.color}
+                                                                onChange={(e) =>
+                                                                    setParentToEdit(
+                                                                        (p) => ({
+                                                                            ...p,
+                                                                            color: e.target.value,
+                                                                        })
+                                                                    )
+                                                                }
+                                                                className="w-9 h-9 cursor-pointer rounded-lg bg-transparent p-0 border border-gray-700"
+                                                                title="Color"
+                                                            />
+                                                        </div>
+                                                        <div className="flex flex-row gap-x-4 shrink-0">
+                                                            <button type="button" onClick={saveEditParent}>
+                                                                <FontAwesomeIcon icon={faCheck} className="text-xl text-green-400" />
+                                                            </button>
+                                                            <button type="button" onClick={() => setParentToEdit(null)}>
+                                                                <FontAwesomeIcon icon={faXmark} className="text-xl text-gray-400" />
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex flex-row gap-x-4 shrink-0">
-                                                        <button type="button" onClick={saveEditParent}>
-                                                            <FontAwesomeIcon icon={faCheck} className="text-xl text-green-400" />
-                                                        </button>
-                                                        <button type="button" onClick={() => setParentToEdit(null)}>
-                                                            <FontAwesomeIcon icon={faXmark} className="text-xl text-gray-400" />
-                                                        </button>
+                                                    <div className="flex flex-row items-center w-full">
+                                                        {parentToEdit.type === "transfer" ? (
+                                                            <span className="text-gray-500 text-xs italic">
+                                                                Technical Transfer category — it is not an
+                                                                expense or income and cannot change type.
+                                                            </span>
+                                                        ) : (
+                                                            <TypeToggle
+                                                                type={parentToEdit.type}
+                                                                onChange={(t) =>
+                                                                    setParentToEdit((p) => ({
+                                                                        ...p,
+                                                                        type: t,
+                                                                    }))
+                                                                }
+                                                            />
+                                                        )}
                                                     </div>
                                                 </>
                                             ) : (
@@ -369,7 +433,19 @@ export default function List() {
                                                         >
                                                             <FontAwesomeIcon icon={pCat.icon} />
                                                         </div>
-                                                        <div className="text-white">{pCat.name}</div>
+                                                        <div className="flex flex-row items-center gap-x-3 min-w-0">
+                                                            <div className="text-white">{pCat.name}</div>
+                                                            {pCat.type === "income" && (
+                                                                <span className="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 border border-green-500/30">
+                                                                    Income
+                                                                </span>
+                                                            )}
+                                                            {pCat.type === "transfer" && (
+                                                                <span className="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-gray-500/20 text-gray-400 border border-gray-500/30">
+                                                                    Transfer
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                     <div className="flex flex-row items-center gap-x-5 shrink-0">
                                                         <button type="button" onClick={() => startEditParent(pCat)} className="text-gray-400 hover:text-white" title="Edit">

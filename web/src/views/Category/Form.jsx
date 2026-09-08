@@ -11,6 +11,8 @@ export default function Form() {
     const [parentCategories, setParentCategories] = useState(null);
     const [icon, setIcon] = useState("");
     const [color, setColor] = useState("#1F839F");
+    const [type, setType] = useState("expense");
+    const [isTransfer, setIsTransfer] = useState(false);
 
     const { category_id, parent_id } = useParams();
     const location = useLocation();
@@ -27,6 +29,11 @@ export default function Form() {
                         setCategory(parent);
                         setIcon(parent.icon || "");
                         setColor(parent.color || "#1F839F");
+                        if (parent.type === "transfer") {
+                            setIsTransfer(true);
+                        } else {
+                            setType(parent.type === "income" ? "income" : "expense");
+                        }
                     }
                 }
             } else {
@@ -48,6 +55,10 @@ export default function Form() {
 
         if (isParentMode) {
             const data = { name: e.target.name.value, icon, color };
+            // The technical transfer category keeps its type: never send it.
+            if (!isTransfer) {
+                data.type = type;
+            }
             if (editId !== undefined) {
                 await Api.updateParentCategory(data, editId);
             } else {
@@ -165,6 +176,80 @@ export default function Form() {
                             </div>
                         </div>
                     </div>
+
+                    {isParentMode && (
+                        <div className="mb-6">
+                            <label
+                                htmlFor="type"
+                                className="block mb-2 text-sm font-medium text-gray-900 text-white"
+                            >
+                                Type
+                            </label>
+                            {isTransfer ? (
+                                <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-4 text-gray-400 text-sm leading-relaxed">
+                                    This is the technical{" "}
+                                    <span className="text-white font-medium">
+                                        Transfer
+                                    </span>{" "}
+                                    category, used to move money between
+                                    accounts. It is neither an expense nor an
+                                    income.
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="flex flex-row gap-x-2 mb-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => setType("expense")}
+                                            className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all border ${
+                                                type === "expense"
+                                                    ? "bg-red-500/20 text-red-400 border-red-500/30"
+                                                    : "text-gray-500 border-gray-800 bg-gray-800/40"
+                                            }`}
+                                        >
+                                            Expense
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setType("income")}
+                                            className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all border ${
+                                                type === "income"
+                                                    ? "bg-green-500/20 text-green-400 border-green-500/30"
+                                                    : "text-gray-500 border-gray-800 bg-gray-800/40"
+                                            }`}
+                                        >
+                                            Income
+                                        </button>
+                                    </div>
+                                    <p className="text-gray-500 text-sm leading-relaxed">
+                                        {type === "income" ? (
+                                            <>
+                                                Records you add under this
+                                                category count as{" "}
+                                                <span className="text-green-400">
+                                                    income
+                                                </span>{" "}
+                                                in the charts, reports and
+                                                balances. Use it for salary,
+                                                sales, refunds, other earnings…
+                                            </>
+                                        ) : (
+                                            <>
+                                                Records you add under this
+                                                category count as{" "}
+                                                <span className="text-red-400">
+                                                    expenses
+                                                </span>{" "}
+                                                in the charts, reports and
+                                                balances. This is the default
+                                                for everyday spending.
+                                            </>
+                                        )}
+                                    </p>
+                                </>
+                            )}
+                        </div>
+                    )}
 
                     {isParentMode && (
                         <div className="mb-6">

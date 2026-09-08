@@ -188,6 +188,12 @@ export default function FormModal({ isOpen, onOpenChange, record_id, recordData,
     const selectedAccount = accounts.find(a => a.id === Number(fromAccount));
     const selectedToAccount = accounts.find(a => a.id === Number(toAccount));
     const selectedParentCategory = parentCategories.find(pc => pc.id === Number(parentCategory));
+
+    // Only offer categories coherent with the record type: income parents
+    // for income records, expense parents for expenses.
+    const visibleParentCategories = parentCategories.filter(
+        (p) => p.type === undefined || p.type === type
+    );
     const selectedCategory = categories.find(c => c.id === Number(category));
 
     const fromCurrency = selectedAccount?.currency_code;
@@ -236,7 +242,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, recordData,
                                 <button
                                     key={key}
                                     type="button"
-                                    onClick={() => { setType(key); setTypeError(false); }}
+                                    onClick={() => { setType(key); setParentCategory(null); setCategory(null); setTypeError(false); }}
                                     className={`flex-1 text-center py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-all hover:opacity-80 ${
                                         type === key
                                             ? `${cfg.bg} ${cfg.color} ${cfg.border} border`
@@ -414,7 +420,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, recordData,
                                                 placeholder="Parent"
                                                 name="parent_category_id"
                                                 size="sm"
-                                                items={parentCategories}
+                                                items={visibleParentCategories}
                                                 selectionMode="single"
                                                 selectedKeys={parentCategory ? [parentCategory.toString()] : []}
                                                 onChange={e => setParentCategory(e.target.value)}

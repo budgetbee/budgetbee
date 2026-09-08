@@ -12,7 +12,7 @@ class ParentCategory extends Model
      * @var string[]
      */
     protected $fillable = [
-        'id', 'user_id', 'name', 'color', 'icon', 'enabled', 'position'
+        'id', 'user_id', 'name', 'color', 'icon', 'type', 'enabled', 'position'
     ];
 
     protected $casts = [

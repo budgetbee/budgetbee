@@ -3,7 +3,7 @@ import Api from "../../../../Api/Endpoints";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import TopNav from "../../../../layout/TopNav";
 
-export default function Form({ setOpen, setCategory }) {
+export default function Form({ setOpen, setCategory, type }) {
     const [parentCategories, setParentCategories] = useState(null);
     const [categories, setCategories] = useState(null);
     const [parentCategory, setParentCategory] = useState(null);
@@ -11,10 +11,16 @@ export default function Form({ setOpen, setCategory }) {
     useEffect(() => {
         async function getParentCategories() {
             const data = await Api.getParentCategories();
-            setParentCategories(data.filter((p) => p.enabled !== false));
+            setParentCategories(
+                data.filter(
+                    (p) =>
+                        p.enabled !== false &&
+                        (!type || p.type === undefined || p.type === type)
+                )
+            );
         }
         getParentCategories();
-    }, []);
+    }, [type]);
 
     useEffect(() => {
         if (parentCategory !== null) {

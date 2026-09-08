@@ -323,14 +323,26 @@ export default function List() {
                                     icon={parentCategory.icon}
                                 />
                             </div>
-                            <div
-                                className={
-                                    !parentCategory.enabled
-                                        ? "text-gray-500"
-                                        : ""
-                                }
-                            >
-                                {parentCategory.name}
+                            <div className="flex flex-col min-w-0">
+                                <div
+                                    className={
+                                        !parentCategory.enabled
+                                            ? "text-gray-500"
+                                            : ""
+                                    }
+                                >
+                                    {parentCategory.name}
+                                </div>
+                                {parentCategory.type === "income" && (
+                                    <div className="text-[10px] font-semibold uppercase tracking-wide text-green-500">
+                                        Income
+                                    </div>
+                                )}
+                                {parentCategory.type === "transfer" && (
+                                    <div className="text-[10px] font-semibold uppercase tracking-wide text-gray-600">
+                                        Transfer
+                                    </div>
+                                )}
                             </div>
                         </div>
                         <div className="flex flex-row items-center gap-x-3 shrink-0">

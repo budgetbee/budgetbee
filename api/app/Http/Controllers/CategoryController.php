@@ -98,11 +98,12 @@ class CategoryController extends Controller
             'name' => 'required|string',
             'color' => 'required|string',
             'icon' => 'required|string',
+            'type' => 'sometimes|in:income,expense',
             'enabled' => 'nullable|boolean',
             'position' => 'nullable|integer',
         ]);
 
-        $data = $request->only('name', 'color', 'icon', 'enabled', 'position');
+        $data = $request->only('name', 'color', 'icon', 'type', 'enabled', 'position');
 
         $data['user_id'] = $request->user()->id;
         if (!array_key_exists('position', $data) || $data['position'] === null) {
@@ -131,11 +132,12 @@ class CategoryController extends Controller
             'name' => 'sometimes|string',
             'color' => 'sometimes|string',
             'icon' => 'sometimes|string',
+            'type' => 'sometimes|in:income,expense',
             'enabled' => 'sometimes|boolean',
             'position' => 'sometimes|integer',
         ]);
 
-        $data = $request->only('name', 'color', 'icon', 'enabled', 'position');
+        $data = $request->only('name', 'color', 'icon', 'type', 'enabled', 'position');
 
         $category->fill(array_filter($data, fn ($value) => $value !== null));
         $category->save();
