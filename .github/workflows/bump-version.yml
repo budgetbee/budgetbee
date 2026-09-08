@@ -1,0 +1,49 @@
+name: Bump version
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "New version without 'v' (e.g. 0.15 or 0.14.3)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Validate version format
+        run: |
+          echo "${{ github.event.inputs.version }}" | grep -Eq '^[0-9]+\.[0-9]+(\.[0-9]+)?$' \
+            || { echo "::error::Invalid version format: use e.g. 0.15 or 0.14.3"; exit 1; }
+
+      - name: Bump version files
+        run: |
+          VER="${{ github.event.inputs.version }}"
+          node -e "const fs=require('fs');const p='web/package.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));j.version=process.argv[1];fs.writeFileSync(p,JSON.stringify(j,null,2)+'\n');" "$VER"
+          sed -i "s/^APP_VERSION=.*/APP_VERSION=v${VER}/" api/.env.example
+          echo "-> web/package.json: $(grep -m1 '\"version\"' web/package.json)"
+          echo "-> api/.env.example: $(grep '^APP_VERSION' api/.env.example)"
+
+      - name: Commit bump and create tag
+        run: |
+          VER="${{ github.event.inputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add web/package.json api/.env.example
+          if git diff --cached --quiet; then
+            echo "Version files already at ${VER} — skipping commit"
+          else
+            git commit -m "Bump version to v${VER}"
+            git push origin main
+          fi
+          git tag "v${VER}"
+          git push origin "v${VER}"
+          echo "Tag v${VER} created on main"
