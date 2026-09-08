@@ -3,7 +3,6 @@ import moment from "moment";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import TopNav from "../../layout/TopNav";
-import FloatMenu from "../../layout/FloatMenu";
 import ReportsFilterBar from "./Components/ReportsFilterBar";
 import SummaryCards from "./Components/SummaryCards";
 import TimelinePanel from "./Components/TimelinePanel";
@@ -26,8 +25,6 @@ export default function ReportsDashboard() {
         <div>
             <TopNav menu={true} />
             <div className="flex flex-col gap-y-4 bg-black px-3 py-5 mt-14 pt-4">
-                <FloatMenu />
-
                 {/* Page title */}
                 <div className="flex flex-row items-center justify-between px-1">
                     <div className="flex flex-row items-center gap-x-2">

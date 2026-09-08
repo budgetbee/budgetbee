@@ -5,6 +5,7 @@ import "./App.css";
 
 import AppRoutes from "./AppRoutes";
 import ChatBot from "./Components/ChatBot/ChatBot";
+import BottomMenu from "./layout/BottomMenu";
 import { useSessionManager } from "./hooks/useSessionManager";
 
 // Icons
@@ -46,10 +47,17 @@ function isChatbotHidden(pathname) {
     return false;
 }
 
-/** Only renders ChatBot on pages where it makes sense (see isChatbotHidden). */
-function ConditionalChatBot() {
+/** Renders the mobile floating UI (BottomMenu pill + AI chat) only on pages
+ *  where it makes sense: auth pages and data-entry screens are excluded. */
+function ConditionalFloatingUI() {
     const location = useLocation();
-    return <ChatBot hidden={isChatbotHidden(location.pathname)} />;
+    const hidden = isChatbotHidden(location.pathname);
+    return (
+        <>
+            <BottomMenu hidden={hidden} />
+            <ChatBot hidden={hidden} />
+        </>
+    );
 }
 
 function App() {
@@ -60,7 +68,7 @@ function App() {
             <div className="App select-none">
                 <BrowserRouter>
                     <AppRoutes />
-                    <ConditionalChatBot />
+                    <ConditionalFloatingUI />
                 </BrowserRouter>
             </div>
         </NextUIProvider>

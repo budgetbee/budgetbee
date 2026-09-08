@@ -6,7 +6,6 @@ import BalanceChart from "./Components/BalanceChart";
 import CategoryRecords from "./Components/CategoryRecords";
 import CategoryChart from "./Components/CategoryChart";
 import TopNav from "../../layout/TopNav";
-import FloatMenu from "../../layout/FloatMenu";
 
 export default function Dashboard() {
     const [activeAccount, setActiveAccount] = useState(null);
@@ -20,7 +19,6 @@ export default function Dashboard() {
         <div>
             <TopNav menu={true} />
             <div className="flex flex-col gap-y-4 bg-black px-3 py-5 mt-14 pt-4">
-                <FloatMenu />
                 <div>
                     <Accounts
                         activeAccount={activeAccount}
