@@ -33,6 +33,8 @@ jobs:
           echo "-> api/.env.example: $(grep '^APP_VERSION' api/.env.example)"
 
       - name: Commit bump and open PR (main is branch-protected)
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           VER="${{ github.event.inputs.version }}"
           git config user.name "github-actions[bot]"
