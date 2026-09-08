@@ -15,7 +15,7 @@ jobs:
     - name: Build the Docker images
       run: |
         docker build -t ghcr.io/budgetbee/budgetbee/proxy:${{ github.event.release.tag_name }} ./docker/nginx
-        docker build -t ghcr.io/budgetbee/budgetbee/api:${{ github.event.release.tag_name }} --build-arg VERSION=${{ github.event.release.tag_name }} ./api
+        docker build -t ghcr.io/budgetbee/budgetbee/api:${{ github.event.release.tag_name }} ./api
         docker build -t ghcr.io/budgetbee/budgetbee/web:${{ github.event.release.tag_name }} ./web
         docker tag ghcr.io/budgetbee/budgetbee/proxy:${{ github.event.release.tag_name }} ghcr.io/budgetbee/budgetbee/proxy:latest
         docker tag ghcr.io/budgetbee/budgetbee/api:${{ github.event.release.tag_name }} ghcr.io/budgetbee/budgetbee/api:latest
