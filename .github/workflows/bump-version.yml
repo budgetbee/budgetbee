@@ -32,7 +32,7 @@ jobs:
           echo "-> web/package.json: $(grep -m1 '\"version\"' web/package.json)"
           echo "-> api/.env.example: $(grep '^APP_VERSION' api/.env.example)"
 
-      - name: Commit bump and create tag
+      - name: Commit bump to main
         run: |
           VER="${{ github.event.inputs.version }}"
           git config user.name "github-actions[bot]"
@@ -44,6 +44,15 @@ jobs:
             git commit -m "Bump version to v${VER}"
             git push origin main
           fi
-          git tag "v${VER}"
-          git push origin "v${VER}"
-          echo "Tag v${VER} created on main"
+
+      - name: Create tag (repo rules allow only admins/org)
+        run: |
+          VER="${{ github.event.inputs.version }}"
+          # The repository ruleset "Auto-imported tag create protections"
+          # only lets OrganizationAdmins and admin repository roles create
+          # v* tags, so the actions bot cannot push it here. Run this once
+          # locally (or with an admin token):
+          #   git tag v${VER} && git push origin v${VER}
+          echo "Version bumped to v${VER} on main."
+          echo "Next: create the tag with an admin token: git tag v${VER} && git push origin v${VER}"
+          echo "Then create the GitHub release from tag v${VER} (docker images build on release)."
