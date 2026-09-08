@@ -282,15 +282,18 @@ export default function ChatBot({ hidden = false }) {
                 </button>
             )}
 
-            {/* Modal overlay + centered chat panel — responsive on mobile */}
+            {/* Modal overlay + centered chat panel — responsive on mobile.
+                On mobile the panel fills the dynamic viewport (100dvh) so it
+                never sits under the browser/status bars, and the safe-area
+                padding keeps the header buttons visible below the notch. */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4"
+                    className="fixed inset-0 z-50 flex items-stretch sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4"
                     onClick={handleOverlayClick}
                 >
                     <div
                         ref={chatPanelRef}
-                        className="w-full sm:w-[700px] h-[85vh] sm:h-[600px] max-h-[90vh] bg-gray-800 rounded-t-xl sm:rounded-xl shadow-2xl flex flex-col border border-gray-600 overflow-hidden"
+                        className="w-full h-[100dvh] sm:w-[700px] sm:h-[600px] sm:max-h-[90vh] bg-gray-800 rounded-none sm:rounded-xl shadow-2xl flex flex-col border-0 sm:border border-gray-600 overflow-hidden pt-[env(safe-area-inset-top)] sm:pt-0"
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3 bg-gray-700 border-b border-gray-600 rounded-t-xl">
@@ -419,7 +422,7 @@ export default function ChatBot({ hidden = false }) {
                     )}
 
                     {/* Input */}
-                    <div className="px-2 sm:px-4 py-2 sm:py-3 bg-gray-700 border-t border-gray-600">
+                    <div className="px-2 sm:px-4 py-2 sm:py-3 bg-gray-700 border-t border-gray-600 pb-[max(env(safe-area-inset-bottom),0.5rem)] sm:pb-3">
                         <div className="hidden sm:flex gap-2 items-center text-xs text-gray-400 mb-1.5">
                             <span>Ctrl+V to paste images</span>
                         </div>
