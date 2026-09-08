@@ -74,68 +74,82 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
         getUser();
     }, []);
 
-    const links = {
-        dashboard: {
-            name: "Dashboard",
-            href: "/dashboard",
-            icon: faChartBar,
-            color: "text-pink-400",
+    const sections = [
+        {
+            title: "Overview",
+            links: {
+                dashboard: {
+                    name: "Dashboard",
+                    href: "/dashboard",
+                    icon: faChartBar,
+                    color: "text-pink-400",
+                },
+                reports: {
+                    name: "Reports",
+                    href: "/reports",
+                    icon: faChartPie,
+                    color: "text-purple-400",
+                },
+            },
         },
-        budgets: {
-            name: "Budgets",
-            href: "/budget",
-            icon: faSackDollar,
-            color: "text-green-400",
+        {
+            title: "Money",
+            links: {
+                accounts: {
+                    name: "Accounts",
+                    href: "/accounts",
+                    icon: faMoneyCheck,
+                    color: "text-red-400",
+                },
+                record: {
+                    name: "Records",
+                    href: "/record/list",
+                    icon: faList,
+                    color: "text-blue-400",
+                },
+            },
         },
-        loans: {
-            name: "Loans",
-            href: "/loans",
-            icon: faHandHoldingDollar,
-            color: "text-yellow-400",
+        {
+            title: "Planning",
+            links: {
+                budgets: {
+                    name: "Budgets",
+                    href: "/budget",
+                    icon: faSackDollar,
+                    color: "text-green-400",
+                },
+                upcoming: {
+                    name: "Upcoming",
+                    href: "/upcoming",
+                    icon: faCalendarDays,
+                    color: "text-blue-400",
+                },
+                loans: {
+                    name: "Loans",
+                    href: "/loans",
+                    icon: faHandHoldingDollar,
+                    color: "text-yellow-400",
+                },
+            },
         },
-        upcoming: {
-            name: "Upcoming",
-            href: "/upcoming",
-            icon: faCalendarDays,
-            color: "text-blue-400",
+        {
+            title: "Manage",
+            links: {
+                categories: {
+                    name: "Categories",
+                    href: "/category/list",
+                    icon: faBars,
+                    color: "text-orange-400",
+                },
+                settings: {
+                    name: "Settings",
+                    href: "/settings",
+                    icon: faGear,
+                    color: "text-gray-400",
+                },
+            },
         },
-        reports: {
-            name: "Reports",
-            href: "/reports",
-            icon: faChartPie,
-            color: "text-purple-400",
-        },
-        record: {
-            name: "Records",
-            href: "/record/list",
-            icon: faList,
-            color: "text-blue-400",
-        },
-        accounts: {
-            name: "Accounts",
-            href: "/accounts",
-            icon: faMoneyCheck,
-            color: "text-red-400",
-        },
-        // rules: {
-        //     name: "Rules",
-        //     href: "/rule",
-        //     icon: faRobot,
-        //     color: "text-green-400",
-        // },
-        categories: {
-            name: "Categories",
-            href: "/category/list",
-            icon: faBars,
-            color: "text-orange-400",
-        },
-        settings: {
-            name: "Settings",
-            href: "/settings",
-            icon: faGear,
-            color: "text-gray-400",
-        },
-    };
+    ];
 
     const handleLogout = async (e) => {
         e.preventDefault();
@@ -227,8 +241,6 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
         </div>
     );
 
-    const linkArray = Object.entries(links);
-
     // Rendered through a portal: the drawer lives inside the TopNav (fixed
     // z-30) and its z-index would otherwise be trapped below the floating
     // bottom pill (z-40). Mounting on document.body lets it stack above.
@@ -271,27 +283,38 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
 
                 {/* Menu Options — scrollable middle section */}
                 <nav className="flex-1 overflow-y-auto min-h-0 py-4 text-white text-md">
-                    <ul>
-                        {linkArray.map(([key, link]) => {
-                            const activeClass =
-                                key === activePage ? "bg-blue-500/30" : "";
-                            return (
-                                <Link key={key} to={link.href}>
-                                    <li
-                                        className={`flex flex-row gap-x-3 items-center px-4 py-3 cursor-pointer ${activeClass}`}
-                                    >
-                                        <FontAwesomeIcon
-                                            icon={link.icon}
-                                            className={`basis-1/5 text-lg ${link.color}`}
-                                        />
-                                        <span className="font-semibold">
-                                            {link.name}
-                                        </span>
-                                    </li>
-                                </Link>
-                            );
-                        })}
-                    </ul>
+                    {sections.map((section) => (
+                        <div key={section.title} className="mb-1">
+                            <div className="px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-widest text-gray-500">
+                                {section.title}
+                            </div>
+                            <ul>
+                                {Object.entries(section.links).map(
+                                    ([key, link]) => {
+                                        const activeClass =
+                                            key === activePage
+                                                ? "bg-blue-500/30"
+                                                : "";
+                                        return (
+                                            <Link key={key} to={link.href}>
+                                                <li
+                                                    className={`flex flex-row gap-x-3 items-center px-4 py-2.5 cursor-pointer ${activeClass}`}
+                                                >
+                                                    <FontAwesomeIcon
+                                                        icon={link.icon}
+                                                        className={`basis-1/5 text-lg ${link.color}`}
+                                                    />
+                                                    <span className="font-semibold">
+                                                        {link.name}
+                                                    </span>
+                                                </li>
+                                            </Link>
+                                        );
+                                    }
+                                )}
+                            </ul>
+                        </div>
+                    ))}
                 </nav>
                 {/* Footer — always visible, below the scrolling links */}
                 <div className="flex flex-col gap-y-2 px-7 py-4 text-white border-t border-gray-800 shrink-0">
