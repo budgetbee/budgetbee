@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link } from "react-router-dom";
 import Cookies from "universal-cookie";
@@ -228,7 +229,10 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
 
     const linkArray = Object.entries(links);
 
-    return (
+    // Rendered through a portal: the drawer lives inside the TopNav (fixed
+    // z-30) and its z-index would otherwise be trapped below the floating
+    // bottom pill (z-40). Mounting on document.body lets it stack above.
+    return createPortal(
         <div
             className={`fixed z-[60] inset-0 flex overflow-hidden ${
                 open ? "" : "w-0"
@@ -328,6 +332,7 @@ export default function LeftSidebarMenu({ open, setOpen, activePage }) {
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
