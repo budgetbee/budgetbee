@@ -15,9 +15,6 @@ use Illuminate\Support\Facades\Cache;
 class BalanceController extends Controller
 {
 
-    const CATEGORY_PARENT_ID_TRANSFER = 1;
-    const CATEGORY_PARENT_ID_INCOME = 10;
-
     public function getBalance(Request $request)
     {
         $query = Account::where('user_id', $request->user()->id);
@@ -39,7 +36,7 @@ class BalanceController extends Controller
         $bindings = $query->getBindings();
         $queryKey = md5($sql . serialize($bindings));
 
-        $cacheKey = 'balance_all_data_' . $queryKey;
+        $cacheKey = 'v2_balance_all_data_' . $queryKey;
         if (Cache::has($cacheKey)) {
             return response()->json(Cache::get($cacheKey));
         }
@@ -47,11 +44,11 @@ class BalanceController extends Controller
         $queryIncome = clone $query;
         $queryExpense = clone $query;
 
-        $excludedCategoryIds = Category::where('parent_category_id', self::CATEGORY_PARENT_ID_INCOME)->pluck('id');
+        $incomeCategoryIds = Category::idsByParentType($request->user()->id, 'income');
 
         $data = [
-            'incomes' => $queryIncome->whereIn('category_id', $excludedCategoryIds)->whereNot('type', 'transfer')->get()->sum('amount_base_currency'),
-            'expenses' => $queryExpense->whereNotIn('category_id', $excludedCategoryIds)->whereNot('type', 'transfer')->get()->sum('amount_base_currency'),
+            'incomes' => $queryIncome->whereIn('category_id', $incomeCategoryIds)->whereNot('type', 'transfer')->get()->sum('amount_base_currency'),
+            'expenses' => $queryExpense->whereNotIn('category_id', $incomeCategoryIds)->whereNot('type', 'transfer')->get()->sum('amount_base_currency'),
             'currency_symbol' => $request->user()->currency_symbol
         ];
 
@@ -122,7 +119,7 @@ class BalanceController extends Controller
 
     public function getByIncomeCategories(Request $request)
     {
-        $incomeCategories = Category::where('parent_category_id', self::CATEGORY_PARENT_ID_INCOME)->pluck('id');
+        $incomeCategories = Category::idsByParentType($request->user()->id, 'income');
         $records = Record::filterByRequest($request)->whereIn('category_id', $incomeCategories)->orderBy('date')->get();
 
         $data = [];
@@ -157,12 +154,12 @@ class BalanceController extends Controller
         $bindings = $query->getBindings();
         $queryKey = md5($sql . serialize($bindings));
 
-        $cacheKey = 'balance_by_expense_categories_data_' . $queryKey;
+        $cacheKey = 'v2_balance_by_expense_categories_data_' . $queryKey;
         if (Cache::has($cacheKey)) {
             return response()->json(Cache::get($cacheKey));
         }
 
-        $expenseCategories = Category::whereNotIn('parent_category_id', [self::CATEGORY_PARENT_ID_TRANSFER, self::CATEGORY_PARENT_ID_INCOME])->pluck('id');
+        $expenseCategories = Category::idsByParentType($request->user()->id, 'expense');
         $records = $query->whereIn('category_id', $expenseCategories)->orderBy('date')->get();
 
         $data = [];
@@ -207,10 +204,12 @@ class BalanceController extends Controller
 
         $data = [];
 
-        $parentCategoriesToOmmit = [1, 10];
+        $incomeParentIds = \App\Models\ParentCategory::where(function ($q) use ($request) {
+            $q->where('user_id', $request->user()->id)->orWhereNull('user_id');
+        })->where('type', 'income')->pluck('id')->all();
 
         foreach ($records as $record) {
-            if (in_array($record->parent_category_id, $parentCategoriesToOmmit) || $record->parent_category_id != $id) {
+            if (in_array($record->parent_category_id, $incomeParentIds) || $record->parent_category_id != $id) {
                 continue;
             }
             $categoryId = $record->category_name;
@@ -246,10 +245,12 @@ class BalanceController extends Controller
 
         $data = [];
 
-        $parentCategoriesToOmmit = [1, 10];
+        $incomeParentIds = \App\Models\ParentCategory::where(function ($q) use ($request) {
+            $q->where('user_id', $request->user()->id)->orWhereNull('user_id');
+        })->where('type', 'income')->pluck('id')->all();
 
         foreach ($records as $record) {
-            if (in_array($record->parent_category_id, $parentCategoriesToOmmit) || $record->parent_category_id != $id) {
+            if (in_array($record->parent_category_id, $incomeParentIds) || $record->parent_category_id != $id) {
                 continue;
             }
             $categoryId = $record->category_name;
@@ -282,7 +283,7 @@ class BalanceController extends Controller
         $bindings = $query->getBindings();
         $queryKey = md5($sql . serialize($bindings));
 
-        $cacheKey = 'balance_by_category_data_' . $queryKey;
+        $cacheKey = 'v2_balance_by_category_data_' . $queryKey;
         if (Cache::has($cacheKey)) {
             return response()->json(Cache::get($cacheKey));
         }
@@ -291,9 +292,13 @@ class BalanceController extends Controller
 
         $currencySymbol = Auth::user()->currency->symbol;
 
+        $incomeParentIds = \App\Models\ParentCategory::where(function ($q) {
+            $q->where('user_id', Auth::id())->orWhereNull('user_id');
+        })->where('type', 'income')->pluck('id')->all();
+
         $data = [];
         foreach ($records as $record) {
-            $categoryType = ($record->parent_category_id === self::CATEGORY_PARENT_ID_INCOME) ? 'income' : 'expense';
+            $categoryType = in_array($record->parent_category_id, $incomeParentIds) ? 'income' : 'expense';
             if (!isset($data[$categoryType][$record->parent_category_id])) {
                 $data[$categoryType][$record->parent_category_id] = [
                     'id' => $record->parent_category_id,

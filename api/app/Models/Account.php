@@ -96,8 +96,10 @@ class Account extends Model
     {
 
         $initialBalance = $this->initial_balance;
+        $incomeCategoryIds = Category::idsByParentType($this->user_id, 'income');
         return Record::where('from_account_id', $this->id)
-            ->where('type', 'income')
+            ->whereIn('category_id', $incomeCategoryIds)
+            ->whereNot('type', 'transfer')
             ->orderBy('date')
             ->pluck('amount')
             ->reduce(function ($balance, $amount) {
@@ -109,8 +111,10 @@ class Account extends Model
     {
 
         $initialBalance = $this->initial_balance;
+        $expenseCategoryIds = Category::idsByParentType($this->user_id, 'expense');
         return Record::where('from_account_id', $this->id)
-            ->where('type', 'expense')
+            ->whereIn('category_id', $expenseCategoryIds)
+            ->whereNot('type', 'transfer')
             ->orderBy('date')
             ->pluck('amount')
             ->reduce(function ($balance, $amount) {

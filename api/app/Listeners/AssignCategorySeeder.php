@@ -32,7 +32,8 @@ class AssignCategorySeeder
                 'user_id' => $event->user->id,
                 'name' => $parentCategory['name'],
                 'color' => $parentCategory['color'],
-                'icon' => $parentCategory['icon']
+                'icon' => $parentCategory['icon'],
+                'type' => $parentCategory['type'] ?? 'expense'
             ]);
             $newParentCategory->save();
 

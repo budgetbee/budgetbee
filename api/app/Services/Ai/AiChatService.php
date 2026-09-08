@@ -901,7 +901,7 @@ PROMPT;
         $fromDate = $args['from_date'] ?? Carbon::now()->startOfYear()->format('Y-m-d');
         $toDate = $args['to_date'] ?? Carbon::now()->format('Y-m-d');
 
-        $incomeCategoryIds = Category::where('parent_category_id', 10)->pluck('id');
+        $incomeCategoryIds = Category::idsByParentType($this->user->id, 'income');
 
         $records = Record::where('user_id', $this->user->id)
             ->whereIn('category_id', $incomeCategoryIds)
@@ -1098,33 +1098,32 @@ PROMPT;
             $categoryName = $record['category_name'] ?? null;
             $matchedCategoryName = 'Unknown';
 
+            // User-scoped fallback category (income records fall back to an
+            // income category, expenses to an expense one) so created records
+            // are always coherent with the parent category type.
+            $fallbackCategory = $recordType === 'income'
+                ? Category::firstByParentType($this->user->id, 'income')
+                : (Category::firstByParentType($this->user->id, 'expense', 'Other%')
+                    ?? Category::firstByParentType($this->user->id, 'expense'));
+
             if ($categoryId) {
                 $cat = $allCategories->firstWhere('id', $categoryId);
                 if ($cat) {
                     $matchedCategoryName = $cat->name;
                 } else {
-                    $categoryId = 44; // Invalid ID → fallback
-                    $matchedCategoryName = 'Other';
+                    $categoryId = $fallbackCategory->id ?? null; // Invalid ID → fallback
+                    $matchedCategoryName = $fallbackCategory->name ?? 'Other';
                 }
             } else {
                 // Fallback: match by name
-                $categoryId = 44;
-                $matchedCategoryName = 'Other';
+                $categoryId = $fallbackCategory->id ?? null;
+                $matchedCategoryName = $fallbackCategory->name ?? 'Other';
                 if ($categoryName) {
                     $matched = $this->fuzzyMatchCategory($categoryName, $allCategories);
                     if ($matched) {
                         $categoryId = $matched->id;
                         $matchedCategoryName = $matched->name;
                     }
-                }
-            }
-
-            // For income, try to find an income category if not matched
-            if ($recordType === 'income' && (!$categoryName || $categoryId === 44)) {
-                $incomeCategory = $allCategories->first(fn($c) => $c->parent_category_id == 10);
-                if ($incomeCategory) {
-                    $categoryId = $incomeCategory->id;
-                    $matchedCategoryName = $incomeCategory->name;
                 }
             }
 

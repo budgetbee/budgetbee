@@ -283,6 +283,26 @@ const Endpoints = {
         return get(`category/parent`);
     },
 
+    getParentCategoryById: async (id) => {
+        return get(`category/parent/${id}`);
+    },
+
+    createParentCategory: async (data) => {
+        return post(`category/parent`, data);
+    },
+
+    updateParentCategory: async (data, id) => {
+        return post(`category/parent/${id}`, data);
+    },
+
+    reorderParentCategories: async (items) => {
+        return post(`category/reorder-parents`, { items });
+    },
+
+    reorderCategories: async (items) => {
+        return post(`category/reorder`, { items });
+    },
+
     getCategoriesByParent: async (id) => {
         return get(`category/by-parent/${id}`);
     },

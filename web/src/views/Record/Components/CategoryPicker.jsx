@@ -11,7 +11,10 @@ export default function Form({ setOpen, setCategory }) {
     useEffect(() => {
         async function getParentCategories() {
             const data = await Api.getParentCategories();
-            setParentCategories(data);
+            // All categories are offered for any record type: the user can
+            // tag an income to an expense category (refund → reduces that
+            // expense) or an expense to an income category (reduces income).
+            setParentCategories(data.filter((p) => p.enabled !== false));
         }
         getParentCategories();
     }, []);
@@ -20,7 +23,7 @@ export default function Form({ setOpen, setCategory }) {
         if (parentCategory !== null) {
             async function getCategoriesByParent() {
                 const data = await Api.getCategoriesByParent(parentCategory);
-                setCategories(data);
+                setCategories(data.filter((c) => c.enabled !== false));
             }
             getCategoriesByParent();
         }

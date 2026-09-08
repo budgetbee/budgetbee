@@ -12,7 +12,21 @@ class ParentCategory extends Model
      * @var string[]
      */
     protected $fillable = [
-        'id', 'user_id', 'name', 'color', 'icon'
+        'id', 'user_id', 'name', 'color', 'icon', 'type', 'enabled', 'position'
     ];
+
+    protected $casts = [
+        'enabled' => 'boolean',
+    ];
+
+    public function categories()
+    {
+        return $this->hasMany(Category::class, 'parent_category_id', 'id');
+    }
+
+    public function scopeOrdered($query)
+    {
+        return $query->orderBy('position')->orderBy('id');
+    }
 
 }
