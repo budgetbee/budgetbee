@@ -46,6 +46,21 @@ if [ ! -f "$ENV_FILE" ]; then
     cp /var/www/html/.env.example "$ENV_FILE"
 fi
 
+# 2.5 Sync APP_VERSION from the image's .env.example into the persistent
+#     .env. The release flow bumps the version in .env.example, which ships
+#     inside the image, so every upgrade shows the correct version without
+#     the user having to edit their /config/.env. Only this one key is
+#     touched — user settings (APP_KEY, DB, mail, ...) stay untouched.
+EXAMPLE_VERSION=$(grep -E '^APP_VERSION=' /var/www/html/.env.example | cut -d= -f2 | tr -d '\r')
+if [ -n "$EXAMPLE_VERSION" ]; then
+    if grep -qE '^APP_VERSION=' "$ENV_FILE"; then
+        sed -i "s|^APP_VERSION=.*|APP_VERSION=${EXAMPLE_VERSION}|" "$ENV_FILE"
+    else
+        echo "APP_VERSION=${EXAMPLE_VERSION}" >> "$ENV_FILE"
+    fi
+    echo "[entrypoint] APP_VERSION synced to ${EXAMPLE_VERSION}"
+fi
+
 # 3. Symlink /config/.env → /var/www/html/.env so Laravel reads it natively
 rm -f "$APP_ENV_FILE"
 ln -s "$ENV_FILE" "$APP_ENV_FILE"
