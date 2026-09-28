@@ -22,6 +22,10 @@ const getAuthHeader = () => {
     return { Authorization: "Bearer " + cookies.get(TOKEN_COOKIE_NAME) };
 };
 
+/** Whether there is a session token. Used to skip requests that would bounce
+ *  an anonymous visitor to the login screen. */
+const isAuthenticated = () => Boolean(cookies.get(TOKEN_COOKIE_NAME));
+
 const HEADERS = {
     headers: { Authorization: "Bearer " + cookies.get(TOKEN_COOKIE_NAME) },
 };
@@ -280,6 +284,24 @@ const Endpoints = {
     createOrUpdateCategory: async (data, category_id) => {
         const id = category_id ?? "";
         return post(`category/${id}`, data);
+    },
+
+    isAuthenticated: () => isAuthenticated(),
+
+    getCategoryTypeSuggestions: async () => {
+        return get("category-type-suggestions");
+    },
+
+    acceptCategoryTypeSuggestions: async (ids) => {
+        return post("category-type-suggestions/accept", { ids });
+    },
+
+    dismissCategoryTypeSuggestions: async () => {
+        return post("category-type-suggestions/dismiss", {});
+    },
+
+    markCategoryTypesTourSeen: async () => {
+        return post("category-type-suggestions/tour-seen", {});
     },
 
     getParentCategories: async () => {

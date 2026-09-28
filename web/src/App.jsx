@@ -5,6 +5,7 @@ import "./App.css";
 
 import AppRoutes from "./AppRoutes";
 import ChatBot from "./Components/ChatBot/ChatBot";
+import CategoryTypesIntro from "./Components/CategoryTypesIntro";
 import BottomMenu from "./layout/BottomMenu";
 import { useSessionManager } from "./hooks/useSessionManager";
 
@@ -69,6 +70,7 @@ function App() {
                 <BrowserRouter>
                     <AppRoutes />
                     <ConditionalFloatingUI />
+                    <CategoryTypesIntro />
                 </BrowserRouter>
             </div>
         </NextUIProvider>

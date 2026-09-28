@@ -9,6 +9,7 @@ use App\Http\Controllers\BalanceController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CategoryTypeSuggestionController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\UserController;
@@ -70,6 +71,13 @@ Route::prefix('record')->middleware(['auth:sanctum', 'token.refresh'])->group(fu
     Route::post('', [RecordController::class, 'create']);
     Route::post('{id}', [RecordController::class, 'update']);
     Route::delete('{id}', [RecordController::class, 'delete']);
+});
+
+Route::prefix('category-type-suggestions')->middleware(['auth:sanctum', 'token.refresh'])->group(function () {
+    Route::get('', [CategoryTypeSuggestionController::class, 'index']);
+    Route::post('accept', [CategoryTypeSuggestionController::class, 'accept']);
+    Route::post('dismiss', [CategoryTypeSuggestionController::class, 'dismiss']);
+    Route::post('tour-seen', [CategoryTypeSuggestionController::class, 'tourSeen']);
 });
 
 Route::prefix('category')->middleware(['auth:sanctum', 'token.refresh'])->group(function () {
