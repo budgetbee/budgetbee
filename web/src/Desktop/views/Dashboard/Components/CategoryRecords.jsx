@@ -35,8 +35,14 @@ export default function CategoryRecords({ searchData, onRecordChange }) {
     };
 
     const getRecordsByCategory = async (categoryId) => {
-        const data = await Api.getRecordsByCategory(categoryId);
-        setRecords(data);
+        const data = await Api.getRecordsByCategory(
+            categoryId,
+            searchData?.from_date,
+            searchData?.to_date
+        );
+        if (Array.isArray(data)) {
+            setRecords(data);
+        }
     };
 
     const handleShowRecords = (category) => {

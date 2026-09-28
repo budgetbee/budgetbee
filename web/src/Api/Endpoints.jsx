@@ -261,9 +261,12 @@ const Endpoints = {
         return get(`record/last?${queryString}`);
     },
 
-    getRecordsByCategory: async (id, from_date) => {
-        const fromDate = from_date ? "?from=" + from_date : "";
-        return get(`record/category/${id}${fromDate}`);
+    getRecordsByCategory: async (id, from_date, to_date) => {
+        const params = new URLSearchParams();
+        if (from_date) params.append("from", from_date);
+        if (to_date) params.append("to", to_date);
+        const queryString = params.toString();
+        return get(`record/category/${id}${queryString ? "?" + queryString : ""}`);
     },
 
     getCategory: async (id) => {
