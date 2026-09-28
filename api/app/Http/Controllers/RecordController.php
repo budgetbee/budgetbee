@@ -211,7 +211,12 @@ class RecordController extends Controller
             ->where('user_id', $request->user()->id)
             ->orderByDesc('date')
             ->orderByDesc('id');
-        $records = $request->query->get('from') ? $records->where('date', '>=', (new DateTime($request->query->get('from')))->format('Y-m-d')) : $records;
+        if ($request->query('from')) {
+            $records->where('date', '>=', (new DateTime($request->query('from')))->format('Y-m-d'));
+        }
+        if ($request->query('to')) {
+            $records->where('date', '<=', (new DateTime($request->query('to')))->format('Y-m-d'));
+        }
         $records = $records->get();
 
         return response()->json($records);

@@ -60,6 +60,27 @@ export default function List() {
 
     const abortControllerRef = useRef(null);
     const isLoadingRef = useRef(false);
+    const requestIdRef = useRef(0);
+
+    // When any filter changes, the list is reset: cleared and taken back to page 1.
+    const filtersKey = JSON.stringify({
+        f: activeFilters,
+        df: activeDateFrom,
+        dt: activeDateTo,
+        a: activeAccountIds,
+    });
+    const filtersKeyRef = useRef(filtersKey);
+    useEffect(() => {
+        if (filtersKeyRef.current !== filtersKey) {
+            filtersKeyRef.current = filtersKey;
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+            setData([]);
+            setPage(1);
+            setMoreData(true);
+        }
+    }, [filtersKey]);
 
     useEffect(() => {
         Api.getParentCategories().then(setParentCategories);
@@ -74,19 +95,24 @@ export default function List() {
         abortControllerRef.current = controller;
 
         async function getRecords() {
+            const requestId = ++requestIdRef.current;
             isLoadingRef.current = true;
             const apiFilters = { ...activeFilters };
             if (activeDateFrom) apiFilters.from_date = activeDateFrom;
             if (activeDateTo) apiFilters.to_date = activeDateTo;
             if (activeAccountIds.length > 0) apiFilters.account_id = activeAccountIds;
             const newData = await Api.getPaginateRecords(null, page, apiFilters);
-            if (controller.signal.aborted) return;
+            if (controller.signal.aborted || requestId !== requestIdRef.current) return;
             if (!Array.isArray(newData)) {
                 setMoreData(false);
                 isLoadingRef.current = false;
                 return;
             }
-            setData((prevData) => (page === 1 ? newData : [...prevData, ...newData]));
+            setData((prevData) => {
+                if (page === 1) return newData;
+                const seen = new Set(prevData.map((r) => r.id));
+                return [...prevData, ...newData.filter((r) => !seen.has(r.id))];
+            });
             if (newData.length === 0) {
                 setMoreData(false);
             }
@@ -100,10 +126,11 @@ export default function List() {
     }, [page, moreData, activeFilters, activeDateFrom, activeDateTo, activeAccountIds]);
 
     function loadMore() {
-        if (!isLoadingRef.current && moreData &&
+        if (!isLoadingRef.current && moreData && data.length > 0 &&
             window.scrollY + window.innerHeight >=
-            document.documentElement.scrollHeight
+            document.documentElement.scrollHeight - 100
         ) {
+            isLoadingRef.current = true;
             setPage((prevPage) => prevPage + 1);
         }
     }
@@ -113,7 +140,10 @@ export default function List() {
         return () => {
             window.removeEventListener("scroll", loadMore);
         };
-    }, []);
+        // Re-registered when these change so the listener reads the current state
+        // (otherwise it keeps the `moreData` value from the first render and keeps
+        // requesting pages forever).
+    }, [moreData, data.length]);
 
     const handleFilter = (field, value) => {
         setFormFilters((prev) => ({ ...prev, [field]: value }));
