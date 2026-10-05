@@ -5,8 +5,18 @@ export default function Dropzone({ setSelectedFile, setIsDropped }) {
     const { acceptedFiles, getRootProps, getInputProps, isDragActive } =
         useDropzone({
             multiple: false,
+            // Bank statements are CSV most of the time, and browsers do not
+            // agree on its type: text/csv normally, application/csv, and on
+            // Windows it is reported as application/vnd.ms-excel. The ".csv"
+            // extension is what really lets the file through (react-dropzone
+            // matches extensions by suffix and mime types exactly); the aliases
+            // are there so the file picker also shows CSV on every system.
+            // text/plain is deliberately NOT listed: it would make every .txt
+            // look acceptable.
             accept: {
-                "application/vnd.ms-excel": [".xls"],
+                "text/csv": [".csv"],
+                "application/csv": [".csv"],
+                "application/vnd.ms-excel": [".xls", ".csv"],
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
                     [".xlsx"],
                 "application/json": [".json"],

@@ -420,6 +420,12 @@ const Endpoints = {
         return post(`import`, data);
     },
 
+    // Reads the uploaded file and reports its columns, so the app can ask the
+    // user to map them when the file is not the standard shape.
+    inspectImport: async (data) => {
+        return post(`import/inspect`, data);
+    },
+
     getAllBudgets: async () => {
         return get(`budget`);
     },

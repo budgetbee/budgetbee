@@ -120,6 +120,9 @@ Route::prefix('balance')->middleware(['auth:sanctum', 'token.refresh'])->group(f
 });
 
 Route::prefix('import')->middleware(['auth:sanctum', 'token.refresh'])->group(function () {
+    // Reads the file and reports its columns so the app can ask the user to map
+    // them when the file is not the standard shape (a bank export, for instance).
+    Route::post('inspect', [ImportController::class, 'inspect']);
     Route::post('', [ImportController::class, 'import']);
 });
 

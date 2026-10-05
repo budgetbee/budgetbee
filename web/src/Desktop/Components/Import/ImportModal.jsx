@@ -9,6 +9,7 @@ import {
     useDisclosure,
 } from "@nextui-org/react";
 import Dropzone from "./Dropzone";
+import ColumnMappingModal from "./ColumnMappingModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Api from "../../../Api/Endpoints";
 
@@ -21,42 +22,97 @@ export default function ImportModal() {
     const [selectedFile, setSelectedFile] = useState(null);
     const [autoCategorise, setAutoCategorise] = useState(false);
     const [summary, setSummary] = useState(null);
+    // Set when the file does not follow the standard format: then the user is
+    // asked what each column holds before anything is imported.
+    const [inspection, setInspection] = useState(null);
+    const [mappingOpen, setMappingOpen] = useState(false);
 
-    const handleUploadFile = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setErrorMsg(null);
-        const formData = new FormData(e.target);
+    const buildFormData = (autoCategoriseFlag, mapping, accountId, skipRows) => {
+        const formData = new FormData();
+        // The real FormData goes to the API: a plain object would be JSON
+        // serialized and the file would never arrive.
         formData.append("file", selectedFile, selectedFile.name);
-        // Only rows that arrive without a category are categorised; anything the
-        // user's own system already categorised is left exactly as it is.
-        formData.append("auto_categorise", autoCategorise ? "1" : "0");
-        // Send the real FormData so axios uses multipart/form-data — a plain
-        // object would be JSON-serialized and the file would never arrive.
-        const response = await Api.importRecords(formData);
+        formData.append("auto_categorise", autoCategoriseFlag ? "1" : "0");
+        if (mapping) {
+            formData.append("mapping", JSON.stringify(mapping));
+        }
+        if (accountId) {
+            formData.append("account_id", accountId);
+        }
+        // Rows of the file the user left out on screen: the holder, the balance,
+        // a total at the end. Numbered as they are in their file.
+        if (skipRows && skipRows.length > 0) {
+            formData.append("skip_rows", JSON.stringify(skipRows));
+        }
+        return formData;
+    };
 
-        if (response.error) {
+    const doImport = async (autoCategoriseFlag, mapping = null, accountId = null, skipRows = null) => {
+        const response = await Api.importRecords(
+            buildFormData(autoCategoriseFlag, mapping, accountId, skipRows)
+        );
+
+        if (response?.error) {
             setErrorMsg(response.error);
         } else {
             setSummary(response);
             setUploadOk(true);
         }
-
         setLoading(false);
+    };
+
+    const handleUploadFile = async (e) => {
+        e.preventDefault();
+        if (!selectedFile) {
+            return;
+        }
+
+        setLoading(true);
+        setErrorMsg(null);
+
+        // First read the file: a standard file imports straight away, any other
+        // one (a bank export, for instance) asks for the columns.
+        const inspectionResponse = await Api.inspectImport(buildFormData(false));
+
+        if (inspectionResponse?.error) {
+            setErrorMsg(inspectionResponse.error);
+            setLoading(false);
+            return;
+        }
+
+        if (!inspectionResponse?.standard) {
+            setInspection(inspectionResponse);
+            setMappingOpen(true);
+            setLoading(false);
+            return;
+        }
+
+        await doImport(autoCategorise);
+    };
+
+    const handleMappingConfirm = async (mapping, accountId, categorise, skipRows = []) => {
+        setLoading(categorise ? "categorise" : "plain");
+        setMappingOpen(false);
+        await doImport(categorise, mapping, accountId, skipRows);
     };
 
     const handleCloseModal = () => {
         setUploadOk(false);
         setSelectedFile(null);
         setIsDropped(false);
+        setSummary(null);
+        setInspection(null);
+        setMappingOpen(false);
+        setLoading(false);
+        setErrorMsg(null);
         onOpenChange();
     };
 
     return (
         <>
             <Button
-                onPress={onOpen} 
-                color="primary" 
+                onPress={onOpen}
+                color="primary"
                 className="w-full"
                 startContent={
                     <FontAwesomeIcon icon="fa-solid fa-cloud-arrow-up" />
@@ -88,6 +144,18 @@ export default function ImportModal() {
                                             </Button>
                                         </a>
                                         <a
+                                            href="/import/csvTemplate.csv"
+                                            download="csv_template.csv"
+                                        >
+                                            <Button
+                                                color="default"
+                                                className="text-white"
+                                                type="button"
+                                            >
+                                                CSV template
+                                            </Button>
+                                        </a>
+                                        <a
                                             href="/import/jsonTemplate.json"
                                             download="json_template.json"
                                         >
@@ -103,11 +171,18 @@ export default function ImportModal() {
                                 </ModalHeader>
                                 <ModalBody>
                                     <p className="text-xs text-gray-400">
-                                        A movement without a category is accepted: it is kept as Unknown.
-                                        Use Upload and categorise and the app will look for the best category
-                                        for those movements with your own rules and what it has already
-                                        learned. Movements that already bring a category are respected and
-                                        are never changed.
+                                        Upload your movements in CSV, JSON, XLS or XLSX. You can use
+                                        the file your bank gives you: if its columns are not the
+                                        standard ones, we will show you what we found in them so you
+                                        can say what each column holds, and we will remember it for
+                                        the next time.
+                                    </p>
+                                    <p className="text-xs text-gray-400">
+                                        A movement without a category is accepted: it is kept as
+                                        Unknown. Use Upload and categorise and the app will look for
+                                        the best category with your own rules and what it has already
+                                        learned. Movements that already bring a category are
+                                        respected and are never changed.
                                     </p>
                                     <Dropzone
                                         setSelectedFile={setSelectedFile}
@@ -137,6 +212,12 @@ export default function ImportModal() {
                                                     can give them one in Auto-categorisation.
                                                 </div>
                                             )}
+                                            {summary?.rows_left_out > 0 && (
+                                                <div className="text-xs text-gray-500">
+                                                    {summary.rows_left_out} line(s) of the file were left
+                                                    out, as you asked.
+                                                </div>
+                                            )}
                                             {summary?.skipped > 0 && (
                                                 <div className="text-xs text-gray-500">
                                                     {summary.skipped} duplicate or invalid row(s) skipped.
@@ -157,10 +238,10 @@ export default function ImportModal() {
                                                 type="submit"
                                                 className="text-white flex-1"
                                                 isDisabled={!isDropped}
-                                                isLoading={loading && !autoCategorise}
+                                                isLoading={loading === true && !autoCategorise}
                                                 onClick={() => setAutoCategorise(false)}
                                                 startContent={
-                                                    !loading && (
+                                                    loading !== true && (
                                                         <FontAwesomeIcon icon="fa-solid fa-check" />
                                                     )
                                                 }
@@ -172,10 +253,10 @@ export default function ImportModal() {
                                                 type="submit"
                                                 className="flex-1"
                                                 isDisabled={!isDropped}
-                                                isLoading={loading && autoCategorise}
+                                                isLoading={loading === true && autoCategorise}
                                                 onClick={() => setAutoCategorise(true)}
                                                 startContent={
-                                                    !loading && (
+                                                    loading !== true && (
                                                         <FontAwesomeIcon icon="fa-solid fa-wand-magic-sparkles" />
                                                     )
                                                 }
@@ -190,6 +271,16 @@ export default function ImportModal() {
                     )}
                 </ModalContent>
             </Modal>
+
+            {/* Only shown when the file columns are not the standard ones. */}
+            <ColumnMappingModal
+                isOpen={mappingOpen}
+                onClose={() => setMappingOpen(false)}
+                inspection={inspection}
+                loading={loading}
+                errorMsg={errorMsg}
+                onConfirm={handleMappingConfirm}
+            />
         </>
     );
 }
