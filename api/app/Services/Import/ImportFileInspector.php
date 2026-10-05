@@ -657,14 +657,41 @@ class ImportFileInspector
      */
     public function detectDelimiter(string $content): string
     {
-        $lines = array_slice(preg_split('/\r\n|\n|\r/', $content) ?: [], 0, 5);
+        // Every line that carries the delimiter, not just the first few: a bank
+        // export usually starts with the account, the holder and the period, and
+        // the header row can sit well below those. Counting only the first lines
+        // found no delimiter at all and fell back to the comma, which then broke
+        // the file apart on the decimal comma of every amount.
+        $lines = [];
+        foreach (preg_split('/\r\n|\n|\r/', $content) ?: [] as $line) {
+            $line = trim($line);
+            if ($line !== '') {
+                $lines[] = $line;
+            }
+        }
+        $lines = array_slice($lines, 0, 200);
+
         $best = ',';
-        $bestCount = 0;
+        $bestScore = 0;
         foreach ([',', ';', "\t", '|'] as $candidate) {
-            $counts = array_map(fn ($line) => substr_count($line, $candidate), $lines);
-            $count = $counts ? (int) round(array_sum($counts) / count($counts)) : 0;
-            if ($count > $bestCount) {
-                $bestCount = $count;
+            // How many lines split into the same number of pieces with this
+            // delimiter: a real delimiter is the one that repeats the same
+            // number of columns line after line.
+            $counts = [];
+            foreach ($lines as $line) {
+                $pieces = substr_count($line, $candidate);
+                if ($pieces > 0) {
+                    $counts[$pieces] = ($counts[$pieces] ?? 0) + 1;
+                }
+            }
+            if (! $counts) {
+                continue;
+            }
+            arsort($counts);
+            $pieces = (int) array_key_first($counts);
+            $score = $counts[$pieces] * $pieces;
+            if ($score > $bestScore) {
+                $bestScore = $score;
                 $best = $candidate;
             }
         }

@@ -101,6 +101,33 @@ class ImportFileInspectorTest extends TestCase
         $this->assertStringContainsString('CAFÉ', $inspector->toUtf8($cp1252));
     }
 
+    /** The header sits six rows down and the amounts use the decimal comma, so
+     *  the first lines of the file carry no delimiter at all. */
+    public function test_it_detects_the_delimiter_below_a_preamble(): void
+    {
+        $csv = "EXAMPLE BANK - STATEMENT\n"
+            . "Account 0000 0000\n"
+            . "Holder JOHN DOE\n"
+            . "Period 01/10/2026 - 31/10/2026\n"
+            . "\n"
+            . "Fecha;Concepto;Importe\n"
+            . "02/10/2026;OPENING BALANCE;1.000,00\n"
+            . "03/10/2026;CARD PURCHASE ACME MART;-45,20\n"
+            . "31/10/2026;TOTAL;1.954,80\n";
+
+        $inspector = new ImportFileInspector();
+
+        $this->assertSame(';', $inspector->detectDelimiter($csv));
+
+        $data = $inspector->inspect($this->upload($csv, 'bank.csv'));
+
+        $this->assertSame(['Fecha', 'Concepto', 'Importe'], $data['columns']);
+        $this->assertSame(6, $data['header_row']);
+        $this->assertSame(0, $data['suggested']['date']);
+        $this->assertSame(1, $data['suggested']['name']);
+        $this->assertSame(2, $data['suggested']['amount']);
+    }
+
     /** A bank export opens with the account, the holder and the balance: the
      *  header is rows below, and until now everything was read as «(column N)». */
     public function test_it_finds_the_header_row_under_a_preamble(): void
