@@ -66,6 +66,11 @@ export default function FormModal({ isOpen, onOpenChange, record_id, recordData,
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const formRef = useRef();
 
+    // Editing a movement that already exists. Its category is what the user chose
+    // when he saved it, so there is nothing to predict and the rules do not get a
+    // say here: they only suggest while a NEW movement is being written.
+    const isExistingRecord = Boolean(record_id) || Boolean(recordData?.id);
+
     const tc = typeConfig[type] || {};
 
     useEffect(() => {
@@ -141,6 +146,86 @@ export default function FormModal({ isOpen, onOpenChange, record_id, recordData,
         setAmount(0);
     };
 
+    // What the categoriser thinks, while the user types the description.
+    const [suggestion, setSuggestion] = useState(null);
+    const [saveError, setSaveError] = useState("");
+    const [allCategories, setAllCategories] = useState(null);
+    // Once the user picks a category by hand, suggestions stop touching it.
+    const categoryTouched = useRef(false);
+    // The category that is currently there because the rules suggested it (null
+    // when there is no suggestion or when he picked it himself).
+    const suggestedId = useRef(null);
+
+    // Take back a suggestion. It never touches a category picked by hand: that
+    // one marks the form as touched and this stops being called.
+    const clearSuggestion = () => {
+        if (suggestedId.current === null) {
+            return;
+        }
+        suggestedId.current = null;
+        setSuggestion(null);
+        setCategory("");
+        setParentCategory("");
+    };
+
+    useEffect(() => {
+        if (allCategories !== null) {
+            return;
+        }
+        Api.getCategories()
+            .then((data) => setAllCategories(data || []))
+            .catch(() => setAllCategories([]));
+    }, [allCategories]);
+
+    // Type a name and the app asks its own rules what this movement usually is,
+    // and fills the category in. Same categoriser the imports use — deterministic,
+    // no AI. A hand-picked category always wins, and an existing movement is never
+    // touched: it already has the category the user gave it when he saved it.
+    useEffect(() => {
+        if (isExistingRecord || type === "transfer" || categoryTouched.current) {
+            return;
+        }
+
+        const text = (name || "").trim();
+        if (text.length < 4) {
+            // Too little to recognise anything: nothing to suggest.
+            clearSuggestion();
+            return;
+        }
+
+        const timer = setTimeout(async () => {
+            try {
+                const result = await Api.predictCategoryByRules(text);
+                // The endpoint answers { merchant_key, prediction: { category_id, ... } }.
+                const prediction = result?.prediction;
+                if (categoryTouched.current) {
+                    return;
+                }
+
+                if (!prediction?.category_id) {
+                    // No rule knows what he is typing: take the suggestion back, so
+                    // the form never keeps a category the text no longer justifies.
+                    clearSuggestion();
+                    return;
+                }
+
+                const parentOf = (allCategories || []).find(
+                    (c) => Number(c.id) === Number(prediction.category_id)
+                )?.parent_category_id;
+                if (parentOf) {
+                    setParentCategory(parentOf);
+                }
+                setCategory(prediction.category_id);
+                suggestedId.current = prediction.category_id;
+                setSuggestion({ id: prediction.category_id, name: prediction.category_name, source: prediction.source });
+            } catch (e) {
+                // A suggestion is a nicety: never get in the way of the form.
+            }
+        }, 600);
+
+        return () => clearTimeout(timer);
+    }, [name, type, allCategories, isExistingRecord]);
+
     const doSave = useCallback(async (isSaveAndNew) => {
         if (!type) {
             setTypeError(true);
@@ -155,10 +240,31 @@ export default function FormModal({ isOpen, onOpenChange, record_id, recordData,
         }
 
         setLoading(true);
+        setSaveError("");
         const formData = new FormData(currentForm);
         formData.set("amount", amount);
+        // An empty category must not travel as "": the API would reject it and the
+        // modal would close as if everything had gone fine.
+        if (!category) {
+            formData.delete("category_id");
+        }
+        if (!parentCategory) {
+            formData.delete("parent_category_id");
+        }
         const formObject = Object.fromEntries(formData.entries());
-        await Api.createRecord(formObject, record_id);
+
+        try {
+            const response = await Api.createRecord(formObject, record_id);
+            if (response && (response.error || response.errors || response.message === undefined && response.id === undefined)) {
+                setSaveError(response.error || "The movement could not be saved. Check the fields.");
+                setLoading(false);
+                return;
+            }
+        } catch (e) {
+            setSaveError(e?.message || "The movement could not be saved. Check the fields.");
+            setLoading(false);
+            return;   // keep the modal open instead of closing on a silent failure
+        }
 
         if (record) fetchAgain();
         if (onRecordChange) onRecordChange();
@@ -171,7 +277,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, recordData,
         } else {
             onOpenChange();
         }
-    }, [type, amount, record_id, record, fetchAgain, onRecordChange, onOpenChange]);
+    }, [type, amount, category, parentCategory, record_id, record, fetchAgain, onRecordChange, onOpenChange]);
 
     const handleFormSubmit = (e) => {
         e.preventDefault();
@@ -287,6 +393,22 @@ export default function FormModal({ isOpen, onOpenChange, record_id, recordData,
                                     onChange={e => setAmount(e.target.value)}
                                 />
                             </div>
+
+                            {/* Description, right under the amount: it is the concept,
+                                the first thing he types, and what the rules read to
+                                suggest a category. Same black as the amount — the
+                                input is transparent — with a border around it. */}
+                            <div className="w-full px-5 mt-3">
+                                <input
+                                    type="text"
+                                    name="name"
+                                    className="w-full bg-transparent border border-gray-800 focus:border-emerald-500/60 rounded-2xl px-4 py-2.5 text-white text-sm outline-none placeholder-gray-600 transition-colors"
+                                    placeholder="Description..."
+                                    value={name}
+                                    onChange={e => setName(e.target.value)}
+                                />
+                            </div>
+
                             {selectedAccount && (
                                 <div className="text-gray-500 text-xs mt-1">
                                     Available: {selectedAccount.currency_symbol}{" "}
@@ -434,7 +556,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, recordData,
                                                 items={visibleParentCategories}
                                                 selectionMode="single"
                                                 selectedKeys={parentCategory ? [parentCategory.toString()] : []}
-                                                onChange={e => setParentCategory(e.target.value)}
+                                                onChange={e => { categoryTouched.current = true; suggestedId.current = null; setSuggestion(null); setParentCategory(e.target.value); }}
                                                 classNames={selectClassNames}
                                                 renderValue={() => (
                                                     <div className="flex flex-row items-center gap-x-2">
@@ -471,7 +593,7 @@ export default function FormModal({ isOpen, onOpenChange, record_id, recordData,
                                                 items={categories}
                                                 selectionMode="single"
                                                 selectedKeys={category ? [category.toString()] : []}
-                                                onChange={e => setCategory(e.target.value)}
+                                                onChange={e => { categoryTouched.current = true; suggestedId.current = null; setSuggestion(null); setCategory(e.target.value); }}
                                                 classNames={selectClassNames}
                                                 renderValue={() => (
                                                     <div className="flex flex-row items-center gap-x-2">
@@ -503,40 +625,47 @@ export default function FormModal({ isOpen, onOpenChange, record_id, recordData,
                                 </div>
                             )}
 
-                            {/* Date and Description */}
-                            <div className="flex flex-row gap-x-2">
-                                <div className="flex-1 bg-[#1a1a2e] rounded-2xl p-3 border border-gray-800">
-                                    <div className="text-gray-500 text-xs uppercase tracking-wider mb-1">Date</div>
-                                    <DatePicker
-                                        selected={date ? new Date(date) : null}
-                                        onChange={(d) => setDate(d ? moment(d).format("YYYY-MM-DD") : null)}
-                                        customInput={
-                                            <input
-                                                className="w-full bg-transparent text-white text-sm outline-none cursor-pointer [color-scheme:dark]"
-                                                placeholder="Select date"
-                                                readOnly
-                                            />
-                                        }
-                                        dateFormat="yyyy-MM-dd"
-                                        wrapperClassName="w-full"
-                                        popperPlacement="bottom"
-                                        popperModifiers={[
-                                            { name: "preventOverflow", options: { boundary: "viewport", padding: 8 } },
-                                            { name: "flip", enabled: false },
-                                        ]}
-                                    />
-                                    <input type="hidden" name="date" value={date ?? ""} />
+                            {suggestion && Number(category) === Number(suggestion.id) && (
+                                <div className="mt-2 flex items-center justify-between gap-2 text-xs text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3 py-2">
+                                    <span>Suggested from your rules: {suggestion.name}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            suggestedId.current = null;
+                                            setSuggestion(null);
+                                            setCategory("");
+                                            setParentCategory("");
+                                        }}
+                                        className="text-gray-400 hover:text-white"
+                                    >
+                                        Clear
+                                    </button>
                                 </div>
-                                <div className="flex-[2] bg-[#1a1a2e] rounded-2xl p-3 border border-gray-800">
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        className="w-full bg-transparent text-white text-sm outline-none placeholder-gray-500"
-                                        placeholder="Description..."
-                                        value={name}
-                                        onChange={e => setName(e.target.value)}
-                                    />
-                                </div>
+                            )}
+
+                            {/* Date. The description is not here any more: it lives
+                                under the amount, at the top of the form. */}
+                            <div className="bg-[#1a1a2e] rounded-2xl p-3 border border-gray-800">
+                                <div className="text-gray-500 text-xs uppercase tracking-wider mb-1">Date</div>
+                                <DatePicker
+                                    selected={date ? new Date(date) : null}
+                                    onChange={(d) => setDate(d ? moment(d).format("YYYY-MM-DD") : null)}
+                                    customInput={
+                                        <input
+                                            className="w-full bg-transparent text-white text-sm outline-none cursor-pointer [color-scheme:dark]"
+                                            placeholder="Select date"
+                                            readOnly
+                                        />
+                                    }
+                                    dateFormat="yyyy-MM-dd"
+                                    wrapperClassName="w-full"
+                                    popperPlacement="bottom"
+                                    popperModifiers={[
+                                        { name: "preventOverflow", options: { boundary: "viewport", padding: 8 } },
+                                        { name: "flip", enabled: false },
+                                    ]}
+                                />
+                                <input type="hidden" name="date" value={date ?? ""} />
                             </div>
 
                             {/* Exchange rate */}
@@ -562,6 +691,12 @@ export default function FormModal({ isOpen, onOpenChange, record_id, recordData,
                         </div>
 
                     </ModalBody>
+
+                    {saveError && (
+                        <div className="mx-5 mb-1 text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2">
+                            {saveError}
+                        </div>
+                    )}
 
                     <ModalFooter className="pt-3 pb-4 px-5 border-t border-gray-800/50">
                         <div className="flex flex-row gap-x-3 w-full">

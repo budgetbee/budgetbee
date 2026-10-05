@@ -319,6 +319,55 @@ const Endpoints = {
         return del(`record/${record_id}`);
     },
 
+    // What the user's own rules say about a text (his own or learned ones), for
+    // the record form while he types the concept. Deterministic: no AI.
+    predictCategoryByRules: async (text) => {
+        return post(`record/predict`, { text });
+    },
+
+    getCategoryRules: async () => {
+        return get(`category-rules`);
+    },
+
+    saveCategoryRule: async (data, rule_id) => {
+        const id = rule_id ?? "";
+        return post(`category-rules/${id}`, data);
+    },
+
+    deleteCategoryRule: async (rule_id) => {
+        return del(`category-rules/${rule_id}`);
+    },
+
+    testCategoryRule: async (data) => {
+        return post(`category-rules/test`, data);
+    },
+
+    // The movements behind a count: a rule ("27 movements") or a suggestion
+    // ("5 movements categorised like this"). Same shape the dashboard modal
+    // already knows how to paint.
+    getCategoryRuleRecords: async (data) => {
+        return post(`category-rules/records`, data);
+    },
+
+    // Saying no to a suggestion: that merchant stops being suggested and the
+    // categoriser stops applying it on its own.
+    ignoreCategorySuggestion: async (merchant_key) => {
+        return post(`category-rules/candidates/ignore`, { merchant_key });
+    },
+
+    // Putting an ignored suggestion back.
+    restoreCategorySuggestion: async (merchant_key) => {
+        return post(`category-rules/candidates/restore`, { merchant_key });
+    },
+
+    applyCategoryRule: async (data) => {
+        return post(`category-rules/apply`, data);
+    },
+
+    getCategoryCandidates: async () => {
+        return get(`category-rules/candidates`);
+    },
+
     getBalance: async (data) => {
         const queryString = queryBuilder(data);
         return get(`balance?${queryString}`);
@@ -389,10 +438,6 @@ const Endpoints = {
 
     deleteBudget: async (id) => {
         return del(`budget/${id}`);
-    },
-
-    predictCategory: async (text) => {
-        return post('ai/predict-category', {name: text})
     },
 
     chatMessage: async (message, files = null) => {

@@ -28,6 +28,7 @@ import SettingsUserList from "./Desktop/views/Settings/UserList";
 import SettingsUserFormDesktop from "./Desktop/views/Settings/Components/UserForm";
 import CurrencySettingsDesktop from "./Desktop/views/Settings/CurrencySettings";
 import ApiKeySettingsDesktop from "./Desktop/views/Settings/ApiKeySettings";
+import CategoryRulesDesktop from "./Desktop/views/Settings/CategoryRules";
 import UpcomingExpenseDashboardDesktop from "./Desktop/views/UpcomingExpense/Dashboard";
 import LoanListDesktop from "./Desktop/views/Loan/LoanListDesktop";
 import LoanFormDesktop from "./Desktop/views/Loan/LoanFormDesktop";
@@ -69,6 +70,7 @@ function AppRoutes() {
                 <Route path="/settings/users/:user_id?" element={isMobile ? <SettingsUserForm /> : <SettingsUserFormDesktop />} />
                 <Route path="/settings/currency" element={isMobile ? <CurrencySettingsDesktop /> : <CurrencySettingsDesktop />} />
                 <Route path="/settings/api-keys" element={isMobile ? <ApiKeySettingsDesktop /> : <ApiKeySettingsDesktop />} />
+                <Route path="/settings/category-rules" element={isMobile ? <CategoryRulesDesktop /> : <CategoryRulesDesktop />} />
                 <Route path="/reports" element={isMobile ? <ReportsDashboard /> : <ReportsDashboardDesktop />} />
             </Routes>
         </>

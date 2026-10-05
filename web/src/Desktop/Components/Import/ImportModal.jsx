@@ -19,6 +19,8 @@ export default function ImportModal() {
     const [errorMsg, setErrorMsg] = useState(null);
     const [uploadOk, setUploadOk] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
+    const [autoCategorise, setAutoCategorise] = useState(false);
+    const [summary, setSummary] = useState(null);
 
     const handleUploadFile = async (e) => {
         e.preventDefault();
@@ -26,6 +28,9 @@ export default function ImportModal() {
         setErrorMsg(null);
         const formData = new FormData(e.target);
         formData.append("file", selectedFile, selectedFile.name);
+        // Only rows that arrive without a category are categorised; anything the
+        // user's own system already categorised is left exactly as it is.
+        formData.append("auto_categorise", autoCategorise ? "1" : "0");
         // Send the real FormData so axios uses multipart/form-data — a plain
         // object would be JSON-serialized and the file would never arrive.
         const response = await Api.importRecords(formData);
@@ -33,6 +38,7 @@ export default function ImportModal() {
         if (response.error) {
             setErrorMsg(response.error);
         } else {
+            setSummary(response);
             setUploadOk(true);
         }
 
@@ -96,6 +102,13 @@ export default function ImportModal() {
                                     </div>
                                 </ModalHeader>
                                 <ModalBody>
+                                    <p className="text-xs text-gray-400">
+                                        A movement without a category is accepted: it is kept as Unknown.
+                                        Use Upload and categorise and the app will look for the best category
+                                        for those movements with your own rules and what it has already
+                                        learned. Movements that already bring a category are respected and
+                                        are never changed.
+                                    </p>
                                     <Dropzone
                                         setSelectedFile={setSelectedFile}
                                         setIsDropped={setIsDropped}
@@ -108,27 +121,68 @@ export default function ImportModal() {
                                         </span>
                                     )}
                                     {uploadOk ? (
-                                        <Button
-                                            color="success"
-                                            type="button"
-                                            onPress={handleCloseModal}
-                                        >
-                                            Upload successful!
-                                        </Button>
+                                        <div className="flex flex-col gap-2 w-full">
+                                            <div className="text-sm text-emerald-400">
+                                                Uploaded: {summary?.imported ?? 0}{" "}
+                                                {(summary?.imported ?? 0) === 1 ? "movement" : "movements"}
+                                            </div>
+                                            {summary?.auto_categorised > 0 && (
+                                                <div className="text-xs text-gray-400">
+                                                    {summary.auto_categorised} categorised automatically with your rules.
+                                                </div>
+                                            )}
+                                            {summary?.unknown > 0 && (
+                                                <div className="text-xs text-amber-400">
+                                                    {summary.unknown} arrived without a category and are in Unknown. You
+                                                    can give them one in Auto-categorisation.
+                                                </div>
+                                            )}
+                                            {summary?.skipped > 0 && (
+                                                <div className="text-xs text-gray-500">
+                                                    {summary.skipped} duplicate or invalid row(s) skipped.
+                                                </div>
+                                            )}
+                                            <Button
+                                                color="success"
+                                                type="button"
+                                                onPress={handleCloseModal}
+                                            >
+                                                Upload successful!
+                                            </Button>
+                                        </div>
                                     ) : (
-                                        <Button
-                                            color="primary"
-                                            type="submit"
-                                            isDisabled={!isDropped}
-                                            isLoading={loading}
-                                            startContent={
-                                                !loading && (
-                                                    <FontAwesomeIcon icon="fa-solid fa-check" />
-                                                )
-                                            }
-                                        >
-                                            Upload
-                                        </Button>
+                                        <div className="flex flex-col sm:flex-row gap-2 w-full">
+                                            <Button
+                                                color="default"
+                                                type="submit"
+                                                className="text-white flex-1"
+                                                isDisabled={!isDropped}
+                                                isLoading={loading && !autoCategorise}
+                                                onClick={() => setAutoCategorise(false)}
+                                                startContent={
+                                                    !loading && (
+                                                        <FontAwesomeIcon icon="fa-solid fa-check" />
+                                                    )
+                                                }
+                                            >
+                                                Upload
+                                            </Button>
+                                            <Button
+                                                color="primary"
+                                                type="submit"
+                                                className="flex-1"
+                                                isDisabled={!isDropped}
+                                                isLoading={loading && autoCategorise}
+                                                onClick={() => setAutoCategorise(true)}
+                                                startContent={
+                                                    !loading && (
+                                                        <FontAwesomeIcon icon="fa-solid fa-wand-magic-sparkles" />
+                                                    )
+                                                }
+                                            >
+                                                Upload and categorise
+                                            </Button>
+                                        </div>
                                     )}
                                 </ModalFooter>
                             </form>
