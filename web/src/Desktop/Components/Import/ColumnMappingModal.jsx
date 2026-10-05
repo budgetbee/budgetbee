@@ -44,6 +44,16 @@ const selectClassNames = {
     popoverContent: "bg-[#1a1a2e] border border-gray-700 text-white",
 };
 
+// The dropdown that lives in a column header: this is where the user says what
+// the column holds, on the table itself instead of in a list above it.
+const HEADER_SELECT_CLASSNAMES = {
+    ...selectClassNames,
+    base: "w-[190px]",
+    trigger:
+        "bg-[#12121f] border border-gray-700 rounded-xl h-auto min-h-[30px] px-2 py-1 data-[hover=true]:!bg-[#1a1a2e]",
+    value: "text-white font-medium text-xs",
+};
+
 // "1-5, 12, 20-22" -> [1,2,3,4,5,12,20,21,22]. Written the way a person writes
 // it, and forgiving: anything that is not a number is simply ignored.
 const parseRowNumbers = (text) => {
@@ -82,6 +92,8 @@ export default function ColumnMappingModal({
     loading,
     errorMsg,
     onConfirm,
+    onReinspect,
+    inspecting,
 }) {
     // column index -> field name ("" = ignore this column)
     const [mapping, setMapping] = useState({});
@@ -204,33 +216,105 @@ export default function ColumnMappingModal({
     const totalRows = inspection?.row_count ?? 0;
     const willImport = Math.max(totalRows - allSkipRows.length, 0);
 
+    // "This row is the header": everything above it is left out and the file is
+    // read again, so the table is rebuilt with the headers where the user says.
+    // It is the way out when the automatic search picks the wrong row.
+    const useAsHeader = (number) => {
+        if (!number || !onReinspect) {
+            return;
+        }
+        const above = Array.from({ length: number - 1 }, (_, index) => index + 1);
+        const next = [...new Set([...allSkipRows, ...above])]
+            .filter((n) => Number.isInteger(n) && n > 0 && n < number)
+            .sort((a, b) => a - b);
+        setTypedRows("");
+        setSkipRows(next);
+        onReinspect(next);
+    };
+
     // One table per end of the file, same shape, so both ends are tickable.
+    // The header of every column is a dropdown: the user reads the table and
+    // says, right there, what each column holds.
     const renderRowsTable = (rows, numbers, emptyText) => {
         if (!rows.length) {
             return <div className="px-3 py-2 text-xs text-gray-500">{emptyText}</div>;
         }
         return (
-            <div className="max-h-64 overflow-auto rounded-2xl border border-gray-800">
+            <div className="max-h-72 overflow-auto rounded-2xl border border-gray-800">
                 <table className="min-w-full text-left text-xs">
-                    <thead className="sticky top-0 bg-[#1a1a2e]">
+                    <thead className="sticky top-0 z-10 bg-[#1a1a2e]">
                         <tr>
-                            <th className="whitespace-nowrap border-b border-gray-700 px-3 py-2 font-medium text-gray-200">
+                            <th className="whitespace-nowrap border-b border-gray-700 px-3 py-2 align-top font-medium text-gray-200">
                                 Row
                             </th>
-                            {columns.map((column, index) => (
-                                <th
-                                    key={`head-${index}`}
-                                    className="whitespace-nowrap border-b border-gray-700 px-3 py-2 font-medium text-gray-200"
-                                >
-                                    {column || `(column ${index + 1})`}
-                                    {mapping[index] && (
-                                        <div className="text-[10px] font-normal text-emerald-300">
-                                            {FIELD_LABELS[mapping[index]]}
+                            {columns.map((column, index) => {
+                                const current = mapping[index] || "";
+                                const suggested = suggestedFor(index);
+                                return (
+                                    <th
+                                        key={`head-${index}`}
+                                        className="border-b border-gray-700 px-2 py-2 align-top font-medium text-gray-200"
+                                    >
+                                        <div
+                                            className="mb-1 flex items-center gap-1 truncate text-[11px] text-gray-400"
+                                            title={column}
+                                        >
+                                            <span className="truncate">
+                                                {column || `(column ${index + 1})`}
+                                            </span>
+                                            {suggested && !current && (
+                                                <span className="shrink-0 rounded-full bg-emerald-500/15 px-1.5 text-[9px] text-emerald-300">
+                                                    detected
+                                                </span>
+                                            )}
                                         </div>
-                                    )}
-                                </th>
-                            ))}
-                            <th className="whitespace-nowrap border-b border-gray-700 px-3 py-2 font-medium text-gray-200">
+                                        <Select
+                                            aria-label={`What is the column ${column || index + 1}`}
+                                            size="sm"
+                                            items={[
+                                                { key: "", label: "Ignore this column" },
+                                                ...Object.entries(FIELD_LABELS).map(([key, label]) => ({
+                                                    key,
+                                                    label,
+                                                })),
+                                            ]}
+                                            selectedKeys={[current]}
+                                            onChange={(event) =>
+                                                setColumnField(index, event.target.value)
+                                            }
+                                            classNames={{
+                                                ...HEADER_SELECT_CLASSNAMES,
+                                                trigger: `${HEADER_SELECT_CLASSNAMES.trigger} ${
+                                                    current
+                                                        ? "!border-emerald-500/40"
+                                                        : "!border-gray-700"
+                                                }`,
+                                            }}
+                                            renderValue={(items) =>
+                                                items.map((item) => (
+                                                    <span
+                                                        key={item.key}
+                                                        className={`text-xs ${
+                                                            item.key === ""
+                                                                ? "text-gray-500"
+                                                                : "text-emerald-300"
+                                                        }`}
+                                                    >
+                                                        {item.key === ""
+                                                            ? "Ignore this column"
+                                                            : FIELD_LABELS[item.key]}
+                                                    </span>
+                                                ))
+                                            }
+                                        >
+                                            {(item) => (
+                                                <SelectItem key={item.key}>{item.label}</SelectItem>
+                                            )}
+                                        </Select>
+                                    </th>
+                                );
+                            })}
+                            <th className="whitespace-nowrap border-b border-gray-700 px-3 py-2 align-top font-medium text-gray-200">
                                 Import
                             </th>
                         </tr>
@@ -239,10 +323,17 @@ export default function ColumnMappingModal({
                         {rows.map((row, rowIndex) => {
                             const number = numbers[rowIndex] ?? null;
                             const leftOut = number !== null && allSkipRows.includes(number);
+                            const isHeader = number !== null && number === headerRow;
                             return (
                                 <tr
                                     key={`row-${number ?? rowIndex}-${rowIndex}`}
-                                    className={leftOut ? "bg-[#12121f] opacity-40" : "bg-[#12121f]"}
+                                    className={
+                                        isHeader
+                                            ? "bg-emerald-500/10"
+                                            : leftOut
+                                            ? "bg-[#12121f] opacity-40"
+                                            : "bg-[#12121f]"
+                                    }
                                 >
                                     <td className="whitespace-nowrap border-b border-gray-800 px-3 py-1.5 text-gray-500">
                                         {number ?? "—"}
@@ -258,18 +349,35 @@ export default function ColumnMappingModal({
                                         </td>
                                     ))}
                                     <td className="whitespace-nowrap border-b border-gray-800 px-3 py-1.5">
-                                        <button
-                                            type="button"
-                                            onClick={() => toggleRow(number)}
-                                            disabled={!number}
-                                            className={
-                                                leftOut
-                                                    ? "rounded-full border border-gray-700 bg-[#1a1a2e] px-2 py-0.5 text-[10px] text-gray-300 hover:bg-[#252540]"
-                                                    : "rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 text-[10px] text-emerald-300 hover:bg-emerald-500/25"
-                                            }
-                                        >
-                                            {leftOut ? "Undo" : "Leave out"}
-                                        </button>
+                                        <div className="flex items-center gap-1">
+                                            <button
+                                                type="button"
+                                                onClick={() => toggleRow(number)}
+                                                disabled={!number}
+                                                className={
+                                                    leftOut
+                                                        ? "rounded-full border border-gray-700 bg-[#1a1a2e] px-2 py-0.5 text-[10px] text-gray-300 hover:bg-[#252540]"
+                                                        : "rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 text-[10px] text-emerald-300 hover:bg-emerald-500/25"
+                                                }
+                                            >
+                                                {leftOut ? "Undo" : "Leave out"}
+                                            </button>
+                                            {isHeader ? (
+                                                <span className="rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 text-[10px] text-emerald-300">
+                                                    Header
+                                                </span>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => useAsHeader(number)}
+                                                    disabled={!number || !onReinspect || inspecting}
+                                                    className="rounded-full border border-gray-700 bg-[#1a1a2e] px-2 py-0.5 text-[10px] text-gray-300 hover:bg-[#252540] disabled:opacity-40"
+                                                    title="Use this row as the header of the table"
+                                                >
+                                                    Use as header
+                                                </button>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             );
@@ -297,12 +405,13 @@ export default function ColumnMappingModal({
                 {(close) => (
                     <>
                         <ModalHeader className="flex flex-col gap-1">
-                            <span className="text-white">Check the columns of your file</span>
+                            <span className="text-white">Check your file</span>
                             <span className="text-xs font-normal text-gray-400">
-                                This file does not follow the standard format, so tell us what each
-                                column holds. We have filled in what we recognised: check it, fix
-                                what is wrong and confirm. We will remember it for the next file
-                                from the same source.
+                                This file does not follow the standard format. We have looked for the
+                                header row and matched the columns by their names: what is in green has
+                                been filled in for you. Below, in the table, say what each column holds
+                                by clicking its header. We will remember it for the next file from the
+                                same source.
                             </span>
                         </ModalHeader>
                         <ModalBody>
@@ -327,61 +436,23 @@ export default function ColumnMappingModal({
                                     Columns: <span className="text-gray-300">{columns.length}</span>
                                 </span>
                                 <span>
-                                    {headerRow
-                                        ? <>Headers found on row <span className="text-gray-300">{headerRow}</span> of the file</>
-                                        : <>No header row found: all rows are movements</>}
+                                    {headerRow ? (
+                                        <>
+                                            Header on row{" "}
+                                            <span className="text-gray-300">{headerRow}</span>
+                                        </>
+                                    ) : (
+                                        <>No header row found: all rows are movements</>
+                                    )}
                                 </span>
                             </div>
 
-                            {/* One selector per column, on top, as in the screen he described. */}
-                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                                {columns.map((column, index) => {
-                                    const suggested = suggestedFor(index);
-                                    const current = mapping[index] || "";
-                                    return (
-                                        <div key={`${column}-${index}`} className={BOX}>
-                                            <div className="mb-1 flex items-center justify-between gap-2">
-                                                <span
-                                                    className="truncate text-xs uppercase tracking-wider text-gray-500"
-                                                    title={column}
-                                                >
-                                                    {column || `(column ${index + 1})`}
-                                                </span>
-                                                {suggested && (
-                                                    <span className="shrink-0 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] text-emerald-300">
-                                                        detected
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <Select
-                                                aria-label={`What is the column ${column}`}
-                                                size="sm"
-                                                items={[
-                                                    { key: "", label: "Ignore this column" },
-                                                    ...Object.entries(FIELD_LABELS).map(([key, label]) => ({
-                                                        key,
-                                                        label,
-                                                    })),
-                                                ]}
-                                                selectedKeys={[current]}
-                                                onChange={(event) => setColumnField(index, event.target.value)}
-                                                classNames={selectClassNames}
-                                                renderValue={(items) =>
-                                                    items.map((item) => (
-                                                        <span key={item.key} className="text-sm text-white">
-                                                            {item.key === ""
-                                                                ? "Ignore this column"
-                                                                : FIELD_LABELS[item.key]}
-                                                        </span>
-                                                    ))
-                                                }
-                                            >
-                                                {(item) => <SelectItem key={item.key}>{item.label}</SelectItem>}
-                                            </Select>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                            {missingRequired.length > 0 && (
+                                <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-300">
+                                    Still to match, click the header of the column that holds it:{" "}
+                                    {missingRequired.map((field) => FIELD_LABELS[field]).join(", ")}
+                                </div>
+                            )}
 
                             {/* The account: a bank export carries no BudgetBee account. */}
                             {!hasAccountColumn && (
@@ -413,15 +484,23 @@ export default function ColumnMappingModal({
                                 </div>
                             )}
 
-                            {/* Rows to leave out: the lines a bank adds around the
-                                movements, which are not movements at all. */}
+                            {/* The table: the headers carry the dropdowns, and every
+                                row can be left out or taken as the header. */}
                             <div className="rounded-2xl border border-gray-800 bg-[#12121f] p-3">
-                                <div className="text-sm text-white">Lines that are not movements</div>
+                                <div className="flex items-center justify-between gap-2">
+                                    <div className="text-sm text-white">Your file, as we read it</div>
+                                    {inspecting && (
+                                        <span className="text-xs text-gray-400">Reading the file…</span>
+                                    )}
+                                </div>
                                 <div className="mt-1 text-xs text-gray-400">
-                                    Bank files usually carry extra lines: the account holder, the
-                                    balance, a note at the start or a total at the end. Press
-                                    Leave out on the ones you do not want to import, and we will
-                                    remember it for the next file of this same layout.
+                                    Click the header of each column and say what it holds. If we took
+                                    the wrong row as the header, press {" "}
+                                    <span className="text-gray-200">Use as header</span> on the right
+                                    row and the table is built again. The lines a bank adds around the
+                                    movements (the holder, the balance, a total) can be left out with{" "}
+                                    <span className="text-gray-200">Leave out</span>: they are the ones
+                                    with a dash through them.
                                 </div>
 
                                 {rememberedRows && (
@@ -431,12 +510,12 @@ export default function ColumnMappingModal({
                                     </div>
                                 )}
 
-                                <div className="mt-3">
+                                <div className="mt-3 overflow-x-auto">
                                     <div className="mb-1 flex items-center justify-between gap-2">
                                         <span className={LABEL}>First rows of the file</span>
                                         {headerRow && headerRow > 1 && (
                                             <span className="text-[11px] text-gray-500">
-                                                The {headerRow - 1} line(s) above the headers are left
+                                                The {headerRow - 1} line(s) above the header are left
                                                 out already.
                                             </span>
                                         )}
@@ -445,7 +524,7 @@ export default function ColumnMappingModal({
                                 </div>
 
                                 {tail.length > 0 && (
-                                    <div className="mt-3">
+                                    <div className="mt-3 overflow-x-auto">
                                         <div className={`mb-1 ${LABEL}`}>Last rows of the file</div>
                                         {renderRowsTable(tail, tailNumbers, "No rows to show.")}
                                     </div>
@@ -485,10 +564,9 @@ export default function ColumnMappingModal({
                         </ModalBody>
                         <ModalFooter className="border-t border-gray-800/50">
                             {errorMsg && <span className="mr-auto text-xs text-red-400">{errorMsg}</span>}
-                            {missingRequired.length > 0 && (
-                                <span className={errorMsg ? "text-xs text-amber-400" : "mr-auto text-xs text-amber-400"}>
-                                    Still to map:{" "}
-                                    {missingRequired.map((field) => FIELD_LABELS[field]).join(", ")}
+                            {missingRequired.length === 0 && needsAccount && (
+                                <span className="mr-auto text-xs text-amber-400">
+                                    Choose the account the movements belong to.
                                 </span>
                             )}
                             <Button

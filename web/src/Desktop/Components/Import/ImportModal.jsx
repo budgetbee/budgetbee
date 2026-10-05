@@ -26,6 +26,8 @@ export default function ImportModal() {
     // asked what each column holds before anything is imported.
     const [inspection, setInspection] = useState(null);
     const [mappingOpen, setMappingOpen] = useState(false);
+    // Reading the file again after the user says which row is the header.
+    const [inspecting, setInspecting] = useState(false);
 
     const buildFormData = (autoCategoriseFlag, mapping, accountId, skipRows) => {
         const formData = new FormData();
@@ -94,6 +96,25 @@ export default function ImportModal() {
         setLoading(categorise ? "categorise" : "plain");
         setMappingOpen(false);
         await doImport(categorise, mapping, accountId, skipRows);
+    };
+
+    // The user said which row is the header: the file is read again leaving out
+    // everything above it, so the header search lands where they said and the
+    // table is rebuilt with their header and their lines.
+    const handleReinspect = async (skipRows) => {
+        if (!selectedFile) {
+            return;
+        }
+        setInspecting(true);
+        setErrorMsg(null);
+        const response = await Api.inspectImport(buildFormData(false, null, null, skipRows));
+        setInspecting(false);
+
+        if (response?.error) {
+            setErrorMsg(response.error);
+            return;
+        }
+        setInspection(response);
     };
 
     const handleCloseModal = () => {
@@ -280,6 +301,8 @@ export default function ImportModal() {
                 loading={loading}
                 errorMsg={errorMsg}
                 onConfirm={handleMappingConfirm}
+                onReinspect={handleReinspect}
+                inspecting={inspecting}
             />
         </>
     );
