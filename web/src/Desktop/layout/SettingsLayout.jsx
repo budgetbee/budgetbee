@@ -25,6 +25,10 @@ const SettingsLayout = ({ children }) => {
             name: "API Keys",
             href: "/settings/api-keys",
         },
+        "category-rules": {
+            name: "Auto-categorisation",
+            href: "/settings/category-rules",
+        },
     };
 
     const linkArray = Object.entries(links);

@@ -1,19 +1,15 @@
 import React, { useEffect, useState } from "react";
 import numeral from "numeral";
-import {
-    Modal,
-    ModalContent,
-    ModalBody,
-    useDisclosure
-} from "@nextui-org/react";
+import { useDisclosure } from "@nextui-org/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Api from "../../../../Api/Endpoints";
-import RecordCard from "../../../Components/Record/Card";
+import RecordsModal from "../../../Components/Record/RecordsModal";
 
 export default function CategoryRecords({ searchData, onRecordChange }) {
     const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState(null);
     const [records, setRecords] = useState([]);
+    const [loadingRecords, setLoadingRecords] = useState(false);
     const [expandedItems, setExpandedItems] = useState([]);
     const { isOpen, onOpenChange } = useDisclosure();
 
@@ -35,11 +31,13 @@ export default function CategoryRecords({ searchData, onRecordChange }) {
     };
 
     const getRecordsByCategory = async (categoryId) => {
+        setLoadingRecords(true);
         const data = await Api.getRecordsByCategory(
             categoryId,
             searchData?.from_date,
             searchData?.to_date
         );
+        setLoadingRecords(false);
         if (Array.isArray(data)) {
             setRecords(data);
         }
@@ -55,34 +53,17 @@ export default function CategoryRecords({ searchData, onRecordChange }) {
         return <></>;
     }
 
+    // The modal is the shared one: the same one the auto-categorisation screen
+    // opens when a count is clicked.
     let recordsModal = (
-
-        <Modal
+        <RecordsModal
             isOpen={isOpen}
             onOpenChange={onOpenChange}
-            placement="top-center"
-            size="xl"
-        >
-            <ModalContent>
-                <ModalBody className="p-0 bg-black">
-                    <div className="max-h-96 overflow-auto w-full bg-black block">
-                        <div className="records">
-                            {records.map((record) => {
-                                return (
-                                    <div key={record.id}>
-                                        <RecordCard
-                                            record={record}
-                                            showName={true}
-                                            onRecordChange={onRecordChange}
-                                        />
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </ModalBody>
-            </ModalContent>
-        </Modal>
+            records={records}
+            isLoading={loadingRecords}
+            emptyText="No movements in this category."
+            onRecordChange={onRecordChange}
+        />
     );
 
     return (

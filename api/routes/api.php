@@ -9,6 +9,7 @@ use App\Http\Controllers\BalanceController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CategoryRuleController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\UserController;
@@ -66,6 +67,8 @@ Route::prefix('record')->middleware(['auth:sanctum', 'token.refresh'])->group(fu
     Route::get('', [RecordController::class, 'get']);
     Route::get('last', [RecordController::class, 'getLastRecords']);
     Route::get('category/{id}', [RecordController::class, 'getRecordsByCategory']);
+    // Literal routes MUST stay before the {id} wildcards.
+    Route::post('predict', [RecordController::class, 'predict']);
     Route::get('{id}', [RecordController::class, 'getById']);
     Route::post('', [RecordController::class, 'create']);
     Route::post('{id}', [RecordController::class, 'update']);
@@ -84,6 +87,23 @@ Route::prefix('category')->middleware(['auth:sanctum', 'token.refresh'])->group(
     Route::post('parent/{id}', [CategoryController::class, 'updateParent']);
     Route::post('', [CategoryController::class, 'create']);
     Route::post('{id}', [CategoryController::class, 'update']);
+});
+
+Route::prefix('category-rules')->middleware(['auth:sanctum', 'token.refresh'])->group(function () {
+    Route::get('', [CategoryRuleController::class, 'index']);
+    // Literal routes MUST stay before the {id} wildcards.
+    Route::post('test', [CategoryRuleController::class, 'test']);
+    Route::post('apply', [CategoryRuleController::class, 'apply']);
+    // The movements behind a count (a rule, or a suggestion).
+    Route::post('records', [CategoryRuleController::class, 'records']);
+    Route::get('candidates', [CategoryRuleController::class, 'candidates']);
+    // Saying no to a suggestion: it stops being suggested and learned.
+    Route::post('candidates/ignore', [CategoryRuleController::class, 'ignoreCandidate']);
+    // And putting it back if he changes his mind.
+    Route::post('candidates/restore', [CategoryRuleController::class, 'restoreCandidate']);
+    Route::post('', [CategoryRuleController::class, 'store']);
+    Route::post('{id}', [CategoryRuleController::class, 'update']);
+    Route::delete('{id}', [CategoryRuleController::class, 'destroy']);
 });
 
 Route::prefix('balance')->middleware(['auth:sanctum', 'token.refresh'])->group(function () {

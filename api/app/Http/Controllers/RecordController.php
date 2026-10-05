@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Categorization\CategoryClassifier;
+use App\Services\Categorization\CategoryLearner;
+
 use Illuminate\Http\Request;
 use App\Models\Record;
 use App\Models\Category;
@@ -88,11 +91,18 @@ class RecordController extends Controller
 
     public function create(Request $request)
     {
+        // The record form sends an empty category_id when nothing was picked.
+        // Treat it as absent so it falls back to the user's unknown category,
+        // instead of failing the "integer" rule and reporting a missing category.
+        if ($request->input('category_id') === '' || $request->input('category_id') === null) {
+            $request->merge(['category_id' => null]);
+        }
+
         $this->validate($request, [
             'date' => 'required|date',
             'from_account_id' => 'required|integer|exists:App\Models\Account,id',
             'to_account_id' => 'integer|exists:App\Models\Account,id',
-            'category_id' => 'integer|exists:App\Models\Category,id',
+            'category_id' => 'nullable|integer|exists:App\Models\Category,id',
             'name' => 'nullable|string',
             'type' => 'required|string|in:income,expense,transfer',
             'amount' => 'required|numeric',
@@ -115,14 +125,111 @@ class RecordController extends Controller
             $data['amount'] = "-" . $data['amount'];
         }
 
-        $data['category_id'] = $data['category_id'] ?? 1;
+        $data['category_id'] = $data['category_id'] ?? $this->fallbackCategoryId((int) $request->user()->id);
         $data['user_id'] = $request->user()->id;
 
         $record = new Record();
         $record->fill($data);
+        $record->merchant_key = (new CategoryClassifier())->merchantKey($record->name ?: $record->description);
         $record->save();
 
+        // Learning input: what the user creates by hand is the highest quality
+        // evidence there is.
+        if ($record->merchant_key) {
+            (new CategoryLearner())->confirm(
+                (int) $record->user_id,
+                $record->merchant_key,
+                (int) $record->category_id
+            );
+        }
+
         return response()->json(['id' => $record->id]);
+    }
+
+    /**
+     * Suggest a category for a movement text. READ ONLY: it never writes
+     * anything and it never guesses when the text has no merchant information.
+     *
+     * It answers with what the user's RULES say, manual or learned: this is the
+     * live suggestion of the record form while he types the concept. History is
+     * left out on purpose, so the suggestion is always something he (or the
+     * categoriser) decided at some point.
+     */
+    public function predict(Request $request)
+    {
+        $this->validate($request, [
+            'text' => 'nullable|string|max:500',
+        ]);
+
+        $userId = (int) $request->user()->id;
+        $classifier = new CategoryClassifier();
+        $merchantKey = $classifier->merchantKey($request->input('text'));
+
+        if ($merchantKey === null) {
+            // No usable merchant text: nothing is suggested on purpose.
+            return response()->json([
+                'merchant_key' => null,
+                'prediction' => null,
+                'reason' => 'no_usable_text',
+            ]);
+        }
+
+        $prediction = $classifier->classifyByRules($userId, $request->input('text'));
+
+        if ($prediction === null) {
+            return response()->json([
+                'merchant_key' => $merchantKey,
+                'prediction' => null,
+                'reason' => 'no_evidence',
+            ]);
+        }
+
+        // The id comes from one of the user's own rules, so looking it up by id
+        // is safe: it can only be a category he already used.
+        $category = Category::find($prediction['category_id']);
+
+        return response()->json([
+            'merchant_key' => $merchantKey,
+            'prediction' => [
+                'category_id' => $prediction['category_id'],
+                'category_name' => $category?->name,
+                'source' => $prediction['source'],
+                'confidence' => $prediction['confidence'],
+            ],
+        ]);
+    }
+
+    /**
+     * Fallback category for a movement created without one: ALWAYS inside the
+     * user's own categories ("Desconocido" if it exists). A hardcoded id can
+     * point to another user's row on a shared installation.
+     */
+    private function fallbackCategoryId(int $userId): int
+    {
+        $scoped = function ($q) use ($userId) {
+            $q->where('user_id', $userId)->orWhereNull('user_id');
+        };
+
+        $unknown = Category::where($scoped)
+            ->where(function ($q) {
+                $q->where('name', 'like', '%esconocid%')
+                    ->orWhere('name', 'like', '%nknown%')
+                    ->orWhere('name', 'like', '%uncategor%')
+                    ->orWhere('name', 'like', '%sin categor%');
+            })
+            ->orderBy('id')
+            ->first();
+
+        if ($unknown) {
+            return (int) $unknown->id;
+        }
+
+        $fallback = Category::firstByParentType($userId, 'expense');
+        if ($fallback) {
+            return (int) $fallback->id;
+        }
+
+        return (int) Category::where($scoped)->min('id');
     }
 
     public function update(Request $request, $id)
