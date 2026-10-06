@@ -26,24 +26,55 @@ const HEADERS = {
     headers: { Authorization: "Bearer " + cookies.get(TOKEN_COOKIE_NAME) },
 };
 
+// Every failure of the app ends up here, so this is where what the user reads is
+// decided. Nothing says "Unknown error": a sentence from the API always wins
+// (the backend knows what happened), then the first rule that failed, and for
+// anything else there is a line per status saying what to do next.
 const handleErrors = (error) => {
     const status = error.response?.status;
+    const data = error.response?.data;
 
-    let message;
-    switch (status) {
-        case 401:
-            cookies.remove(TOKEN_COOKIE_NAME);
-            window.location.href = "/login";
-            break;
-        case 404:
-            message = "Not Found";
-            break;
-        default:
-            message = error.response?.data?.error || "Unknown error";
-            break;
+    if (status === 401) {
+        cookies.remove(TOKEN_COOKIE_NAME);
+        window.location.href = "/login";
+        return { error: "Your session has expired. Log in again." };
     }
 
-    return { error: message };
+    if (data?.error) {
+        return { error: data.error };
+    }
+
+    if (data?.errors && typeof data.errors === "object") {
+        const first = Object.values(data.errors).flat()[0];
+        if (first) {
+            return { error: first };
+        }
+    }
+
+    if (data?.message) {
+        return { error: data.message };
+    }
+
+    // No response at all: the request never reached the server.
+    if (!error.response) {
+        return { error: "The server did not answer. Check your connection and try again." };
+    }
+
+    const byStatus = {
+        400: "The request could not be read. Try again.",
+        403: "You do not have permission to do this.",
+        404: "Not found.",
+        413: "That file is too big for the server. Split the export and try again.",
+        419: "Your session has expired. Log in again.",
+        429: "Too many attempts. Wait a moment and try again.",
+        500: "Something went wrong on the server and nothing was saved. Try again in a moment.",
+    };
+
+    return {
+        error:
+            byStatus[status] ||
+            `The server answered with error ${status ?? "?"}. Try again in a moment.`,
+    };
 };
 
 const queryBuilder = (data) => {
@@ -418,6 +449,12 @@ const Endpoints = {
 
     importRecords: async (data) => {
         return post(`import`, data);
+    },
+
+    // Reads the uploaded file and reports its columns, so the app can ask the
+    // user to map them when the file is not the standard shape.
+    inspectImport: async (data) => {
+        return post(`import/inspect`, data);
     },
 
     getAllBudgets: async () => {
