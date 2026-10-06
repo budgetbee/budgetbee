@@ -5,9 +5,15 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\Account;
+use App\Models\Category;
+use App\Models\CategoryRule;
+use App\Models\ParentCategory;
+use App\Models\Import;
 use App\Models\Record;
 use App\Models\UserCurrency;
 use Illuminate\Http\UploadedFile;
+use App\Services\Categorization\CategoryClassifier;
+use App\Services\Categorization\CategoryLearner;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -149,6 +155,102 @@ class ImportCsvTest extends TestCase
     }
 
     /**
+     * Categorising must not get in the way of the duplicate detection: the code
+     * is worked out from what the FILE says (or from the default category when it
+     * says nothing), never from what the categoriser decides afterwards.
+     *
+     * This is the real life case: import a statement today, the app learns the
+     * merchant, import the same statement tomorrow. It must still be recognised
+     * as already there, even though the second time the category comes from what
+     * was learned and not from the default.
+     */
+    public function testTheCategoryTheAppLearnsDoesNotChangeTheCode(): void
+    {
+        // Una categoria cuelga de una categoria padre: se usa una de las que
+        // trae la instalacion (los tests Feature cuentan con la BD sembrada).
+        $parent = ParentCategory::first();
+        $this->assertNotNull($parent, 'Hace falta la BD sembrada (parent_categories)');
+
+        $category = Category::create([
+            'user_id' => $this->user->id,
+            'name' => 'Groceries',
+            'parent_category_id' => $parent->id,
+            'icon' => 'fa-solid fa-tag',
+            'enabled' => true,
+        ]);
+
+        // Una regla propia ("cuando aparezca ACME MART es Groceries"): es lo que
+        // hace que la categorizacion automatica mueva el movimiento de sitio.
+        $classifier = app(CategoryClassifier::class);
+
+        CategoryRule::create([
+            'user_id' => $this->user->id,
+            'category_id' => $category->id,
+            'match_field' => 'merchant_key',
+            'operator' => 'equals',
+            'value' => $classifier->merchantKey('CARD PURCHASE ACME MART'),
+            'source' => 'manual',
+            'enabled' => true,
+        ]);
+
+        $payload = [
+            'mapping' => json_encode(['date' => 0, 'name' => 1, 'amount' => 2]),
+            'account_id' => $this->account->id,
+            'skip_rows' => json_encode([4, 9]),
+            'auto_categorise' => '1',
+        ];
+
+        $first = $this->post('/api/import', $payload + ['file' => $this->bankCsv()]);
+        $first->assertStatus(200)->assertJson(['imported' => 4]);
+
+        // The categoriser did move that movement out of the default category...
+        $this->assertDatabaseHas('records', [
+            'user_id' => $this->user->id,
+            'name' => 'CARD PURCHASE ACME MART',
+            'category_id' => $category->id,
+        ]);
+
+        // ...and the same file imported again is still seen as already there.
+        $second = $this->post('/api/import', $payload + ['file' => $this->bankCsv()]);
+        $second->assertStatus(200)->assertJson([
+            'imported' => 0,
+            'duplicates' => 4,
+            'already_there' => true,
+        ]);
+
+        $this->assertEquals(4, Record::where('user_id', $this->user->id)->count());
+    }
+
+    /**
+     * The same export imported twice: every row is already stored, which is not
+     * a failure. The screen used to answer "Error to save records, check the
+     * file and try again" and the user went looking for a problem that was not
+     * there.
+     */
+    public function testImportingTheSameExportTwiceSaysNothingNew(): void
+    {
+        $payload = [
+            'mapping' => json_encode(['date' => 0, 'name' => 1, 'amount' => 2]),
+            'account_id' => $this->account->id,
+            'skip_rows' => json_encode([4, 9]),
+        ];
+
+        $first = $this->post('/api/import', $payload + ['file' => $this->bankCsv()]);
+        $first->assertStatus(200)->assertJson(['imported' => 4, 'duplicates' => 0]);
+
+        $second = $this->post('/api/import', $payload + ['file' => $this->bankCsv()]);
+        $second->assertStatus(200)->assertJson([
+            'imported' => 0,
+            'duplicates' => 4,
+            'already_there' => true,
+        ]);
+
+        // Nothing stored twice, and an import that brought nothing leaves no row.
+        $this->assertEquals(4, Record::where('user_id', $this->user->id)->count());
+        $this->assertEquals(1, Import::where('user_id', $this->user->id)->count());
+    }
+
+    /**
      * With no type column the SIGN decides: a positive figure is money coming in.
      * Before, every positive row went in as an expense, so a salary was booked
      * as money going out without saying anything.
@@ -214,6 +316,8 @@ class ImportCsvTest extends TestCase
         Storage::fake('uploads');
         $file = UploadedFile::fake()->createWithContent('statement.txt', "date,name,amount\n2026-09-01,Sample,10\n");
 
-        $this->post('/api/import', ['file' => $file])->assertStatus(400);
+        $this->post('/api/import', ['file' => $file])
+            ->assertStatus(422)
+            ->assertJsonFragment(['error' => 'That file type cannot be read. Upload a CSV, an Excel file (XLS, XLSX) or a JSON one.']);
     }
 }

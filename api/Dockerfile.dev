@@ -1,5 +1,9 @@
 FROM php:8.2-fpm-alpine3.17
 
+# El importador acepta ficheros de hasta 10MB (validacion del controlador) y el
+# nginx deja pasar 20m: sin esto, PHP corta en 2M y el usuario ve un error raro.
+RUN printf 'upload_max_filesize=20M\npost_max_size=20M\n' > /usr/local/etc/php/conf.d/99-uploads.ini
+
 # Install cron
 RUN apk add --no-cache dcron
 

@@ -11,7 +11,9 @@ use App\Models\Record;
 use App\Services\Categorization\CategoryClassifier;
 use App\Services\Categorization\CategoryLearner;
 use App\Services\Import\ImportFileInspector;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -22,25 +24,30 @@ class ImportController extends Controller
     /** Formats the app can read. CSV is new: banks hand it out everywhere. */
     private const VALID_EXTENSIONS = ['json', 'csv', 'xls', 'xlsx'];
 
+    /** The biggest file the importer takes. The same number is said to the user. */
+    private const MAX_FILE_BYTES = 10 * 1024 * 1024;
+
+    // Every message the user can read. Plain, in English, saying what to do next.
+    private const MESSAGE_NO_FILE = 'No file arrived. Choose it again and upload it.';
+    private const MESSAGE_TOO_BIG = 'That file is bigger than the 10 MB the importer takes. Split the export into smaller files (for example, one per month) and try again.';
+    private const MESSAGE_BAD_TYPE = 'That file type cannot be read. Upload a CSV, an Excel file (XLS, XLSX) or a JSON one.';
+    private const MESSAGE_NO_COLUMNS = 'There are no rows we can read in this file. Check that it is not empty and that the line with the column names is there.';
+    private const MESSAGE_NOTHING_READABLE = 'No movement could be read from this file. Check which column holds the date, the description and the amount.';
+    private const MESSAGE_SAVE_FAILED = 'No movement could be saved from this file, so nothing was imported. Check the columns you chose and try again.';
+
     /**
      * Reads an uploaded file and says what is inside it, so the app can ask the
      * user to map the columns when the file is not the standard shape.
      */
     public function inspect(Request $request, ImportFileInspector $inspector)
     {
-        $this->validate($request, [
-            'file' => 'required|file|max:10240',
-            'skip_rows' => 'nullable',
-        ]);
+        $error = $this->checkFile($request);
+
+        if ($error) {
+            return $error;
+        }
 
         $file = $request->file('file');
-        $extension = strtolower($file->getClientOriginalExtension());
-
-        if (! in_array($extension, self::VALID_EXTENSIONS, true)) {
-            return response()->json([
-                'error' => 'Unsupported file type. Upload a CSV, JSON, XLS or XLSX file.',
-            ], 422);
-        }
 
         // Rows the user wants left out of the file ("1-5, 12" or a JSON list), so
         // the preview shows what is really going to be imported.
@@ -48,7 +55,7 @@ class ImportController extends Controller
         $data = $inspector->inspect($file, $skipRows);
 
         if (empty($data['columns'])) {
-            return response()->json(['error' => 'No columns found, check the file and try again'], 400);
+            return response()->json(['error' => self::MESSAGE_NO_COLUMNS], 400);
         }
 
         $saved = $this->savedMapping($columns = $data['columns'], $inspector);
@@ -58,8 +65,6 @@ class ImportController extends Controller
             'columns' => $columns,
             'preview' => $data['preview'],
             'preview_row_numbers' => $data['preview_row_numbers'],
-            'preview_tail' => $data['preview_tail'],
-            'preview_tail_row_numbers' => $data['preview_tail_row_numbers'],
             'row_count' => $data['row_count'],
             'standard' => $data['standard'],
             'suggested' => $data['suggested'],
@@ -76,13 +81,11 @@ class ImportController extends Controller
 
     public function import(Request $request, ImportFileInspector $inspector)
     {
-        $this->validate($request, [
-            'file' => 'required|file|max:10240',
-            'auto_categorise' => 'nullable|boolean',
-            'mapping' => 'nullable|string',
-            'skip_rows' => 'nullable',
-            'account_id' => 'nullable|integer',
-        ]);
+        $error = $this->checkFile($request);
+
+        if ($error) {
+            return $error;
+        }
 
         // Only rows WITHOUT a category are touched: whatever the user's own
         // system brought in is respected exactly as it came.
@@ -90,10 +93,6 @@ class ImportController extends Controller
 
         $file = $request->file('file');
         $fileExtension = strtolower($file->getClientOriginalExtension());
-
-        if (! $file->isValid() || ! in_array($fileExtension, self::VALID_EXTENSIONS, true)) {
-            return response()->json(['error' => 'Error, there is no records to upload'], 400);
-        }
 
         $mapping = $this->decodeMapping($request->input('mapping'));
         $accountId = $this->resolveAccountId($request->input('account_id'));
@@ -109,7 +108,7 @@ class ImportController extends Controller
             $columns = $data['columns'];
 
             if (empty($columns)) {
-                return response()->json(['error' => 'No columns found, check the file and try again'], 400);
+                return response()->json(['error' => self::MESSAGE_NO_COLUMNS], 400);
             }
 
             $records = $this->extractWithMapping($columns, $data['rows'], $mapping, $accountId);
@@ -125,9 +124,15 @@ class ImportController extends Controller
             $data = $inspector->inspect($file);
             $columns = $data['columns'];
 
-            if (empty($columns) || ! $inspector->isStandard($columns)) {
+            if (empty($columns)) {
+                // Nothing readable at all: this is not a mapping problem, so the
+                // screen must not send the user to choose columns that are not there.
+                return response()->json(['error' => self::MESSAGE_NO_COLUMNS], 400);
+            }
+
+            if (! $inspector->isStandard($columns)) {
                 return response()->json([
-                    'error' => 'This file needs a column mapping before it can be imported.',
+                    'error' => 'Before importing this file we need to know which column holds the date, the description and the amount.',
                     'needs_mapping' => true,
                 ], 409);
             }
@@ -137,7 +142,7 @@ class ImportController extends Controller
         }
 
         if (! $records) {
-            return response()->json(['error' => 'Error, there is no records to upload'], 400);
+            return response()->json(['error' => self::MESSAGE_NOTHING_READABLE], 400);
         }
 
         $importModel = Import::create([
@@ -147,31 +152,65 @@ class ImportController extends Controller
             'user_id' => auth()->user()->id,
         ]);
 
-        [$imported, $skipped, $autoCategorised, $unknown] = $this->persistRecords(
+        [$imported, $skipped, $duplicates, $autoCategorised, $unknown] = $this->persistRecords(
             $records,
             (int) $importModel->id,
             $autoCategorise
         );
 
-        if ($imported === 0) {
-            $importModel->forceDelete();
-
-            return response()->json(['error' => 'Error to save records, check file and try again'], 500);
+        if ($mapping && $columns) {
+            // Remembered also when nothing new came in: the same bank file next
+            // month must not ask for the columns all over again.
+            $this->rememberMapping($columns, $fileExtension, $mapping, $accountId, $skipRows, $inspector);
         }
 
-        if ($mapping && $columns) {
-            $this->rememberMapping($columns, $fileExtension, $mapping, $accountId, $skipRows, $inspector);
+        if ($imported === 0 && $duplicates > 0) {
+            // Every row was already stored (the same export imported twice).
+            // Nothing was duplicated and nothing failed: saying "error, check the
+            // file" here sent the user looking for a problem that did not exist.
+            // The imports row is still dropped: an import that brought nothing
+            // has no place in the history.
+            $importModel->forceDelete();
+
+            return response()->json([
+                'message' => $duplicates === 1
+                    ? 'Nothing new: that movement is already there'
+                    : "Nothing new: those $duplicates movements are already there",
+                'imported' => 0,
+                'skipped' => $skipped,
+                'duplicates' => $duplicates,
+                'auto_categorised' => 0,
+                'unknown' => 0,
+                'rows_left_out' => count($skipRows),
+                'already_there' => true,
+            ]);
+        }
+
+        if ($imported === 0) {
+            // Not one row could be read (a mapping that does not fit the file):
+            // this one IS a failure.
+            $importModel->forceDelete();
+
+            return response()->json(['error' => self::MESSAGE_SAVE_FAILED], 500);
         }
 
         $message = 'File uploaded successfully';
         if ($skipped > 0) {
-            $message .= " ($imported imported, $skipped duplicate or invalid row(s) skipped)";
+            $parts = [];
+            if ($duplicates > 0) {
+                $parts[] = $duplicates === 1 ? '1 duplicate' : "$duplicates duplicates";
+            }
+            if ($skipped - $duplicates > 0) {
+                $parts[] = ($skipped - $duplicates) . ' unreadable';
+            }
+            $message .= ' (' . $imported . ' imported, ' . implode(' + ', $parts) . ' row(s) skipped)';
         }
 
         return response()->json([
             'message' => $message,
             'imported' => $imported,
             'skipped' => $skipped,
+            'duplicates' => $duplicates,
             'auto_categorised' => $autoCategorised,
             'unknown' => $unknown,
             'rows_left_out' => count($skipRows),
@@ -182,12 +221,15 @@ class ImportController extends Controller
      * Saves the parsed records and grows the learned rules. Shared by the
      * standard files and by the ones the user mapped, so both behave the same.
      *
-     * @return array{0:int,1:int,2:int,3:int} imported, skipped, auto categorised, unknown
+     * @return array{0:int,1:int,2:int,3:int,4:int} imported, skipped, duplicates, auto categorised, unknown
      */
     private function persistRecords(array $records, int $importId, bool $autoCategorise): array
     {
         $imported = 0;
         $skipped = 0;
+        // Counted apart from the rows that could not be read: re-importing the
+        // same export is not a failure, a broken row is.
+        $duplicates = 0;
         $autoCategorised = 0;
         $unknown = 0;
         // One query, not one per row.
@@ -201,6 +243,7 @@ class ImportController extends Controller
                 // whole file.
                 if (Record::where('user_id', $record->user_id)->where('code', $record->code)->exists()) {
                     $skipped++;
+                    $duplicates++;
                     continue;
                 }
                 $record->import_id = $importId;
@@ -244,7 +287,7 @@ class ImportController extends Controller
             }
         }
 
-        return [$imported, $skipped, $autoCategorised, $unknown];
+        return [$imported, $skipped, $duplicates, $autoCategorised, $unknown];
     }
 
     /**
@@ -721,6 +764,50 @@ class ImportController extends Controller
         }
 
         return $records;
+    }
+
+    /**
+     * Every way the upload itself can go wrong, answered with a sentence the user
+     * can act on. Returns null when the file is fine to work with.
+     */
+    private function checkFile(Request $request): ?JsonResponse
+    {
+        if (! $request->hasFile('file')) {
+            // An empty POST is what a file over the server limit looks like from
+            // here, and also a form sent with nothing chosen.
+            return response()->json(['error' => self::MESSAGE_NO_FILE], 422);
+        }
+
+        $file = $request->file('file');
+
+        if (! $file->isValid()) {
+            return response()->json(['error' => $this->uploadErrorMessage($file)], 422);
+        }
+
+        if ($file->getSize() > self::MAX_FILE_BYTES) {
+            return response()->json(['error' => self::MESSAGE_TOO_BIG], 422);
+        }
+
+        if (! in_array(strtolower($file->getClientOriginalExtension()), self::VALID_EXTENSIONS, true)) {
+            return response()->json(['error' => self::MESSAGE_BAD_TYPE], 422);
+        }
+
+        return null;
+    }
+
+    /**
+     * Why PHP could not take the file, in words: a size limit, a partial upload,
+     * a directory it could not write to.
+     */
+    private function uploadErrorMessage(UploadedFile $file): string
+    {
+        return match ($file->getError()) {
+            UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => self::MESSAGE_TOO_BIG,
+            UPLOAD_ERR_PARTIAL => 'The file arrived only partly. Try uploading it again.',
+            UPLOAD_ERR_NO_FILE => self::MESSAGE_NO_FILE,
+            UPLOAD_ERR_NO_TMP_DIR, UPLOAD_ERR_CANT_WRITE => 'The server could not store the file. Try again in a moment.',
+            default => 'The file could not be read. Try uploading it again.',
+        };
     }
 
     /**

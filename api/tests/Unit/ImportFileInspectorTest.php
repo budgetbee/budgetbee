@@ -19,6 +19,27 @@ use Tests\TestCase;
  */
 class ImportFileInspectorTest extends TestCase
 {
+    /**
+     * The screen asks for three columns and nothing else, however the file
+     * names its columns: account, category, type, rate and money in only arrive
+     * in a file that already follows the downloadable template, so they must
+     * never come back as something to choose on screen.
+     */
+    public function test_the_screen_only_offers_the_three_columns_of_every_export(): void
+    {
+        $this->assertSame(['date', 'name', 'amount'], ImportFileInspector::MAPPABLE);
+
+        $csv = "Fecha;Categoría;Cuenta origen;Cuenta destino;Tipo;Abono;Cargo;Importe;Tasa\n"
+            . "02/10/2026;SALARY SEPTEMBER;ES11 0000 0000;ES22 1111 1111;income;1.850,00;;1.850,00;1\n"
+            . "03/10/2026;Compras;ES11 0000 0000;;expense;;87,45;87,45;1\n"
+            . "04/10/2026;Compras;ES11 0000 0000;;expense;;10,00;10,00;1\n";
+
+        $suggested = (new ImportFileInspector())->inspect($this->upload($csv, 'todo.csv'))['suggested'];
+
+        $this->assertSame([], array_diff(array_keys($suggested), ImportFileInspector::MAPPABLE));
+        $this->assertSame([], array_diff(ImportFileInspector::MAPPABLE, array_keys($suggested)));
+    }
+
     private function upload(string $content, string $name): UploadedFile
     {
         $path = tempnam(sys_get_temp_dir(), 'insp') . '_' . $name;
@@ -41,7 +62,11 @@ class ImportFileInspectorTest extends TestCase
         $this->assertSame(0, $data['suggested']['date']);
         $this->assertSame(2, $data['suggested']['name']);
         $this->assertSame(3, $data['suggested']['amount']);
-        $this->assertSame(5, $data['suggested']['amount_in']);
+        // The screen offers only the three columns every export carries, so the
+        // "Abono" column is not proposed any more: a file that splits the money
+        // into two columns cannot be mapped on screen today.
+        $this->assertArrayNotHasKey('amount_in', $data['suggested']);
+        $this->assertArrayNotHasKey('type', $data['suggested']);
     }
 
     /**
@@ -239,9 +264,6 @@ class ImportFileInspectorTest extends TestCase
         $this->assertSame([6, 7, 8], $data['row_numbers']);
         $this->assertSame([9], $data['skip_rows']);
         $this->assertSame(1, $data['skipped_count']);
-        // The last rows of the file are shown as well, with their real numbers,
-        // so the total can be ticked where it is.
-        $this->assertSame([6, 7, 8], $data['preview_tail_row_numbers']);
         // The preview holds the rows that will really be imported, numbered as
         // they are in the file (the header itself is not a movement).
         $this->assertSame([6, 7, 8], $data['preview_row_numbers']);

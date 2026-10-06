@@ -21,10 +21,7 @@ use PhpOffice\PhpSpreadsheet\Shared\Date as SpreadsheetDate;
 class ImportFileInspector
 {
     /** Preview rows handed to the mapping screen. */
-    public const PREVIEW_ROWS = 10;
-
-    /** Rows from the END of the file shown as well: bank exports close with a total. */
-    public const PREVIEW_TAIL_ROWS = 5;
+    public const PREVIEW_ROWS = 15;
 
     /**
      * Canonical fields of a movement: the first EIGHT, in this order, are the
@@ -39,6 +36,15 @@ class ImportFileInspector
 
     /** Fields a file has to provide for an import to make sense. */
     public const REQUIRED = ['date', 'name', 'amount'];
+
+    /**
+     * Fields the column mapping screen offers. The rest of the canonical fields
+     * (account, category, type, rate) only arrive in a file that already follows
+     * the downloadable template, and those import straight away without being
+     * asked anything. A bank export does not carry those columns, so suggesting
+     * them on screen only invites mistakes.
+     */
+    public const MAPPABLE = ['date', 'name', 'amount'];
 
     /**
      * Fields worth guessing from the CONTENT of the cells. Account, type,
@@ -87,7 +93,7 @@ class ImportFileInspector
 
     /**
      * @param  array<int,int>  $skipRows  rows of the file (1-based) to leave out
-     * @return array{format:string,columns:array,preview:array,preview_row_numbers:array,preview_tail:array,preview_tail_row_numbers:array,rows:array,row_numbers:array,skip_rows:array,skipped_count:int,suggested:array,standard:bool,row_count:int,header_row:?int}
+     * @return array{format:string,columns:array,preview:array,preview_row_numbers:array,rows:array,row_numbers:array,skip_rows:array,skipped_count:int,suggested:array,standard:bool,row_count:int,header_row:?int}
      */
     public function inspect(UploadedFile $file, array $skipRows = []): array
     {
@@ -122,10 +128,6 @@ class ImportFileInspector
             'columns' => $columns,
             'preview' => array_slice($rows, 0, self::PREVIEW_ROWS),
             'preview_row_numbers' => array_slice($numbers, 0, self::PREVIEW_ROWS),
-            // The end of the file too: that is where the account total sits, and
-            // it is a row the user has to be able to leave out on screen.
-            'preview_tail' => array_slice($rows, -self::PREVIEW_TAIL_ROWS),
-            'preview_tail_row_numbers' => array_slice($numbers, -self::PREVIEW_TAIL_ROWS),
             'rows' => $rows,
             'row_numbers' => $numbers,
             'skip_rows' => $skipRows,
@@ -405,7 +407,7 @@ class ImportFileInspector
         // the values, no matter which field is looked at first. That is what
         // stops "Concepto" being taken by to_account_id because it contains "to".
         $candidates = [];
-        foreach (self::FIELDS as $field) {
+        foreach (self::MAPPABLE as $field) {
             foreach ($columns as $index => $label) {
                 if ($this->isForbidden($field, (string) $label)) {
                     continue;

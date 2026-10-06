@@ -12,17 +12,15 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Api from "../../../Api/Endpoints";
 
-// What each field means, in the words a person uses, not the column names.
+// The three things every bank export carries, and the only ones this screen
+// asks for. A file that also brings accounts, category or type is a file that
+// already follows the downloadable template, and those import straight away
+// without being asked anything, so offering those columns here would only
+// invite mistakes.
 const FIELD_LABELS = {
     date: "Date",
     name: "Description",
     amount: "Amount",
-    amount_in: "Money in (Abono / credit)",
-    type: "Type (income / expense)",
-    category_id: "Category",
-    from_account_id: "From account",
-    to_account_id: "To account",
-    rate: "Exchange rate",
 };
 
 const REQUIRED_FIELDS = ["date", "name", "amount"];
@@ -30,7 +28,6 @@ const REQUIRED_FIELDS = ["date", "name", "amount"];
 // Field box, label and dropdown, copied from the record modal so this screen
 // is the same screen as the rest of the app: the app is a dark theme painted
 // by hand, and a NextUI default (light) background makes this unreadable.
-const BOX = "rounded-2xl border border-gray-800 bg-[#1a1a2e] px-3 py-2";
 const LABEL = "text-xs uppercase tracking-wider text-gray-500";
 
 const selectClassNames = {
@@ -44,45 +41,32 @@ const selectClassNames = {
     popoverContent: "bg-[#1a1a2e] border border-gray-700 text-white",
 };
 
+// The account dropdown, copied verbatim from Desktop/Components/Record/FormModal.jsx
+// (same trigger height, same coloured box, same balance on the right) so picking
+// an account here is the same gesture as picking it in the record form.
+const ACCOUNT_SELECT_CLASSNAMES = {
+    base: "w-full",
+    trigger:
+        "bg-transparent shadow-none border-0 h-auto min-h-[36px] py-1.5 px-0 data-[hover=true]:!bg-transparent data-[hover=true]:opacity-80",
+    innerWrapper: "pt-0",
+    value: "text-white font-medium text-sm",
+    listbox:
+        "bg-[#1a1a2e] text-white [&_li]:data-[hover=true]:!bg-[#252540] [&_li]:data-[hover=true]:!text-white",
+    popoverContent: "bg-[#1a1a2e] border border-gray-700 text-white",
+};
+
+// A card like the ones the rest of the app uses for a field: dark, rounded and
+// with the label in small caps. No warning colours: nothing here is broken.
+const CARD = "bg-[#1a1a2e] rounded-2xl p-3 border border-gray-800";
+
 // The dropdown that lives in a column header: this is where the user says what
 // the column holds, on the table itself instead of in a list above it.
 const HEADER_SELECT_CLASSNAMES = {
     ...selectClassNames,
-    base: "w-[190px]",
+    base: "w-[150px]",
     trigger:
         "bg-[#12121f] border border-gray-700 rounded-xl h-auto min-h-[30px] px-2 py-1 data-[hover=true]:!bg-[#1a1a2e]",
     value: "text-white font-medium text-xs",
-};
-
-// "1-5, 12, 20-22" -> [1,2,3,4,5,12,20,21,22]. Written the way a person writes
-// it, and forgiving: anything that is not a number is simply ignored.
-const parseRowNumbers = (text) => {
-    const numbers = [];
-    String(text || "")
-        .split(/[,\s;]+/)
-        .map((chunk) => chunk.trim())
-        .filter(Boolean)
-        .forEach((chunk) => {
-            const range = chunk.match(/^(\d+)\s*[-–]\s*(\d+)$/);
-            if (range) {
-                let from = parseInt(range[1], 10);
-                let to = parseInt(range[2], 10);
-                if (from > to) {
-                    [from, to] = [to, from];
-                }
-                for (let i = from; i <= Math.min(to, from + 2000); i++) {
-                    if (i > 0) {
-                        numbers.push(i);
-                    }
-                }
-                return;
-            }
-            if (/^\d+$/.test(chunk) && parseInt(chunk, 10) > 0) {
-                numbers.push(parseInt(chunk, 10));
-            }
-        });
-
-    return [...new Set(numbers)].sort((a, b) => a - b);
 };
 
 export default function ColumnMappingModal({
@@ -95,14 +79,14 @@ export default function ColumnMappingModal({
     onReinspect,
     inspecting,
 }) {
-    // column index -> field name ("" = ignore this column)
+    // field name -> column index, the shape the API and a saved mapping use
+    // ("" or absent = that column is ignored)
     const [mapping, setMapping] = useState({});
     const [accountId, setAccountId] = useState("");
     const [accounts, setAccounts] = useState([]);
     const [wasRemembered, setWasRemembered] = useState(false);
     // Rows the user does not want imported, numbered as they are in the file.
     const [skipRows, setSkipRows] = useState([]);
-    const [typedRows, setTypedRows] = useState("");
     const [rememberedRows, setRememberedRows] = useState(false);
 
     useEffect(() => {
@@ -126,7 +110,13 @@ export default function ColumnMappingModal({
         const saved = inspection.saved_mapping || null;
         const source = saved && Object.keys(saved).length > 0 ? saved : inspection.suggested || {};
         setWasRemembered(Boolean(saved && Object.keys(saved).length > 0));
-        setMapping({ ...source });
+        // Only the columns this screen asks for: a remembered mapping may name
+        // others, and they would show as a dropdown with nothing selected.
+        setMapping(
+            Object.fromEntries(
+                Object.entries(source).filter(([field]) => FIELD_LABELS[field])
+            )
+        );
         setAccountId(
             inspection.saved_account_id ? String(inspection.saved_account_id) : ""
         );
@@ -138,45 +128,45 @@ export default function ColumnMappingModal({
             : [];
         setSkipRows(savedRows);
         setRememberedRows(savedRows.length > 0);
-        setTypedRows("");
     }, [inspection]);
 
     const columns = inspection?.columns || [];
     const preview = inspection?.preview || [];
     const previewNumbers = inspection?.preview_row_numbers || [];
-    const tail = inspection?.preview_tail || [];
-    const tailNumbers = inspection?.preview_tail_row_numbers || [];
     const headerRow = inspection?.header_row || null;
 
-    // A field can only be used once: the options of the others are greyed out.
-    const usedFields = useMemo(
-        () => Object.values(mapping).filter((field) => field),
-        [mapping]
-    );
+    // The dropdown of a column shows the field that column holds.
+    const fieldForColumn = (index) =>
+        Object.entries(mapping).find(([, columnIndex]) => Number(columnIndex) === Number(index))?.[0] || "";
+
+    const mappedFields = useMemo(() => Object.keys(mapping), [mapping]);
 
     const missingRequired = REQUIRED_FIELDS.filter(
-        (field) => !usedFields.includes(field)
+        (field) => !mappedFields.includes(field)
     );
 
-    // A bank export brings no accounts: then the user has to say which account
-    // these movements belong to, otherwise they cannot be stored.
-    const hasAccountColumn =
-        usedFields.includes("from_account_id") || usedFields.includes("to_account_id");
-    const needsAccount = !hasAccountColumn && !accountId;
+    // This screen only appears for a file that does not follow the template, so
+    // the account is never in the file: the user always has to pick it here,
+    // otherwise the movements cannot be stored.
+    const needsAccount = !accountId;
+
+    const selectedAccount = accounts.find(
+        (account) => String(account.id) === String(accountId)
+    );
 
     const setColumnField = (index, field) => {
         setMapping((previous) => {
             const next = { ...previous };
-            // Free the field from any other column before assigning it here.
+            // A column holds at most one field: clear whatever this column had.
             Object.keys(next).forEach((key) => {
-                if (next[key] === field && Number(key) !== Number(index)) {
+                if (Number(next[key]) === Number(index)) {
                     delete next[key];
                 }
             });
+            // A field lives in one column: this also takes it away from the
+            // column it was in before.
             if (field) {
-                next[index] = field;
-            } else {
-                delete next[index];
+                next[field] = index;
             }
             return next;
         });
@@ -206,12 +196,13 @@ export default function ColumnMappingModal({
         );
     };
 
-    const typedNumbers = useMemo(() => parseRowNumbers(typedRows), [typedRows]);
-
-    const allSkipRows = useMemo(() => {
-        const merged = [...new Set([...(skipRows || []), ...typedNumbers])];
-        return merged.filter((n) => Number.isInteger(n) && n > 0).sort((a, b) => a - b);
-    }, [skipRows, typedNumbers]);
+    const allSkipRows = useMemo(
+        () =>
+            (skipRows || [])
+                .filter((n) => Number.isInteger(n) && n > 0)
+                .sort((a, b) => a - b),
+        [skipRows]
+    );
 
     const totalRows = inspection?.row_count ?? 0;
     const willImport = Math.max(totalRows - allSkipRows.length, 0);
@@ -227,12 +218,11 @@ export default function ColumnMappingModal({
         const next = [...new Set([...allSkipRows, ...above])]
             .filter((n) => Number.isInteger(n) && n > 0 && n < number)
             .sort((a, b) => a - b);
-        setTypedRows("");
         setSkipRows(next);
         onReinspect(next);
     };
 
-    // One table per end of the file, same shape, so both ends are tickable.
+    // One table, one row per line of the file, so every line is tickable.
     // The header of every column is a dropdown: the user reads the table and
     // says, right there, what each column holds.
     const renderRowsTable = (rows, numbers, emptyText) => {
@@ -240,7 +230,7 @@ export default function ColumnMappingModal({
             return <div className="px-3 py-2 text-xs text-gray-500">{emptyText}</div>;
         }
         return (
-            <div className="max-h-72 overflow-auto rounded-2xl border border-gray-800">
+            <div className="max-h-96 overflow-auto rounded-2xl border border-gray-800">
                 <table className="min-w-full text-left text-xs">
                     <thead className="sticky top-0 z-10 bg-[#1a1a2e]">
                         <tr>
@@ -248,8 +238,10 @@ export default function ColumnMappingModal({
                                 Row
                             </th>
                             {columns.map((column, index) => {
-                                const current = mapping[index] || "";
+                                const current = fieldForColumn(index);
                                 const suggested = suggestedFor(index);
+                                // The column holds what we found for it by itself.
+                                const isDetected = Boolean(current) && current === suggested;
                                 return (
                                     <th
                                         key={`head-${index}`}
@@ -262,7 +254,7 @@ export default function ColumnMappingModal({
                                             <span className="truncate">
                                                 {column || `(column ${index + 1})`}
                                             </span>
-                                            {suggested && !current && (
+                                            {isDetected && (
                                                 <span className="shrink-0 rounded-full bg-emerald-500/15 px-1.5 text-[9px] text-emerald-300">
                                                     detected
                                                 </span>
@@ -341,15 +333,16 @@ export default function ColumnMappingModal({
                                     {columns.map((_, cellIndex) => (
                                         <td
                                             key={`cell-${rowIndex}-${cellIndex}`}
-                                            className={`whitespace-nowrap border-b border-gray-800 px-3 py-1.5 text-gray-300 ${
+                                            className={`max-w-[160px] truncate border-b border-gray-800 px-3 py-1.5 text-gray-300 ${
                                                 leftOut ? "line-through" : ""
                                             }`}
+                                            title={row[cellIndex] === null || row[cellIndex] === undefined ? "" : String(row[cellIndex])}
                                         >
                                             {renderCell(row[cellIndex])}
                                         </td>
                                     ))}
                                     <td className="whitespace-nowrap border-b border-gray-800 px-3 py-1.5">
-                                        <div className="flex items-center gap-1">
+                                        <div className="flex items-center gap-1 whitespace-nowrap">
                                             <button
                                                 type="button"
                                                 onClick={() => toggleRow(number)}
@@ -448,41 +441,57 @@ export default function ColumnMappingModal({
                             </div>
 
                             {missingRequired.length > 0 && (
-                                <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-300">
+                                <div className={`${CARD} text-xs text-gray-300`}>
                                     Still to match, click the header of the column that holds it:{" "}
                                     {missingRequired.map((field) => FIELD_LABELS[field]).join(", ")}
                                 </div>
                             )}
 
-                            {/* The account: a bank export carries no BudgetBee account. */}
-                            {!hasAccountColumn && (
-                                <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-3 py-2">
-                                    <div className="mb-1 text-xs text-amber-300">
-                                        This file does not say which account the movements belong to.
-                                        Choose it here.
-                                    </div>
-                                    <Select
-                                        aria-label="Account the movements belong to"
-                                        placeholder="Select account"
-                                        size="sm"
-                                        items={accounts}
-                                        selectedKeys={accountId ? [accountId] : []}
-                                        onChange={(event) => setAccountId(event.target.value)}
-                                        classNames={selectClassNames}
-                                        renderValue={(items) =>
-                                            items.map((item) => (
-                                                <span key={item.key} className="text-sm text-white">
-                                                    {item.data?.name}
-                                                </span>
-                                            ))
-                                        }
-                                    >
-                                        {(account) => (
-                                            <SelectItem key={account.id}>{account.name}</SelectItem>
-                                        )}
-                                    </Select>
+                            {/* The account: this file does not say which one the
+                                movements belong to. */}
+                            <div className={CARD}>
+                                <div className={`${LABEL} mb-1`}>Account</div>
+                                <div className="mb-2 text-xs text-gray-500">
+                                    This file does not say which account the movements belong to.
                                 </div>
-                            )}
+                                <Select
+                                    aria-label="Account the movements belong to"
+                                    placeholder="Select account"
+                                    size="sm"
+                                    items={accounts}
+                                    selectionMode="single"
+                                    selectedKeys={accountId ? [accountId.toString()] : []}
+                                    onChange={(event) => setAccountId(event.target.value)}
+                                    classNames={ACCOUNT_SELECT_CLASSNAMES}
+                                    renderValue={() => (
+                                        <div className="flex flex-row items-center gap-x-2">
+                                            {selectedAccount && (
+                                                <>
+                                                    <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold text-xs" style={{ backgroundColor: selectedAccount.color || "#666" }}>
+                                                        {selectedAccount.name.charAt(0)}
+                                                    </div>
+                                                    <span className="text-white text-sm">{selectedAccount.name}</span>
+                                                </>
+                                            )}
+                                        </div>
+                                    )}
+                                >
+                                    {(item) => (
+                                        <SelectItem key={item.id} value={item.id}
+                                            startContent={
+                                                <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold text-xs" style={{ backgroundColor: item.color || "#666" }}>
+                                                    {item.name.charAt(0)}
+                                                </div>
+                                            }
+                                            endContent={
+                                                <span className="text-gray-400 text-xs">{item.currency_symbol} {item.balance}</span>
+                                            }
+                                        >
+                                            {item.name}
+                                        </SelectItem>
+                                    )}
+                                </Select>
+                            </div>
 
                             {/* The table: the headers carry the dropdowns, and every
                                 row can be left out or taken as the header. */}
@@ -523,49 +532,28 @@ export default function ColumnMappingModal({
                                     {renderRowsTable(preview, previewNumbers, "No rows to show.")}
                                 </div>
 
-                                {tail.length > 0 && (
-                                    <div className="mt-3 overflow-x-auto">
-                                        <div className={`mb-1 ${LABEL}`}>Last rows of the file</div>
-                                        {renderRowsTable(tail, tailNumbers, "No rows to show.")}
-                                    </div>
-                                )}
-
-                                <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end">
-                                    <div className="flex-1">
-                                        <div className={`mb-1 ${LABEL}`}>
-                                            Other rows to leave out
-                                        </div>
-                                        <input
-                                            type="text"
-                                            value={typedRows}
-                                            onChange={(event) => setTypedRows(event.target.value)}
-                                            placeholder="For example 6, 12, 215-216"
-                                            className={`${BOX} w-full text-sm text-white placeholder:text-gray-600 focus:border-emerald-500/40 focus:outline-none`}
-                                        />
-                                    </div>
-                                    <div className="text-xs text-gray-400 sm:pb-2">
-                                        {allSkipRows.length > 0 ? (
-                                            <>
-                                                <span className="text-amber-300">
-                                                    {allSkipRows.length} line(s)
-                                                </span>{" "}
-                                                will not be imported:{" "}
-                                                <span className="text-gray-300">
-                                                    {allSkipRows.slice(0, 12).join(", ")}
-                                                    {allSkipRows.length > 12 ? "…" : ""}
-                                                </span>
-                                            </>
-                                        ) : (
-                                            <>Every row of the file will be imported.</>
-                                        )}
-                                    </div>
+                                <div className="mt-3 text-xs text-gray-400">
+                                    {allSkipRows.length > 0 ? (
+                                        <>
+                                            <span className="text-gray-200">
+                                                {allSkipRows.length} line(s)
+                                            </span>{" "}
+                                            will not be imported:{" "}
+                                            <span className="text-gray-300">
+                                                {allSkipRows.slice(0, 12).join(", ")}
+                                                {allSkipRows.length > 12 ? "…" : ""}
+                                            </span>
+                                        </>
+                                    ) : (
+                                        <>Every row of the file will be imported.</>
+                                    )}
                                 </div>
                             </div>
                         </ModalBody>
                         <ModalFooter className="border-t border-gray-800/50">
                             {errorMsg && <span className="mr-auto text-xs text-red-400">{errorMsg}</span>}
                             {missingRequired.length === 0 && needsAccount && (
-                                <span className="mr-auto text-xs text-amber-400">
+                                <span className="mr-auto text-xs text-gray-400">
                                     Choose the account the movements belong to.
                                 </span>
                             )}
@@ -577,34 +565,21 @@ export default function ColumnMappingModal({
                             >
                                 Cancel
                             </Button>
+                            {/* One button only: every import is categorised, so
+                                there is nothing to choose here. */}
                             <Button
                                 type="button"
-                                variant="flat"
-                                className="bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30"
-                                isLoading={loading === "plain"}
+                                className="bg-green-500 text-white hover:bg-green-600"
+                                isLoading={Boolean(loading)}
                                 isDisabled={missingRequired.length > 0 || needsAccount}
-                                onPress={() => onConfirm(mapping, accountId, false, allSkipRows)}
+                                onPress={() => onConfirm(mapping, accountId, true, allSkipRows)}
                                 startContent={
-                                    loading !== "plain" && (
-                                        <FontAwesomeIcon icon="fa-solid fa-check" />
+                                    !loading && (
+                                        <FontAwesomeIcon icon="fa-solid fa-cloud-arrow-up" />
                                     )
                                 }
                             >
                                 Upload
-                            </Button>
-                            <Button
-                                type="button"
-                                className="bg-green-500 text-white hover:bg-green-600"
-                                isLoading={loading === "categorise"}
-                                isDisabled={missingRequired.length > 0 || needsAccount}
-                                onPress={() => onConfirm(mapping, accountId, true, allSkipRows)}
-                                startContent={
-                                    loading !== "categorise" && (
-                                        <FontAwesomeIcon icon="fa-solid fa-wand-magic-sparkles" />
-                                    )
-                                }
-                            >
-                                Upload and categorise
                             </Button>
                         </ModalFooter>
                     </>
