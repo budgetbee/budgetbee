@@ -34,6 +34,13 @@ class CategoryTextNormalizer
     /** @var int */
     private int $corpusDocuments = 0;
 
+    /**
+     * Words the user said are not a merchant ("card payment" and the like).
+     *
+     * @var array<int,string>
+     */
+    private array $ignoredPhrases = [];
+
     public function __construct(?array $config = null)
     {
         $this->config = $config ?? (array) config('categorization', []);
@@ -94,6 +101,50 @@ class CategoryTextNormalizer
     }
 
     /**
+     * Take these words out of the text before the key is built, so the words
+     * that come after them become the key.
+     *
+     * Nothing is listed here by the code: the list only ever holds what the user
+     * marked himself on screen.
+     *
+     * @param array<int,string|null> $phrases
+     */
+    public function withIgnoredPhrases(array $phrases): self
+    {
+        $clone = clone $this;
+        $clone->ignoredPhrases = array_values(array_filter(
+            array_map(fn ($phrase) => self::flatten($phrase), $phrases),
+            fn (string $phrase): bool => $phrase !== ''
+        ));
+
+        return $clone;
+    }
+
+    /**
+     * Text ready to become a key: cleaned, stripped of references and without
+     * the words the user marked as "not a merchant".
+     */
+    private function prepare(?string $raw): string
+    {
+        return $this->dropIgnoredPhrases($this->stripNoise(self::flatten($raw)));
+    }
+
+    private function dropIgnoredPhrases(string $text): string
+    {
+        if ($text === '' || $this->ignoredPhrases === []) {
+            return $text;
+        }
+
+        foreach ($this->ignoredPhrases as $phrase) {
+            if (str_contains($text, $phrase)) {
+                $text = (string) preg_replace('/' . preg_quote($phrase, '/') . '/', ' ', $text);
+            }
+        }
+
+        return trim((string) preg_replace('/\s+/', ' ', $text));
+    }
+
+    /**
      * How many of the movements fed to withCorpus() were used.
      */
     public function corpusDocuments(): int
@@ -110,7 +161,7 @@ class CategoryTextNormalizer
      */
     private function rawTokensOf(?string $raw): array
     {
-        $text = $this->stripNoise($this->cleanText($raw));
+        $text = $this->prepare($raw);
         if ($text === '') {
             return [];
         }
@@ -133,14 +184,7 @@ class CategoryTextNormalizer
      */
     public function normalize(?string $raw): ?string
     {
-        $text = $this->cleanText($raw);
-        if ($text === '') {
-            return null;
-        }
-
-        $text = $this->stripNoise($text);
-
-        $tokens = $this->tokensOf($text);
+        $tokens = $this->tokensOf($this->prepare($raw));
         if (empty($tokens)) {
             // Empty text, only payment-method words, only numbers: NO KEY.
             return null;
@@ -164,18 +208,16 @@ class CategoryTextNormalizer
      */
     public function significantTokens(?string $raw): array
     {
-        $text = $this->cleanText($raw);
-        if ($text === '') {
-            return [];
-        }
-
-        return $this->tokensOf($this->stripNoise($text));
+        return $this->tokensOf($this->prepare($raw));
     }
 
     /**
      * Uppercase, accent-free, punctuation collapsed to single spaces.
+     *
+     * Public and static on purpose: it is the form two texts are compared in,
+     * and the form a phrase the user marked as "not a merchant" is stored in.
      */
-    private function cleanText(?string $raw): string
+    public static function flatten(?string $raw): string
     {
         if ($raw === null) {
             return '';
@@ -329,7 +371,7 @@ class CategoryTextNormalizer
         $index = [];
         foreach ((array) ($this->config['aliases'] ?? []) as $alias => $value) {
             // Alias keys come from the config already normalised.
-            $index[$this->cleanText((string) $alias)] = (string) $value;
+            $index[self::flatten((string) $alias)] = (string) $value;
         }
 
         return $this->aliasIndex = $index;

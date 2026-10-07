@@ -70,6 +70,7 @@ class CategoryCorpus
     public function normalizerFor(int $userId, ?int $accountId = null, array $extra = [], ?int $limit = null): CategoryTextNormalizer
     {
         return (new CategoryTextNormalizer())
+            ->withIgnoredPhrases(app(CategoryIgnoredPhrases::class)->forUser($userId))
             ->withCorpus($this->textsFor($userId, $accountId, $extra, $limit));
     }
 }

@@ -57,6 +57,9 @@ export default function CategoryRules() {
     const [rules, setRules] = useState([]);
     const [suggestions, setSuggestions] = useState([]);
     const [ignored, setIgnored] = useState([]);
+    // What ignoring a suggestion did, in movements: it is not only a suggestion
+    // that goes away.
+    const [notice, setNotice] = useState(null);
     // Which view of the rules section is open: the rules, or what he said no to.
     const [tab, setTab] = useState("rules");
     const [summary, setSummary] = useState(null);
@@ -245,10 +248,19 @@ export default function CategoryRules() {
 
     // Saying no: the merchant stops being suggested (and stops being learned on
     // its own). Its movements are still there, so nothing is lost.
+    // Saying no to a suggestion also means "stop reading those words": the
+    // movements that carried them come back keyed by what comes after (the shop),
+    // so they are suggested one by one instead of as one group of shops that have
+    // nothing to do with each other.
     const handleIgnore = async (suggestion) => {
-        await Endpoints.ignoreCategorySuggestion(suggestion.merchant_key);
+        const response = await Endpoints.ignoreCategorySuggestion(suggestion.merchant_key);
+
         setEditing(null);
         setPendingCategoryId(null);
+        setNotice({
+            words: suggestion.merchant_key,
+            moved: response?.moved ?? 0,
+        });
         await load();
     };
 
@@ -256,6 +268,7 @@ export default function CategoryRules() {
     // learnable).
     const handleRestore = async (suggestion) => {
         await Endpoints.restoreCategorySuggestion(suggestion.merchant_key);
+        setNotice(null);
         await load();
     };
 
@@ -794,12 +807,25 @@ export default function CategoryRules() {
                                 </button>
                             </div>
 
+                            {notice && (
+                                <div className="mt-3 text-xs text-gray-400 bg-[#12121f] rounded-2xl p-3 border border-gray-800">
+                                    “{notice.words}” is not read any more.{" "}
+                                    {notice.moved > 0
+                                        ? `${notice.moved} movements are now keyed by the shop that comes after it`
+                                        : "No movement was keyed by it"}{" "}
+                                    — they go back to being suggestions of their own.
+                                </div>
+                            )}
+
                             {tab === "ignored" ? (
                                 <div className="mt-4">
                                     <p className="text-xs text-gray-500 mb-3">
-                                        Merchants you said no to: they are not suggested, and the categoriser
-                                        does not apply them on its own. Nothing was thrown away — their
-                                        movements keep the category they have — and you can put one back.
+                                        Words you said no to: they are not suggested, the categoriser does not
+                                        apply them on its own, and they are not read any more when the shop is
+                                        worked out — the words that come after them take their place. A bank
+                                        writes them in every line, so this is the fastest way of telling it
+                                        apart from a shop. Nothing was thrown away: those movements keep the
+                                        category they have, and you can put one back.
                                     </p>
 
                                     {ignored.length === 0 ? (
@@ -834,8 +860,9 @@ export default function CategoryRules() {
                                 <div className="mb-4">
                                     <p className="text-xs text-gray-500 mb-2">
                                         Seen but still not applied on its own: give it your OK, change the
-                                        category, or ignore it so it stops being suggested and stops being
-                                        applied by itself.
+                                        category, or ignore it. Ignoring a wording that the bank writes in
+                                        every line stops it being read, and the shop that comes after it
+                                        becomes the suggestion.
                                     </p>
                                     <div className="columns-1 xl:columns-2 gap-2">
                                         {suggestions.slice(0, 10).map((suggestion) =>

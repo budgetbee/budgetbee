@@ -9,6 +9,8 @@ use App\Models\ParentCategory;
 use App\Models\Record;
 use App\Services\Categorization\CategoryClassifier;
 use App\Services\Categorization\CategoryCorpus;
+use App\Services\Categorization\CategoryIgnoredPhrases;
+use App\Services\Categorization\MerchantKeyRebuilder;
 use App\Services\Categorization\CategoryLearner;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -528,9 +530,19 @@ class CategoryRuleController extends Controller
             ->where('merchant_key', $data['merchant_key'])
             ->update(['ignored_at' => now()]);
 
+        // Saying no to a suggestion also means: stop reading those words when the
+        // merchant is worked out. The movements that carried them get a new key
+        // from what comes after (the shop), so they come back as suggestions of
+        // their own instead of as one group of shops that have nothing to do
+        // with each other.
+        app(CategoryIgnoredPhrases::class)->ignore($userId, $data['merchant_key']);
+        $rebuilt = app(MerchantKeyRebuilder::class)->rebuild($userId, [$data['merchant_key']]);
+
         return response()->json([
             'merchant_key' => $data['merchant_key'],
             'ignored' => $ignored,
+            'moved' => $rebuilt['changed'],
+            'keys' => array_keys($rebuilt['changes']),
         ]);
     }
 
@@ -552,9 +564,15 @@ class CategoryRuleController extends Controller
             ->where('merchant_key', $data['merchant_key'])
             ->update(['ignored_at' => null]);
 
+        // Reading those words again changes the key of every movement they are in,
+        // so the whole history is looked at again.
+        app(CategoryIgnoredPhrases::class)->restore($userId, $data['merchant_key']);
+        $rebuilt = app(MerchantKeyRebuilder::class)->rebuild($userId);
+
         return response()->json([
             'merchant_key' => $data['merchant_key'],
             'restored' => $restored,
+            'moved' => $rebuilt['changed'],
         ]);
     }
 
