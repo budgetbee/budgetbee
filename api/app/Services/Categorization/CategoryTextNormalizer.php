@@ -23,9 +23,107 @@ class CategoryTextNormalizer
     /** @var array<string,string>|null */
     private ?array $aliasIndex = null;
 
+    /**
+     * Tokens that carry no merchant information FOR THIS USER, worked out from
+     * his own movements instead of from a dictionary shipped with the project.
+     *
+     * @var array<string,bool>
+     */
+    private array $corpusNoise = [];
+
+    /** @var int */
+    private int $corpusDocuments = 0;
+
     public function __construct(?array $config = null)
     {
         $this->config = $config ?? (array) config('categorization', []);
+    }
+
+    /**
+     * Read the user's own movements so the key is built from what identifies a
+     * merchant, not from the words the bank repeats in every line.
+     *
+     * A word that shows up in most of the movements on the account ("card
+     * payment", "direct debit", the account holder, the city) says nothing
+     * about WHO was paid: those words are dropped for this corpus only, and the
+     * key survives from the words that do single a merchant out. Nothing is
+     * hardcoded per bank: the list is derived from the texts in front of it.
+     *
+     * @param array<int,string|null> $texts
+     */
+    public function withCorpus(array $texts): self
+    {
+        $clone = clone $this;
+        $clone->corpusNoise = [];
+        $clone->corpusDocuments = 0;
+
+        $minDocuments = max(2, (int) ($this->config['corpus_min_documents'] ?? 8));
+        $noiseShare = (float) ($this->config['corpus_noise_share'] ?? 0.4);
+
+        $documents = [];
+        foreach ($texts as $raw) {
+            $tokens = $this->rawTokensOf($raw);
+            if ($tokens !== []) {
+                $documents[] = $tokens;
+            }
+        }
+
+        $total = count($documents);
+        if ($total < $minDocuments || $noiseShare <= 0.0) {
+            return $clone;
+        }
+
+        $seen = [];
+        foreach ($documents as $tokens) {
+            foreach ($tokens as $token) {
+                $seen[$token] = ($seen[$token] ?? 0) + 1;
+            }
+        }
+
+        $noise = [];
+        foreach ($seen as $token => $count) {
+            if ($count / $total >= $noiseShare) {
+                $noise[$token] = true;
+            }
+        }
+
+        $clone->corpusDocuments = $total;
+        $clone->corpusNoise = $noise;
+
+        return $clone;
+    }
+
+    /**
+     * How many of the movements fed to withCorpus() were used.
+     */
+    public function corpusDocuments(): int
+    {
+        return $this->corpusDocuments;
+    }
+
+    /**
+     * Every word of a text (cleaned and stripped of dates/references), before
+     * the length and generic-word filters: the corpus has to see the words the
+     * key would otherwise be built from.
+     *
+     * @return array<int,string>
+     */
+    private function rawTokensOf(?string $raw): array
+    {
+        $text = $this->stripNoise($this->cleanText($raw));
+        if ($text === '') {
+            return [];
+        }
+
+        $tokens = [];
+        foreach (explode(' ', $text) as $token) {
+            $token = trim($token);
+            if ($token !== '' && preg_replace('/[^A-Z]/', '', $token) !== '') {
+                $tokens[$token] = true;
+            }
+        }
+
+        return array_keys($tokens);
     }
 
     /**
@@ -159,7 +257,22 @@ class CategoryTextNormalizer
         }
 
         // Remove duplicates, preserving order (bank texts repeat the merchant).
-        return array_values(array_unique($tokens));
+        $tokens = array_values(array_unique($tokens));
+
+        if ($this->corpusNoise === []) {
+            return $tokens;
+        }
+
+        // Words the bank repeats in most of this user's movements are not part
+        // of the merchant name. If the filter empties the text (a file that only
+        // holds movements of one single merchant), the unfiltered tokens are
+        // kept: a key that groups those movements together is still true.
+        $kept = array_values(array_filter(
+            $tokens,
+            fn (string $token): bool => ! isset($this->corpusNoise[$token])
+        ));
+
+        return $kept === [] ? $tokens : $kept;
     }
 
     /**

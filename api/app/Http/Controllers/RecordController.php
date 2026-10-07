@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\Categorization\CategoryClassifier;
+use App\Services\Categorization\CategoryCorpus;
 use App\Services\Categorization\CategoryLearner;
 
 use Illuminate\Http\Request;
@@ -130,7 +131,14 @@ class RecordController extends Controller
 
         $record = new Record();
         $record->fill($data);
-        $record->merchant_key = (new CategoryClassifier())->merchantKey($record->name ?: $record->description);
+        // The key is built against this user's own movements: the words his bank
+        // repeats in every line are not part of a merchant name.
+        $record->merchant_key = (new CategoryClassifier(
+            app(CategoryCorpus::class)->normalizerFor(
+                (int) $record->user_id,
+                (int) ($record->from_account_id ?: $record->to_account_id) ?: null
+            )
+        ))->merchantKey($record->name ?: $record->description);
         $record->save();
 
         // Learning input: what the user creates by hand is the highest quality
@@ -162,7 +170,10 @@ class RecordController extends Controller
         ]);
 
         $userId = (int) $request->user()->id;
-        $classifier = new CategoryClassifier();
+        // Same key as the one the movement will get once it is saved.
+        $classifier = new CategoryClassifier(
+            app(CategoryCorpus::class)->normalizerFor($userId, null, [(string) $request->input('text')])
+        );
         $merchantKey = $classifier->merchantKey($request->input('text'));
 
         if ($merchantKey === null) {

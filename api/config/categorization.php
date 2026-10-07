@@ -106,6 +106,27 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Words that identify nobody, worked out from the user's own movements
+    |--------------------------------------------------------------------------
+    |
+    | A bank wraps every line in its own words ("card payment", "direct debit",
+    | the account holder, the city). Those words are not the merchant, and taking
+    | the first words of the text as the key makes every shop share one key.
+    |
+    | They are NOT listed here: the normaliser reads the texts of the file being
+    | imported plus the movements already stored, and drops any word that shows
+    | up in at least `corpus_noise_share` of them. With fewer than
+    | `corpus_min_documents` texts nothing is dropped, so a small file behaves
+    | exactly as before.
+    |
+    */
+    'corpus_min_documents' => 8,
+    'corpus_noise_share' => 0.4,
+    // How many of the user's movements are read as corpus for a single movement.
+    'corpus_history_rows' => 300,
+
+    /*
+    |--------------------------------------------------------------------------
     | Generic tokens: payment method / banking noise, NOT merchants
     |--------------------------------------------------------------------------
     |
