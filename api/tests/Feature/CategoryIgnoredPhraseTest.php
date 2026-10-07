@@ -61,13 +61,19 @@ class CategoryIgnoredPhraseTest extends TestCase
      * A tiny file, so the merchant key comes out of the text alone: the wording
      * that repeats in every line ends up being the key of all of them.
      */
-    private function import(array $names, string $file = 'statement.csv'): void
+    private function import(array $names, string $file = 'statement.csv', $categoryId = null): void
     {
         $csv = "date,from_account_id,to_account_id,type,category_id,name,amount,rate\n";
         $day = 1;
 
         foreach ($names as $name) {
-            $csv .= sprintf("2026-09-%02d,%d,,expense,,%s,10.00,1\n", $day++, $this->account->id, $name);
+            $csv .= sprintf(
+                "2026-09-%02d,%d,,expense,%s,%s,10.00,1\n",
+                $day++,
+                $this->account->id,
+                $categoryId ?? '',
+                $name
+            );
         }
 
         Storage::fake('uploads');
@@ -75,6 +81,22 @@ class CategoryIgnoredPhraseTest extends TestCase
         $this->post('/api/import', [
             'file' => UploadedFile::fake()->createWithContent($file, $csv),
         ])->assertStatus(200);
+    }
+
+    /**
+     * Una categoria propia: lo que el fichero dice de su puño y letra es lo
+     * unico que cuenta como evidencia para aprender.
+     */
+    private function category(): \App\Models\Category
+    {
+        return \App\Models\Category::firstOrCreate(
+            ['user_id' => $this->user->id, 'name' => 'Groceries'],
+            [
+                'parent_category_id' => \App\Models\ParentCategory::first()->id,
+                'icon' => 'fa-solid fa-tag',
+                'enabled' => true,
+            ]
+        );
     }
 
     private function keys(): array
@@ -126,11 +148,14 @@ class CategoryIgnoredPhraseTest extends TestCase
         $this->postJson('/api/category-rules/candidates/ignore', ['merchant_key' => 'ZZZ PAYMENT'])
             ->assertStatus(200);
 
+        // Con categoria propia, que es lo que hace que el aparato lo proponga:
+        // sin ella no hay evidencia y no hay sugerencia que mirar.
         $this->import([
             'ZZZ PAYMENT AT HARDWARE DEPOT',
             'ZZZ PAYMENT AT HARDWARE DEPOT',
             'ZZZ PAYMENT AT HARDWARE DEPOT',
-        ], 'next.csv');
+            'ZZZ PAYMENT AT HARDWARE DEPOT',
+        ], 'next.csv', $this->category()->id);
 
         $keys = $this->keys();
         $this->assertSame('HARDWARE DEPOT', $keys['ZZZ PAYMENT AT HARDWARE DEPOT']);

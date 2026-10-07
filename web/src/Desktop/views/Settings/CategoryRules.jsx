@@ -501,6 +501,18 @@ export default function CategoryRules() {
                                 >
                                     Remove
                                 </button>
+
+                                {/* Learned by the categoriser: "Remove" alone would
+                                    only delete it, and the next file would learn it
+                                    again. Ignoring says no to the words themselves. */}
+                                {rule.source === "learned" && (
+                                    <button
+                                        onClick={() => handleIgnore({ merchant_key: rule.value })}
+                                        className="text-xs px-2.5 py-1 rounded-lg border border-gray-700 text-gray-400 hover:bg-white/5 shrink-0"
+                                    >
+                                        Ignore
+                                    </button>
+                                )}
                             </div>
 
                             {editing === rule.id && (

@@ -538,9 +538,19 @@ class CategoryRuleController extends Controller
         app(CategoryIgnoredPhrases::class)->ignore($userId, $data['merchant_key']);
         $rebuilt = app(MerchantKeyRebuilder::class)->rebuild($userId, [$data['merchant_key']]);
 
+        // A rule the categoriser worked out for those words goes with them:
+        // keeping it would go on applying exactly what the user just said no to.
+        // A rule he added himself is his own decision, so it is left alone.
+        $removedRule = CategoryRule::forUser($userId)
+            ->where('match_field', 'merchant_key')
+            ->where('value', $data['merchant_key'])
+            ->where('source', CategoryRule::SOURCE_LEARNED)
+            ->delete();
+
         return response()->json([
             'merchant_key' => $data['merchant_key'],
             'ignored' => $ignored,
+            'rule_removed' => $removedRule,
             'moved' => $rebuilt['changed'],
             'keys' => array_keys($rebuilt['changes']),
         ]);

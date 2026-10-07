@@ -101,6 +101,14 @@ class CategoryLearner
         $top = $candidates->sortByDesc('confirmations')->first();
         $confirmations = (int) $top->confirmations;
 
+        // The fallback category is where the app puts what it does not know, so
+        // a wording filed there over and over says nothing about the merchant.
+        // It stays as a suggestion for the user to answer (or ignore): it never
+        // becomes a rule pointing at "Desconocido" on its own.
+        if ((int) $top->category_id === app(FallbackCategory::class)->idFor($userId)) {
+            return null;
+        }
+
         $minConfirmations = (int) ($this->config['min_confirmations'] ?? 3);
         $minShare = (float) ($this->config['min_share'] ?? 0.8);
 
