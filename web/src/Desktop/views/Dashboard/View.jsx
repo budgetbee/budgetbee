@@ -12,7 +12,6 @@ import CategoryIncomeChart from "./Components/CategoryIncomeChart";
 import CategoryExpenseChart from "./Components/CategoryExpenseChart";
 import BudgetsOverviewCard from "./Components/BudgetsOverviewCard";
 import CategorizerStatusCard from "./Components/CategorizerStatusCard";
-import RecordFilter, { readStoredFilters, countActiveFilters } from "./Components/RecordFilter";
 import TopNav from "../../layout/TopNav";
 
 const DEFAULT_SEARCH_DATA = {
@@ -21,13 +20,7 @@ const DEFAULT_SEARCH_DATA = {
 };
 
 export default function Dashboard() {
-    // The last applied filter comes back on its own, so the screen opens where
-    // the user left it.
-    const [searchData, setSearchData] = useState(() => ({
-        ...DEFAULT_SEARCH_DATA,
-        ...(readStoredFilters() || {}),
-    }));
-    const [filterOpen, setFilterOpen] = useState(false);
+    const [searchData, setSearchData] = useState(DEFAULT_SEARCH_DATA);
     const [lastRecordsRefreshKey, setLastRecordsRefreshKey] = useState(0);
 
     const handleRecordChange = () => {
@@ -37,23 +30,7 @@ export default function Dashboard() {
 
     return (
         <Layout onRecordChange={handleRecordChange}>
-            <TopNav
-                searchData={searchData}
-                setSearchData={setSearchData}
-                activeFilterCount={countActiveFilters(searchData)}
-                filtersOpen={filterOpen}
-                onToggleFilters={() => setFilterOpen((open) => !open)}
-            />
-
-            {filterOpen && (
-                <div className="px-10 pb-2">
-                    <RecordFilter
-                        searchData={searchData}
-                        setSearchData={setSearchData}
-                        onClose={() => setFilterOpen(false)}
-                    />
-                </div>
-            )}
+            <TopNav searchData={searchData} setSearchData={setSearchData} />
 
             <div className="flex flex-row min-h-screen">
                 <div className="flex flex-col gap-y-6 basis-9/12 px-10 py-5">

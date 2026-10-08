@@ -13,17 +13,11 @@ const DATE_PRESETS = [
  * The top bar of the dashboard.
  *
  * It keeps the same contract as before — it receives setSearchData and writes
- * { from_date, to_date, ... } onto it — and adds the period shortcuts, the
- * search box and the button that opens the full filter. It is the only place
- * the range is chosen, so every panel reads the same from_date / to_date.
+ * { from_date, to_date, ... } onto it — and adds the period shortcuts and the
+ * search box. It is the only place the range is chosen, so every panel reads
+ * the same from_date / to_date.
  */
-export default function TopNav({
-    searchData,
-    setSearchData,
-    activeFilterCount = 0,
-    filtersOpen = false,
-    onToggleFilters,
-}) {
+export default function TopNav({ searchData, setSearchData }) {
     const applyPreset = (preset) => {
         setSearchData((prev) => ({
             ...prev,
@@ -119,24 +113,6 @@ export default function TopNav({
                         Search
                     </button>
                 </form>
-
-                <button
-                    type="button"
-                    onClick={onToggleFilters}
-                    className={`ml-2 flex h-10 items-center gap-x-2 rounded-2xl border px-4 text-sm transition-colors ${
-                        filtersOpen
-                            ? "border-emerald-500/25 bg-emerald-500/15 text-emerald-300"
-                            : "border-gray-700 bg-[#2c3a50] text-gray-300 hover:text-white"
-                    }`}
-                >
-                    <FontAwesomeIcon icon="fa-solid fa-filter" />
-                    Filters
-                    {activeFilterCount > 0 && (
-                        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-green-500 px-1 text-xs font-semibold text-white">
-                            {activeFilterCount}
-                        </span>
-                    )}
-                </button>
             </div>
         </div>
     );
