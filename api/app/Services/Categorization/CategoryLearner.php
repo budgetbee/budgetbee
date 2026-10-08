@@ -4,6 +4,7 @@ namespace App\Services\Categorization;
 
 use App\Models\CategoryCandidate;
 use App\Models\CategoryRule;
+use App\Models\Record;
 
 /**
  * Learns from the user's own confirmations.
@@ -56,6 +57,56 @@ class CategoryLearner
         $candidate->save();
 
         $this->promoteIfReady($userId, $merchantKey);
+    }
+
+    /**
+     * Write the evidence that is already in the stored movements.
+     *
+     * The learner only counts what passes through the import or the record form
+     * from now on, so a database that already had history suggests nothing until
+     * it is read once. This reads what is there and writes the same evidence the
+     * learner would have written, with the same promotion rule. Only movements
+     * carrying BOTH a merchant key and a category count: nothing is guessed.
+     *
+     * @return array{pairs:int,rules:int}
+     */
+    public function learnFromHistory(int $userId): array
+    {
+        $rows = Record::query()
+            ->where('user_id', $userId)
+            ->whereNotNull('merchant_key')
+            ->where('merchant_key', '<>', '')
+            ->whereNotNull('category_id')
+            ->selectRaw('merchant_key, category_id, COUNT(*) as total')
+            ->groupBy('merchant_key', 'category_id')
+            ->get();
+
+        if ($rows->isEmpty()) {
+            return ['pairs' => 0, 'rules' => 0];
+        }
+
+        $pairs = 0;
+        foreach ($rows as $row) {
+            $candidate = CategoryCandidate::firstOrNew([
+                'user_id' => $userId,
+                'merchant_key' => $row->merchant_key,
+                'category_id' => (int) $row->category_id,
+            ]);
+
+            $candidate->confirmations = (int) $row->total;
+            $candidate->last_seen_at = now();
+            $candidate->save();
+            $pairs++;
+        }
+
+        $rules = 0;
+        foreach ($rows->pluck('merchant_key')->unique() as $merchantKey) {
+            if ($this->promoteIfReady($userId, (string) $merchantKey) !== null) {
+                $rules++;
+            }
+        }
+
+        return ['pairs' => $pairs, 'rules' => $rules];
     }
 
     /**

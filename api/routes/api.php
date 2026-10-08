@@ -10,6 +10,7 @@ use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CategoryRuleController;
+use App\Http\Controllers\CategorizationPreferenceController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\UserController;
@@ -104,6 +105,18 @@ Route::prefix('category-rules')->middleware(['auth:sanctum', 'token.refresh'])->
     Route::post('', [CategoryRuleController::class, 'store']);
     Route::post('{id}', [CategoryRuleController::class, 'update']);
     Route::delete('{id}', [CategoryRuleController::class, 'destroy']);
+});
+
+Route::prefix('categorization/preferences')->middleware(['auth:sanctum', 'token.refresh'])->group(function () {
+    // The switch, and whether the onboarding is still pending for this user.
+    Route::get('', [CategorizationPreferenceController::class, 'show']);
+    Route::post('', [CategorizationPreferenceController::class, 'update']);
+    // Each mark is written once: that is what stops the modal and the card from
+    // coming back.
+    Route::post('intro-seen', [CategorizationPreferenceController::class, 'markIntroSeen']);
+    Route::post('card-seen', [CategorizationPreferenceController::class, 'markCardSeen']);
+    // Read the movements already stored and leave the suggestions ready.
+    Route::post('backfill', [CategorizationPreferenceController::class, 'backfill']);
 });
 
 Route::prefix('balance')->middleware(['auth:sanctum', 'token.refresh'])->group(function () {

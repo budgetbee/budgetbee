@@ -2,8 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Models\CategoryCandidate;
-use App\Models\Record;
 use App\Services\Categorization\CategoryLearner;
 use Illuminate\Console\Command;
 
@@ -40,46 +38,16 @@ class LearnFromHistoryCommand extends Command
             return self::FAILURE;
         }
 
-        $rows = Record::query()
-            ->where('user_id', $user->id)
-            ->whereNotNull('merchant_key')
-            ->whereNotNull('category_id')
-            ->selectRaw('merchant_key, category_id, COUNT(*) as total')
-            ->groupBy('merchant_key', 'category_id')
-            ->get();
+        $result = app(CategoryLearner::class)->learnFromHistory((int) $user->id);
 
-        if ($rows->isEmpty()) {
+        if ($result['pairs'] === 0) {
             $this->warn('No movements with a merchant key and a category: nothing to learn from.');
 
             return self::SUCCESS;
         }
 
-        $seeded = 0;
-        foreach ($rows as $row) {
-            $candidate = CategoryCandidate::firstOrNew([
-                'user_id' => $user->id,
-                'merchant_key' => $row->merchant_key,
-                'category_id' => (int) $row->category_id,
-            ]);
-
-            $candidate->confirmations = (int) $row->total;
-            $candidate->last_seen_at = now();
-            $candidate->save();
-            $seeded++;
-        }
-
-        $this->info('Evidence written: ' . $seeded . ' merchant/category pairs.');
-
-        $learner = new CategoryLearner();
-        $promoted = 0;
-        foreach ($rows->pluck('merchant_key')->unique() as $merchantKey) {
-            if ($learner->promoteIfReady((int) $user->id, (string) $merchantKey) !== null) {
-                $promoted++;
-                $this->line('  rule created: ' . $merchantKey);
-            }
-        }
-
-        $this->info('Rules born from history: ' . $promoted);
+        $this->info('Evidence written: ' . $result['pairs'] . ' merchant/category pairs.');
+        $this->info('Rules born from history: ' . $result['rules']);
 
         return self::SUCCESS;
     }
