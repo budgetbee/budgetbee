@@ -158,7 +158,9 @@ export default function Accounts({ activeAccount, setSearchData }) {
                     <p className="text-sm text-gray-500">No accounts.</p>
                 )}
             </div>
-            {activeIds.length > 0 && adjustBalance}
+            {/* Adjusting a balance only makes sense for one account at a time:
+                with none or several selected the numbers have no single owner. */}
+            {activeIds.length === 1 && adjustBalance}
         </DashboardCard>
     );
 }

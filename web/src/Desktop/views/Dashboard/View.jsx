@@ -5,13 +5,11 @@ import Layout from "../../layout/Layout";
 import Accounts from "./Components/Accounts";
 import LastRecords from "./Components/LastRecords";
 import BalanceCard from "./Components/BalanceCard";
-import IncomeExpensesBalanceCard from "./Components/IncomeExpensesBalanceCard";
 import TopExpensesCard from "./Components/TopExpensesCard";
 import BalanceChart from "./Components/BalanceChart";
 import CategoryRecords from "./Components/CategoryRecords";
 import CategoryIncomeChart from "./Components/CategoryIncomeChart";
 import CategoryExpenseChart from "./Components/CategoryExpenseChart";
-import SummaryCards from "./Components/SummaryCards";
 import BudgetsOverviewCard from "./Components/BudgetsOverviewCard";
 import CategorizerStatusCard from "./Components/CategorizerStatusCard";
 import RecordFilter, { readStoredFilters, countActiveFilters } from "./Components/RecordFilter";
@@ -59,19 +57,14 @@ export default function Dashboard() {
 
             <div className="flex flex-row min-h-screen">
                 <div className="flex flex-col gap-y-6 basis-9/12 px-10 py-5">
-                    <div className="flex flex-row items-start gap-x-6">
-                        <div className="basis-3/12">
+                    <div className="flex flex-row gap-x-6">
+                        <div className="basis-7/12">
                             <BalanceCard searchData={searchData} />
                         </div>
                         <div className="basis-5/12">
-                            <IncomeExpensesBalanceCard searchData={searchData} />
-                        </div>
-                        <div className="grow">
                             <TopExpensesCard searchData={searchData} />
                         </div>
                     </div>
-
-                    <SummaryCards searchData={searchData} />
 
                     <BalanceChart searchData={searchData} />
 

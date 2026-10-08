@@ -259,7 +259,7 @@ export default function LeftSidebarMenu({ onRecordChange }) {
 
                 {/* Menu Options — scrollable middle section */}
                 <nav className="flex-1 overflow-y-auto min-h-0 py-4 text-white text-md">
-                    <div className="flex flex-col gap-y-2 mx-3 my-4">
+                    <div className="flex flex-col gap-y-3 mx-4 my-5">
                         <div className="w-full">
                             <RecordModalButton onRecordChange={onRecordChange} />
                         </div>
@@ -270,7 +270,7 @@ export default function LeftSidebarMenu({ onRecordChange }) {
                     <ul>
                         {sections.map((section) => (
                             <div key={section.title} className="mb-1">
-                                <div className="px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-widest text-gray-500">
+                                <div className="px-4 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-widest text-gray-500">
                                     {section.title}
                                 </div>
                                 {Object.entries(section.links).map(
@@ -286,9 +286,9 @@ export default function LeftSidebarMenu({ onRecordChange }) {
                                                 >
                                                     <FontAwesomeIcon
                                                         icon={link.icon}
-                                                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/5 text-base ${link.color}`}
+                                                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/5 text-[13px] ${link.color}`}
                                                     />
-                                                    <span className="text-sm font-medium">
+                                                    <span className="text-[13px] font-medium">
                                                         {link.name}
                                                     </span>
                                                 </li>
