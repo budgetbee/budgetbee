@@ -83,7 +83,7 @@ export default function CategoryRecords({ searchData, onRecordChange }) {
             className="h-full"
         >
             {isOpen && recordsModal}
-            <div className="mt-3 flex flex-col">
+            <div className="mt-2 flex flex-col">
                 {data.map(([typeKey, type]) => (
                     <div key={typeKey} className="flex flex-col">
                         {Object.entries(type).map(([parentKey, parent]) => {
@@ -96,7 +96,7 @@ export default function CategoryRecords({ searchData, onRecordChange }) {
                                     <button
                                         type="button"
                                         onClick={() => handleExpand(parent.id)}
-                                        className="flex w-full items-center justify-between gap-3 py-3 text-left"
+                                        className="flex w-full items-center justify-between gap-3 py-2 text-left"
                                     >
                                         <span className="flex items-center gap-3 min-w-0">
                                             <span
@@ -108,12 +108,12 @@ export default function CategoryRecords({ searchData, onRecordChange }) {
                                                     className="text-sm"
                                                 />
                                             </span>
-                                            <span className="text-sm font-medium text-white truncate">
+                                            <span className="text-base font-semibold text-white truncate">
                                                 {parent.name}
                                             </span>
                                         </span>
                                         <span className="flex items-center gap-3 shrink-0">
-                                            <span className="text-sm font-semibold text-white">
+                                            <span className="text-base font-bold text-white">
                                                 {parent.currency_symbol}{" "}
                                                 {numeral(Math.abs(parent.total)).format("0,0.00 a")}
                                             </span>
@@ -128,7 +128,7 @@ export default function CategoryRecords({ searchData, onRecordChange }) {
                                         </span>
                                     </button>
                                     {isExpanded && (
-                                        <div className="flex flex-col pb-2 pl-12">
+                                        <div className="flex flex-col pb-1.5 pl-12">
                                             {Object.entries(parent.childrens).map(
                                                 ([childKey, child]) => (
                                                     <button
@@ -137,12 +137,12 @@ export default function CategoryRecords({ searchData, onRecordChange }) {
                                                         onClick={() =>
                                                             handleShowRecords(child.id)
                                                         }
-                                                        className="flex flex-row items-center justify-between gap-3 border-t border-white/5 py-2 text-left"
+                                                        className="flex flex-row items-center justify-between gap-3 border-t border-white/5 py-1.5 text-left"
                                                     >
-                                                        <span className="text-sm text-gray-400 truncate">
+                                                        <span className="text-[15px] text-gray-300 truncate">
                                                             {child.name}
                                                         </span>
-                                                        <span className="text-sm text-gray-300 shrink-0">
+                                                        <span className="text-[15px] font-medium text-gray-200 shrink-0">
                                                             {child.currency_symbol}{" "}
                                                             {numeral(Math.abs(child.total)).format(
                                                                 "0,0.00 a"

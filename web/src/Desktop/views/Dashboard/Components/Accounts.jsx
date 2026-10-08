@@ -159,12 +159,12 @@ export default function Accounts({ activeAccount, setSearchData }) {
                             } ${isDimmed ? "opacity-45" : ""}`}
                         >
                             <span
-                                className={`w-full truncate text-sm leading-5 ${texto.secundario}`}
+                                className={`w-full truncate text-base font-semibold leading-6 ${texto.secundario}`}
                             >
                                 {account.name}
                             </span>
                             <span
-                                className={`w-full truncate text-sm font-bold leading-5 ${texto.principal}`}
+                                className={`w-full truncate text-base font-bold leading-6 ${texto.principal}`}
                             >
                                 {account.currency_symbol}{" "}
                                 {numeral(account.balance).format("0,0.00")}
