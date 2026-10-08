@@ -28,7 +28,7 @@ export default function DashboardCard({
 
     return (
         <section
-            className={`rounded-2xl border border-gray-800 bg-[#12121f] p-4 sm:p-5 ${className}`}
+            className={`rounded-2xl border border-gray-700 bg-[#2c3a50] p-4 sm:p-5 ${className}`}
         >
             {(title || action) && (
                 <header className="flex items-start justify-between gap-3">

@@ -91,7 +91,7 @@ export default function CategoryRecords({ searchData, onRecordChange }) {
                             return (
                                 <div
                                     key={parentKey}
-                                    className="border-t border-gray-800/60 first:border-t-0"
+                                    className="border-t border-white/5 first:border-t-0"
                                 >
                                     <button
                                         type="button"
@@ -137,7 +137,7 @@ export default function CategoryRecords({ searchData, onRecordChange }) {
                                                         onClick={() =>
                                                             handleShowRecords(child.id)
                                                         }
-                                                        className="flex flex-row items-center justify-between gap-3 border-t border-gray-800/60 py-2 text-left"
+                                                        className="flex flex-row items-center justify-between gap-3 border-t border-white/5 py-2 text-left"
                                                     >
                                                         <span className="text-sm text-gray-400 truncate">
                                                             {child.name}

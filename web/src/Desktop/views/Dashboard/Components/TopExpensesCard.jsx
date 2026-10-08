@@ -34,7 +34,7 @@ export default function TopExpensesCard({ searchData }) {
                 <p className="mt-3 text-sm text-gray-500">No expenses in this period.</p>
             ) : (
                 <div className="mt-3 flex flex-col">
-                    {topExpenses.map((category, index) => {
+                    {topExpenses.slice(0, 3).map((category, index) => {
                         const name =
                             category.name && category.name.length > 20
                                 ? category.name.slice(0, 20) + "..."
@@ -42,11 +42,11 @@ export default function TopExpensesCard({ searchData }) {
                         return (
                             <div
                                 key={index}
-                                className="flex items-center justify-between gap-3 py-2 border-t border-gray-800/60 first:border-t-0"
+                                className="flex items-center justify-between gap-3 py-1.5 border-t border-white/5 first:border-t-0"
                             >
                                 <div className="flex items-center gap-3 min-w-0">
                                     <span
-                                        className="flex items-center justify-center w-9 h-9 rounded-2xl text-white shrink-0"
+                                        className="flex items-center justify-center w-8 h-8 rounded-xl text-white shrink-0"
                                         style={{ backgroundColor: category.color }}
                                     >
                                         <FontAwesomeIcon

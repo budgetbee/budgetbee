@@ -251,7 +251,7 @@ export default function LeftSidebarMenu({ onRecordChange }) {
 
             {/* Sidebar */}
             <div
-                className={`fixed flex flex-col transform h-screen duration-300 ease-in-out bg-gray-900 w-72`}
+                className="fixed flex flex-col transform h-screen duration-300 ease-in-out bg-[#182130] border-r border-white/5 w-72"
             >
                 <div className="px-4 pt-10 pb-5 shrink-0">
                     <img className="px-5" src={logo} alt="logo" />
@@ -259,7 +259,7 @@ export default function LeftSidebarMenu({ onRecordChange }) {
 
                 {/* Menu Options — scrollable middle section */}
                 <nav className="flex-1 overflow-y-auto min-h-0 py-4 text-white text-md">
-                    <div className="flex flex-col gap-y-3 mx-14 my-4">
+                    <div className="flex flex-col gap-y-2 mx-3 my-4">
                         <div className="w-full">
                             <RecordModalButton onRecordChange={onRecordChange} />
                         </div>
@@ -277,18 +277,18 @@ export default function LeftSidebarMenu({ onRecordChange }) {
                                     ([key, link]) => {
                                         const activeClass =
                                             key === activePage
-                                                ? "bg-blue-500/30"
+                                                ? "border border-emerald-500/25 bg-emerald-500/15 text-emerald-300"
                                                 : "";
                                         return (
                                             <Link key={key} to={link.href}>
                                                 <li
-                                                    className={`flex flex-row gap-x-3 items-center px-4 py-2.5 cursor-pointer ${activeClass} hover:bg-gray-700/50`}
+                                                    className={`mx-3 my-0.5 flex flex-row gap-x-3 items-center rounded-xl px-3 py-2.5 cursor-pointer transition-colors hover:bg-white/5 ${activeClass}`}
                                                 >
                                                     <FontAwesomeIcon
                                                         icon={link.icon}
-                                                        className={`basis-1/5 text-lg ${link.color}`}
+                                                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/5 text-base ${link.color}`}
                                                     />
-                                                    <span className="font-semibold">
+                                                    <span className="text-sm font-medium">
                                                         {link.name}
                                                     </span>
                                                 </li>
@@ -301,7 +301,7 @@ export default function LeftSidebarMenu({ onRecordChange }) {
                     </ul>
                 </nav>
                 {/* Footer — always visible, below the scrolling links */}
-                <div className="flex flex-col gap-y-2 px-7 py-4 text-white border-t border-gray-800 shrink-0">
+                <div className="flex flex-col gap-y-2 px-7 py-4 text-white border-t border-white/5 shrink-0">
                     <div className="flex gap-x-4">
                         <a
                             className="flex items-center gap-x-2 hover:text-pink-400"
@@ -332,7 +332,7 @@ export default function LeftSidebarMenu({ onRecordChange }) {
                     <button
                         type="button"
                         onClick={() => fetchReleaseInfo(appVersion)}
-                        className="text-left text-gray-300 underline decoration-dotted underline-offset-4 hover:text-white"
+                        className="text-left text-xs text-gray-500 underline decoration-dotted underline-offset-4 hover:text-white"
                         title="View release notes"
                     >
                         Version: {appVersion}

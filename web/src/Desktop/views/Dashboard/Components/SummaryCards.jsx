@@ -128,7 +128,7 @@ export default function SummaryCards({ searchData }) {
             {metrics.map((metric) => (
                 <div
                     key={metric.key}
-                    className="rounded-2xl border border-gray-800 bg-[#12121f] p-4 sm:p-5"
+                    className="rounded-2xl border border-gray-700 bg-[#2c3a50] p-4 sm:p-5"
                 >
                     <div className="flex items-center gap-3">
                         <span

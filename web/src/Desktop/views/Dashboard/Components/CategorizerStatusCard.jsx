@@ -48,7 +48,7 @@ export default function CategorizerStatusCard() {
                 {rows.map((row) => (
                     <div
                         key={row.key}
-                        className="flex items-center justify-between gap-3 py-3 border-t border-gray-800/60 first:border-t-0"
+                        className="flex items-center justify-between gap-3 py-3 border-t border-white/5 first:border-t-0"
                     >
                         <span className="flex items-center gap-3 text-sm text-gray-400">
                             <FontAwesomeIcon

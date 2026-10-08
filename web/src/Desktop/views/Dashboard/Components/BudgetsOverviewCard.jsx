@@ -90,7 +90,7 @@ export default function BudgetsOverviewCard() {
                         return (
                             <div
                                 key={budget.id}
-                                className="flex flex-col gap-2 py-3 border-t border-gray-800/60 first:border-t-0"
+                                className="flex flex-col gap-2 py-3 border-t border-white/5 first:border-t-0"
                             >
                                 <div className="flex items-center justify-between gap-3">
                                     <div className="flex items-center gap-3 min-w-0">

@@ -13,7 +13,6 @@ import CategoryIncomeChart from "./Components/CategoryIncomeChart";
 import CategoryExpenseChart from "./Components/CategoryExpenseChart";
 import SummaryCards from "./Components/SummaryCards";
 import BudgetsOverviewCard from "./Components/BudgetsOverviewCard";
-import QuickActionsCard from "./Components/QuickActionsCard";
 import CategorizerStatusCard from "./Components/CategorizerStatusCard";
 import RecordFilter, { readStoredFilters, countActiveFilters } from "./Components/RecordFilter";
 import TopNav from "../../layout/TopNav";
@@ -60,7 +59,7 @@ export default function Dashboard() {
 
             <div className="flex flex-row min-h-screen">
                 <div className="flex flex-col gap-y-6 basis-9/12 px-10 py-5">
-                    <div className="flex flex-row gap-x-6">
+                    <div className="flex flex-row items-start gap-x-6">
                         <div className="basis-3/12">
                             <BalanceCard searchData={searchData} />
                         </div>
@@ -104,7 +103,6 @@ export default function Dashboard() {
                         activeAccount={searchData.account_id}
                         setSearchData={setSearchData}
                     />
-                    <QuickActionsCard onRecordChange={handleRecordChange} />
                     <LastRecords
                         searchData={searchData}
                         refreshKey={lastRecordsRefreshKey}

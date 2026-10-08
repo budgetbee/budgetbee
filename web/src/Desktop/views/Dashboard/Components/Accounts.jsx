@@ -67,7 +67,7 @@ export default function Accounts({ activeAccount, setSearchData }) {
         <button
             type="button"
             onClick={() => setAdjustBalanceOpen(true)}
-            className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-gray-800 bg-[#0a0a0f] px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors"
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-gray-700 bg-[#0a0a0f] px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors"
         >
             <FontAwesomeIcon icon="fa-solid fa-sliders" />
             Adjust balance
@@ -82,7 +82,7 @@ export default function Accounts({ activeAccount, setSearchData }) {
             ></div>
             <form
                 onSubmit={handleSaveForm}
-                className="relative z-20 w-80 rounded-2xl border border-gray-800 bg-[#12121f] p-5"
+                className="relative z-20 w-80 rounded-2xl border border-gray-700 bg-[#2c3a50] p-5"
             >
                 <div className="text-lg font-semibold text-white">Adjust balance</div>
                 <input
@@ -90,7 +90,7 @@ export default function Accounts({ activeAccount, setSearchData }) {
                     name="balance"
                     id="balance"
                     step="any"
-                    className="mt-4 block w-full rounded-2xl border border-gray-800 bg-[#0a0a0f] px-3 py-2 text-white focus:border-emerald-500/40 focus:outline-none transition-colors"
+                    className="mt-4 block w-full rounded-2xl border border-gray-700 bg-[#0a0a0f] px-3 py-2 text-white focus:border-emerald-500/40 focus:outline-none transition-colors"
                 ></input>
                 <div className="mt-4 flex justify-end gap-2">
                     <button
@@ -126,7 +126,7 @@ export default function Accounts({ activeAccount, setSearchData }) {
                             className={`flex items-center justify-between gap-3 rounded-2xl border px-3 py-2 text-left transition-colors ${
                                 isActive
                                     ? "border-emerald-500/25 bg-emerald-500/15"
-                                    : "border-gray-800 bg-[#0a0a0f] hover:border-gray-700"
+                                    : "border-gray-700 bg-[#0a0a0f] hover:border-gray-700"
                             } ${isDimmed ? "opacity-50" : ""}`}
                         >
                             <span className="flex items-center gap-3 min-w-0">

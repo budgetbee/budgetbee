@@ -36,7 +36,7 @@ const TYPE_OPTIONS = [
 ];
 
 const INPUT_CLASS =
-    "w-full rounded-2xl border border-gray-800 bg-[#0a0a0f] px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-emerald-500/40 focus:outline-none transition-colors";
+    "w-full rounded-2xl border border-gray-700 bg-[#26334a] px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-emerald-500/40 focus:outline-none transition-colors";
 
 const LABEL_CLASS =
     "text-xs font-semibold uppercase tracking-wide text-gray-500";
@@ -239,7 +239,7 @@ export default function RecordFilter({ searchData, setSearchData, onClose }) {
                     <button
                         type="button"
                         onClick={onClose}
-                        className="flex h-9 w-9 items-center justify-center rounded-2xl border border-gray-800 bg-[#0a0a0f] text-gray-400 hover:text-white transition-colors"
+                        className="flex h-9 w-9 items-center justify-center rounded-2xl border border-gray-700 bg-[#26334a] text-gray-400 hover:text-white transition-colors"
                         title="Close filters"
                     >
                         <FontAwesomeIcon icon="fa-solid fa-xmark" />
@@ -263,7 +263,7 @@ export default function RecordFilter({ searchData, setSearchData, onClose }) {
                                         className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
                                             isActive
                                                 ? "border border-emerald-500/25 bg-emerald-500/15 text-emerald-300"
-                                                : "border border-gray-800 bg-[#0a0a0f] text-gray-300 hover:text-white"
+                                                : "border border-gray-700 bg-[#26334a] text-gray-300 hover:text-white"
                                         }`}
                                     >
                                         {preset.label}
@@ -286,7 +286,7 @@ export default function RecordFilter({ searchData, setSearchData, onClose }) {
                         </div>
                     </div>
 
-                    <div className="border-t border-gray-800/60" />
+                    <div className="border-t border-white/5" />
 
                     {/* Text and type */}
                     <div className="grid grid-cols-3 gap-4">
@@ -314,7 +314,7 @@ export default function RecordFilter({ searchData, setSearchData, onClose }) {
                                         className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                                             form.type === option.value
                                                 ? "border border-emerald-500/25 bg-emerald-500/15 text-emerald-300"
-                                                : "border border-gray-800 bg-[#0a0a0f] text-gray-300 hover:text-white"
+                                                : "border border-gray-700 bg-[#26334a] text-gray-300 hover:text-white"
                                         }`}
                                     >
                                         {option.label}
@@ -324,7 +324,7 @@ export default function RecordFilter({ searchData, setSearchData, onClose }) {
                         </div>
                     </div>
 
-                    <div className="border-t border-gray-800/60" />
+                    <div className="border-t border-white/5" />
 
                     {/* Category and amount */}
                     <div className="grid grid-cols-4 gap-4">
@@ -391,7 +391,7 @@ export default function RecordFilter({ searchData, setSearchData, onClose }) {
                         </div>
                     </div>
 
-                    <div className="border-t border-gray-800/60" />
+                    <div className="border-t border-white/5" />
 
                     {/* Accounts */}
                     <div className="flex flex-col gap-2">
@@ -418,7 +418,7 @@ export default function RecordFilter({ searchData, setSearchData, onClose }) {
                                         className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
                                             isActive
                                                 ? "border-emerald-500/25 bg-emerald-500/15 text-emerald-300"
-                                                : "border-gray-800 bg-[#0a0a0f] text-gray-300 hover:text-white"
+                                                : "border-gray-700 bg-[#26334a] text-gray-300 hover:text-white"
                                         }`}
                                     >
                                         <span
@@ -435,7 +435,7 @@ export default function RecordFilter({ searchData, setSearchData, onClose }) {
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-end gap-2 border-t border-gray-800/60 pt-4">
+                    <div className="flex items-center justify-end gap-2 border-t border-white/5 pt-4">
                         <button
                             type="button"
                             onClick={clearFilters}

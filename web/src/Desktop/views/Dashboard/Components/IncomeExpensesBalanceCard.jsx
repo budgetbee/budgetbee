@@ -47,7 +47,7 @@ export default function IncomeExpensesBalanceCard({ searchData }) {
                         {currency} {numeral(totalIncome).format("0,0.00")}
                     </span>
                 </div>
-                <div className="flex flex-col gap-1 border-l border-gray-800/60 pl-4">
+                <div className="flex flex-col gap-1 border-l border-white/5 pl-4">
                     <span className="flex items-center gap-2 text-sm text-gray-400">
                         <FontAwesomeIcon
                             icon="fa-solid fa-arrow-trend-down"
@@ -56,7 +56,7 @@ export default function IncomeExpensesBalanceCard({ searchData }) {
                         Expenses
                     </span>
                     <span className="text-2xl font-bold text-white">
-                        {currency} {numeral(totalExpenses).format("0,0.00")}
+                        {currency} {numeral(Math.abs(totalExpenses)).format("0,0.00")}
                     </span>
                 </div>
             </div>

@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import moment from "moment";
 
@@ -8,12 +7,6 @@ const DATE_PRESETS = [
     { key: "last_month", label: "Last month", from: () => moment().subtract(1, "month").startOf("month"), to: () => moment().subtract(1, "month").endOf("month") },
     { key: "this_year", label: "This year", from: () => moment().startOf("year"), to: () => moment() },
     { key: "last_30_days", label: "Last 30 days", from: () => moment().subtract(30, "days"), to: () => moment() },
-];
-
-const QUICK_LINKS = [
-    { to: "/record/list", icon: "fa-solid fa-list", label: "Records" },
-    { to: "/reports", icon: "fa-solid fa-chart-pie", label: "Reports" },
-    { to: "/budget", icon: "fa-solid fa-sack-dollar", label: "Budgets" },
 ];
 
 /**
@@ -75,35 +68,6 @@ export default function TopNav({
                     </div>
                 </div>
 
-                <div className="flex items-center gap-x-2">
-                    {QUICK_LINKS.map((link) => (
-                        <Link
-                            key={link.to}
-                            to={link.to}
-                            title={link.label}
-                            className="flex h-10 w-10 items-center justify-center rounded-2xl border border-gray-800 bg-[#12121f] text-gray-400 hover:text-white transition-colors"
-                        >
-                            <FontAwesomeIcon icon={link.icon} />
-                        </Link>
-                    ))}
-                    <button
-                        type="button"
-                        onClick={onToggleFilters}
-                        className={`flex h-10 items-center gap-x-2 rounded-2xl border px-4 text-sm transition-colors ${
-                            filtersOpen
-                                ? "border-emerald-500/25 bg-emerald-500/15 text-emerald-300"
-                                : "border-gray-800 bg-[#12121f] text-gray-300 hover:text-white"
-                        }`}
-                    >
-                        <FontAwesomeIcon icon="fa-solid fa-filter" />
-                        Filters
-                        {activeFilterCount > 0 && (
-                            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-green-500 px-1 text-xs font-semibold text-white">
-                                {activeFilterCount}
-                            </span>
-                        )}
-                    </button>
-                </div>
             </div>
 
             <div className="flex flex-row flex-wrap items-center gap-2">
@@ -123,7 +87,7 @@ export default function TopNav({
                             className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
                                 isActive
                                     ? "border-emerald-500/25 bg-emerald-500/15 text-emerald-300"
-                                    : "border-gray-800 bg-[#12121f] text-gray-300 hover:text-white"
+                                    : "border-gray-700 bg-[#2c3a50] text-gray-300 hover:text-white"
                             }`}
                         >
                             {preset.label}
@@ -145,7 +109,7 @@ export default function TopNav({
                             name="search_term"
                             defaultValue={searchData?.search_term ?? ""}
                             placeholder="Search movements"
-                            className="w-72 rounded-2xl border border-gray-800 bg-[#12121f] py-2 pl-9 pr-4 text-sm text-white placeholder-gray-600 focus:border-emerald-500/40 focus:outline-none transition-colors"
+                            className="w-72 rounded-2xl border border-gray-700 bg-[#2c3a50] py-2 pl-9 pr-4 text-sm text-white placeholder-gray-500 focus:border-emerald-500/40 focus:outline-none transition-colors"
                         />
                     </div>
                     <button
@@ -155,6 +119,24 @@ export default function TopNav({
                         Search
                     </button>
                 </form>
+
+                <button
+                    type="button"
+                    onClick={onToggleFilters}
+                    className={`ml-2 flex h-10 items-center gap-x-2 rounded-2xl border px-4 text-sm transition-colors ${
+                        filtersOpen
+                            ? "border-emerald-500/25 bg-emerald-500/15 text-emerald-300"
+                            : "border-gray-700 bg-[#2c3a50] text-gray-300 hover:text-white"
+                    }`}
+                >
+                    <FontAwesomeIcon icon="fa-solid fa-filter" />
+                    Filters
+                    {activeFilterCount > 0 && (
+                        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-green-500 px-1 text-xs font-semibold text-white">
+                            {activeFilterCount}
+                        </span>
+                    )}
+                </button>
             </div>
         </div>
     );
