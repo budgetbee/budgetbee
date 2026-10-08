@@ -320,4 +320,52 @@ class ImportCsvTest extends TestCase
             ->assertStatus(422)
             ->assertJsonFragment(['error' => 'That file type cannot be read. Upload a CSV, an Excel file (XLS, XLSX) or a JSON one.']);
     }
+
+    /**
+     * A file whose lines all start with the same wording from the bank.
+     *
+     * Taking that wording as the key makes every shop share one key: a petrol
+     * station, a shop and a person end up in the same bucket and the categoriser
+     * cannot tell them apart. The key must come from what singles each movement
+     * out, and no per-bank list is shipped to do it: the file in front of it is
+     * the evidence.
+     */
+    public function testTheWordingSharedByMostRowsIsNotTheMerchantKey(): void
+    {
+        $rows = [
+            'ZZZ MOBILE EN CORNER SHOP',
+            'ZZZ MOBILE EN GAS STATION ONE',
+            'ZZZ MOBILE EN CORNER SHOP',
+            'ZZZ MOBILE EN MRS SMITH',
+            'ZZZ MOBILE EN HARDWARE DEPOT',
+            'ZZZ MOBILE EN GAS STATION ONE',
+            'ZZZ MOBILE EN MRS SMITH',
+            'ZZZ MOBILE EN HARDWARE DEPOT',
+            'ZZZ MOBILE EN CORNER SHOP',
+        ];
+
+        $csv = "date,from_account_id,to_account_id,type,category_id,name,amount,rate\n";
+        $day = 1;
+        foreach ($rows as $name) {
+            $csv .= sprintf("2026-09-%02d,%d,,expense,,%s,10.00,1\n", $day++, $this->account->id, $name);
+        }
+
+        Storage::fake('uploads');
+
+        $response = $this->post('/api/import', [
+            'file' => UploadedFile::fake()->createWithContent('statement.csv', $csv),
+        ]);
+
+        $response->assertStatus(200)->assertJson(['imported' => 9]);
+
+        $keys = Record::where('user_id', $this->user->id)->pluck('merchant_key', 'name');
+
+        $this->assertSame('CORNER SHOP', $keys['ZZZ MOBILE EN CORNER SHOP']);
+        $this->assertSame('GAS STATION', $keys['ZZZ MOBILE EN GAS STATION ONE']);
+        $this->assertSame('MRS SMITH', $keys['ZZZ MOBILE EN MRS SMITH']);
+        $this->assertSame('HARDWARE DEPOT', $keys['ZZZ MOBILE EN HARDWARE DEPOT']);
+
+        $this->assertFalse($keys->contains('ZZZ MOBILE'), 'The bank wording became the key: ' . json_encode($keys));
+        $this->assertSame(4, $keys->unique()->filter()->count(), 'Different shops must not share one key');
+    }
 }

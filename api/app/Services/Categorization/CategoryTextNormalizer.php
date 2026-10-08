@@ -23,9 +23,158 @@ class CategoryTextNormalizer
     /** @var array<string,string>|null */
     private ?array $aliasIndex = null;
 
+    /**
+     * Tokens that carry no merchant information FOR THIS USER, worked out from
+     * his own movements instead of from a dictionary shipped with the project.
+     *
+     * @var array<string,bool>
+     */
+    private array $corpusNoise = [];
+
+    /** @var int */
+    private int $corpusDocuments = 0;
+
+    /**
+     * Words the user said are not a merchant ("card payment" and the like).
+     *
+     * @var array<int,string>
+     */
+    private array $ignoredPhrases = [];
+
     public function __construct(?array $config = null)
     {
         $this->config = $config ?? (array) config('categorization', []);
+    }
+
+    /**
+     * Read the user's own movements so the key is built from what identifies a
+     * merchant, not from the words the bank repeats in every line.
+     *
+     * A word that shows up in most of the movements on the account ("card
+     * payment", "direct debit", the account holder, the city) says nothing
+     * about WHO was paid: those words are dropped for this corpus only, and the
+     * key survives from the words that do single a merchant out. Nothing is
+     * hardcoded per bank: the list is derived from the texts in front of it.
+     *
+     * @param array<int,string|null> $texts
+     */
+    public function withCorpus(array $texts): self
+    {
+        $clone = clone $this;
+        $clone->corpusNoise = [];
+        $clone->corpusDocuments = 0;
+
+        $minDocuments = max(2, (int) ($this->config['corpus_min_documents'] ?? 8));
+        $noiseShare = (float) ($this->config['corpus_noise_share'] ?? 0.4);
+
+        $documents = [];
+        foreach ($texts as $raw) {
+            $tokens = $this->rawTokensOf($raw);
+            if ($tokens !== []) {
+                $documents[] = $tokens;
+            }
+        }
+
+        $total = count($documents);
+        if ($total < $minDocuments || $noiseShare <= 0.0) {
+            return $clone;
+        }
+
+        $seen = [];
+        foreach ($documents as $tokens) {
+            foreach ($tokens as $token) {
+                $seen[$token] = ($seen[$token] ?? 0) + 1;
+            }
+        }
+
+        $noise = [];
+        foreach ($seen as $token => $count) {
+            if ($count / $total >= $noiseShare) {
+                $noise[$token] = true;
+            }
+        }
+
+        $clone->corpusDocuments = $total;
+        $clone->corpusNoise = $noise;
+
+        return $clone;
+    }
+
+    /**
+     * Take these words out of the text before the key is built, so the words
+     * that come after them become the key.
+     *
+     * Nothing is listed here by the code: the list only ever holds what the user
+     * marked himself on screen.
+     *
+     * @param array<int,string|null> $phrases
+     */
+    public function withIgnoredPhrases(array $phrases): self
+    {
+        $clone = clone $this;
+        $clone->ignoredPhrases = array_values(array_filter(
+            array_map(fn ($phrase) => self::flatten($phrase), $phrases),
+            fn (string $phrase): bool => $phrase !== ''
+        ));
+
+        return $clone;
+    }
+
+    /**
+     * Text ready to become a key: cleaned, stripped of references and without
+     * the words the user marked as "not a merchant".
+     */
+    private function prepare(?string $raw): string
+    {
+        return $this->dropIgnoredPhrases($this->stripNoise(self::flatten($raw)));
+    }
+
+    private function dropIgnoredPhrases(string $text): string
+    {
+        if ($text === '' || $this->ignoredPhrases === []) {
+            return $text;
+        }
+
+        foreach ($this->ignoredPhrases as $phrase) {
+            if (str_contains($text, $phrase)) {
+                $text = (string) preg_replace('/' . preg_quote($phrase, '/') . '/', ' ', $text);
+            }
+        }
+
+        return trim((string) preg_replace('/\s+/', ' ', $text));
+    }
+
+    /**
+     * How many of the movements fed to withCorpus() were used.
+     */
+    public function corpusDocuments(): int
+    {
+        return $this->corpusDocuments;
+    }
+
+    /**
+     * Every word of a text (cleaned and stripped of dates/references), before
+     * the length and generic-word filters: the corpus has to see the words the
+     * key would otherwise be built from.
+     *
+     * @return array<int,string>
+     */
+    private function rawTokensOf(?string $raw): array
+    {
+        $text = $this->prepare($raw);
+        if ($text === '') {
+            return [];
+        }
+
+        $tokens = [];
+        foreach (explode(' ', $text) as $token) {
+            $token = trim($token);
+            if ($token !== '' && preg_replace('/[^A-Z]/', '', $token) !== '') {
+                $tokens[$token] = true;
+            }
+        }
+
+        return array_keys($tokens);
     }
 
     /**
@@ -35,14 +184,7 @@ class CategoryTextNormalizer
      */
     public function normalize(?string $raw): ?string
     {
-        $text = $this->cleanText($raw);
-        if ($text === '') {
-            return null;
-        }
-
-        $text = $this->stripNoise($text);
-
-        $tokens = $this->tokensOf($text);
+        $tokens = $this->tokensOf($this->prepare($raw));
         if (empty($tokens)) {
             // Empty text, only payment-method words, only numbers: NO KEY.
             return null;
@@ -66,18 +208,16 @@ class CategoryTextNormalizer
      */
     public function significantTokens(?string $raw): array
     {
-        $text = $this->cleanText($raw);
-        if ($text === '') {
-            return [];
-        }
-
-        return $this->tokensOf($this->stripNoise($text));
+        return $this->tokensOf($this->prepare($raw));
     }
 
     /**
      * Uppercase, accent-free, punctuation collapsed to single spaces.
+     *
+     * Public and static on purpose: it is the form two texts are compared in,
+     * and the form a phrase the user marked as "not a merchant" is stored in.
      */
-    private function cleanText(?string $raw): string
+    public static function flatten(?string $raw): string
     {
         if ($raw === null) {
             return '';
@@ -159,7 +299,22 @@ class CategoryTextNormalizer
         }
 
         // Remove duplicates, preserving order (bank texts repeat the merchant).
-        return array_values(array_unique($tokens));
+        $tokens = array_values(array_unique($tokens));
+
+        if ($this->corpusNoise === []) {
+            return $tokens;
+        }
+
+        // Words the bank repeats in most of this user's movements are not part
+        // of the merchant name. If the filter empties the text (a file that only
+        // holds movements of one single merchant), the unfiltered tokens are
+        // kept: a key that groups those movements together is still true.
+        $kept = array_values(array_filter(
+            $tokens,
+            fn (string $token): bool => ! isset($this->corpusNoise[$token])
+        ));
+
+        return $kept === [] ? $tokens : $kept;
     }
 
     /**
@@ -216,7 +371,7 @@ class CategoryTextNormalizer
         $index = [];
         foreach ((array) ($this->config['aliases'] ?? []) as $alias => $value) {
             // Alias keys come from the config already normalised.
-            $index[$this->cleanText((string) $alias)] = (string) $value;
+            $index[self::flatten((string) $alias)] = (string) $value;
         }
 
         return $this->aliasIndex = $index;

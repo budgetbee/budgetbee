@@ -8,6 +8,9 @@ use App\Models\CategoryRule;
 use App\Models\ParentCategory;
 use App\Models\Record;
 use App\Services\Categorization\CategoryClassifier;
+use App\Services\Categorization\CategoryCorpus;
+use App\Services\Categorization\CategoryIgnoredPhrases;
+use App\Services\Categorization\MerchantKeyRebuilder;
 use App\Services\Categorization\CategoryLearner;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -31,6 +34,16 @@ class CategoryRuleController extends Controller
     /**
      * Rules of the user plus the evidence behind them.
      */
+    /**
+     * Classifier primed with the user's own movements: the words his bank
+     * repeats in every line are not part of any merchant name, and taking them
+     * as the key makes every shop share one key.
+     */
+    private function classifierFor(int $userId): CategoryClassifier
+    {
+        return new CategoryClassifier(app(CategoryCorpus::class)->normalizerFor($userId));
+    }
+
     public function index(Request $request)
     {
         $userId = (int) $request->user()->id;
@@ -48,7 +61,7 @@ class CategoryRuleController extends Controller
         // is: it is a running counter of what the importer applied, kept for the
         // learner, not what is on screen.
         $allRecords = $rules->isEmpty() ? collect() : $this->matchableRecords($userId);
-        $classifier = new CategoryClassifier();
+        $classifier = $this->classifierFor($userId);
 
         $rules = $rules->map(fn (CategoryRule $rule) => [
             'id' => $rule->id,
@@ -206,7 +219,7 @@ class CategoryRuleController extends Controller
             ->limit($limit)
             ->get(['id', 'name', 'description', 'merchant_key', 'category_id', 'date', 'amount', 'type', 'from_account_id', 'to_account_id']);
 
-        $classifier = new CategoryClassifier();
+        $classifier = $this->classifierFor($userId);
         $scanned = 0;
         $matched = 0;
         $noKey = 0;
@@ -341,7 +354,7 @@ class CategoryRuleController extends Controller
         // The number on a suggestion and the movements that open when it is clicked
         // come from the same live count (see matchingRecords), so the two agree.
         $allRecords = $this->matchableRecords($userId);
-        $classifier = new CategoryClassifier();
+        $classifier = $this->classifierFor($userId);
 
         $out = [];
         foreach ($grouped as $merchantKey => $items) {
@@ -452,7 +465,7 @@ class CategoryRuleController extends Controller
             ->limit($limit)
             ->get(['id', 'name', 'description', 'merchant_key', 'category_id']);
 
-        $classifier = new CategoryClassifier();
+        $classifier = $this->classifierFor($userId);
         $ids = [];
 
         foreach ($records as $record) {
@@ -517,9 +530,29 @@ class CategoryRuleController extends Controller
             ->where('merchant_key', $data['merchant_key'])
             ->update(['ignored_at' => now()]);
 
+        // Saying no to a suggestion also means: stop reading those words when the
+        // merchant is worked out. The movements that carried them get a new key
+        // from what comes after (the shop), so they come back as suggestions of
+        // their own instead of as one group of shops that have nothing to do
+        // with each other.
+        app(CategoryIgnoredPhrases::class)->ignore($userId, $data['merchant_key']);
+        $rebuilt = app(MerchantKeyRebuilder::class)->rebuild($userId, [$data['merchant_key']]);
+
+        // A rule the categoriser worked out for those words goes with them:
+        // keeping it would go on applying exactly what the user just said no to.
+        // A rule he added himself is his own decision, so it is left alone.
+        $removedRule = CategoryRule::forUser($userId)
+            ->where('match_field', 'merchant_key')
+            ->where('value', $data['merchant_key'])
+            ->where('source', CategoryRule::SOURCE_LEARNED)
+            ->delete();
+
         return response()->json([
             'merchant_key' => $data['merchant_key'],
             'ignored' => $ignored,
+            'rule_removed' => $removedRule,
+            'moved' => $rebuilt['changed'],
+            'keys' => array_keys($rebuilt['changes']),
         ]);
     }
 
@@ -541,9 +574,15 @@ class CategoryRuleController extends Controller
             ->where('merchant_key', $data['merchant_key'])
             ->update(['ignored_at' => null]);
 
+        // Reading those words again changes the key of every movement they are in,
+        // so the whole history is looked at again.
+        app(CategoryIgnoredPhrases::class)->restore($userId, $data['merchant_key']);
+        $rebuilt = app(MerchantKeyRebuilder::class)->rebuild($userId);
+
         return response()->json([
             'merchant_key' => $data['merchant_key'],
             'restored' => $restored,
+            'moved' => $rebuilt['changed'],
         ]);
     }
 
@@ -580,7 +619,7 @@ class CategoryRuleController extends Controller
         // is capped, so a huge rule can never make the two disagree again.
         $matched = $this->matchingRecords(
             $this->matchableRecords($userId, $categoryId),
-            new CategoryClassifier(),
+            $this->classifierFor($userId),
             $field,
             $operator,
             $expected,

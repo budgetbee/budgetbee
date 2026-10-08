@@ -164,4 +164,87 @@ class CategoryTextNormalizerTest extends TestCase
         $this->assertNull($two->normalize('PURCHASE'), 'PURCHASE is noise for the second instance');
         $this->assertSame('CARD', $two->normalize('CARD 1234'), 'CARD is a merchant for the second instance');
     }
+
+    /**
+     * A bank wraps every line in its own words, and those words are NOT the
+     * merchant: the key has to come from what singles a movement out.
+     *
+     * Nothing is listed per bank here: no generic word at all, only the
+     * movements in front of it. If this test passes, a bank whose wording was
+     * never seen before cannot turn every shop into one single key.
+     */
+    public function test_a_word_repeated_across_the_movements_is_not_part_of_the_key(): void
+    {
+        $normalizer = new CategoryTextNormalizer([
+            'key_tokens' => 2,
+            'min_token_length' => 3,
+            'generic_tokens' => [],
+            'aliases' => [],
+        ]);
+
+        $file = [
+            'ZZZ MOBILE EN CORNER SHOP',
+            'ZZZ MOBILE EN GAS STATION ONE',
+            'ZZZ MOBILE EN CORNER SHOP',
+            'ZZZ MOBILE EN MRS SMITH',
+            'ZZZ MOBILE EN HARDWARE DEPOT',
+            'ZZZ MOBILE EN GAS STATION ONE',
+            'ZZZ MOBILE EN MRS SMITH',
+            'ZZZ MOBILE EN HARDWARE DEPOT',
+            'ZZZ MOBILE EN CORNER SHOP',
+        ];
+
+        $primed = $normalizer->withCorpus($file);
+
+        $this->assertSame('CORNER SHOP', $primed->normalize('ZZZ MOBILE EN CORNER SHOP'));
+        $this->assertSame('GAS STATION', $primed->normalize('ZZZ MOBILE EN GAS STATION ONE'));
+        $this->assertSame('MRS SMITH', $primed->normalize('ZZZ MOBILE EN MRS SMITH'));
+        $this->assertSame('HARDWARE DEPOT', $primed->normalize('ZZZ MOBILE EN HARDWARE DEPOT'));
+
+        // Without the movements to go by, nothing changed: the same text keys
+        // by its first words as it always did.
+        $this->assertSame('ZZZ MOBILE', $normalizer->normalize('ZZZ MOBILE EN CORNER SHOP'));
+    }
+
+    /**
+     * A file that only holds one merchant must still produce a key: everything
+     * in it belongs together, wrapper wording included.
+     */
+    public function test_a_file_of_one_single_merchant_keeps_a_usable_key(): void
+    {
+        $normalizer = new CategoryTextNormalizer([
+            'key_tokens' => 2,
+            'min_token_length' => 3,
+            'generic_tokens' => [],
+            'aliases' => [],
+        ]);
+
+        $file = array_fill(0, 10, 'ZZZ MOBILE EN CORNER SHOP');
+        $primed = $normalizer->withCorpus($file);
+
+        $this->assertSame('ZZZ MOBILE', $primed->normalize('ZZZ MOBILE EN CORNER SHOP'));
+    }
+
+    /**
+     * A handful of movements is not evidence: below the configured minimum the
+     * key is built exactly as before, so short files do not change behaviour.
+     */
+    public function test_a_small_corpus_is_left_alone(): void
+    {
+        $normalizer = new CategoryTextNormalizer([
+            'key_tokens' => 2,
+            'min_token_length' => 3,
+            'generic_tokens' => [],
+            'aliases' => [],
+        ]);
+
+        $primed = $normalizer->withCorpus([
+            'ZZZ MOBILE EN CORNER SHOP',
+            'ZZZ MOBILE EN MRS SMITH',
+            'ZZZ MOBILE EN HARDWARE DEPOT',
+        ]);
+
+        $this->assertSame(0, $primed->corpusDocuments());
+        $this->assertSame('ZZZ MOBILE', $primed->normalize('ZZZ MOBILE EN CORNER SHOP'));
+    }
 }

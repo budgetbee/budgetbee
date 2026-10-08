@@ -11,6 +11,12 @@ import Api from "../../Api/Endpoints";
  * same gesture as picking it in the record form.
  *
  * It reports the chosen SUBCATEGORY id through onChange(id).
+ *
+ * What is picked here shows HERE, at once. The value coming from outside is what
+ * is already stored, and callers do not always send it back after a pick: if the
+ * dropdown only ever painted that value, choosing a subcategory of another
+ * parent left it showing the previous category — one that is not even in the
+ * list on screen — and the movement looked impossible to change.
  */
 
 // Copied from Desktop/Components/Record/FormModal.jsx so both look identical.
@@ -39,6 +45,14 @@ export default function CategorySelect({ value, onChange, parentId = null, label
     const [children, setChildren] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // The subcategory on screen: follows the value from outside, and moves the
+    // moment a subcategory is picked here.
+    const [picked, setPicked] = useState(value ?? null);
+
+    // Once the user chooses a parent himself, nothing fills it in behind his
+    // back: the parent of the stored category is a starting point, not a rule.
+    const [parentPicked, setParentPicked] = useState(false);
+
     useEffect(() => {
         let cancelled = false;
 
@@ -64,9 +78,13 @@ export default function CategorySelect({ value, onChange, parentId = null, label
         };
     }, []);
 
+    useEffect(() => {
+        setPicked(value ?? null);
+    }, [value]);
+
     // Given a category but no parent, find which parent it hangs from.
     useEffect(() => {
-        if (parent || !value || !all.length) {
+        if (parentPicked || parent || !value || !all.length) {
             return;
         }
 
@@ -76,7 +94,7 @@ export default function CategorySelect({ value, onChange, parentId = null, label
         if (parentOf) {
             setParent(String(parentOf));
         }
-    }, [value, all, parent]);
+    }, [value, all, parent, parentPicked]);
 
     useEffect(() => {
         if (!parent) {
@@ -102,9 +120,15 @@ export default function CategorySelect({ value, onChange, parentId = null, label
     }, [parent]);
 
     const selectedParent = parents.find((p) => Number(p.id) === Number(parent));
+
+    // ONLY a category of the list on screen is painted. Falling back to the full
+    // list painted a category that is not in the dropdown (the old one, while the
+    // new parent's list was already loaded), which is both misleading and what
+    // made NextUI complain on every render. While the list is still on its way,
+    // the full list is all there is to show a name.
     const selected =
-        children.find((c) => Number(c.id) === Number(value)) ||
-        all.find((c) => Number(c.id) === Number(value));
+        children.find((c) => Number(c.id) === Number(picked)) ||
+        (children.length === 0 ? all.find((c) => Number(c.id) === Number(picked)) : undefined);
 
     return (
         <div className="bg-[#1a1a2e] rounded-2xl p-3 border border-gray-800">
@@ -112,13 +136,17 @@ export default function CategorySelect({ value, onChange, parentId = null, label
             <div className="flex flex-row gap-x-2">
                 <div className="flex-1">
                     <Select
+                        aria-label="Parent category"
                         placeholder="Parent"
                         size="sm"
                         items={parents}
                         selectionMode="single"
                         selectedKeys={parent ? [String(parent)] : []}
                         onChange={(e) => {
+                            setParentPicked(true);
                             setParent(e.target.value);
+                            // The category picked before belongs to the old parent.
+                            setPicked(null);
                             onChange(null);
                         }}
                         classNames={selectClassNames}
@@ -143,12 +171,18 @@ export default function CategorySelect({ value, onChange, parentId = null, label
                 </div>
                 <div className="flex-1">
                     <Select
+                        aria-label="Subcategory"
                         placeholder="Subcategory"
                         size="sm"
                         items={children}
                         selectionMode="single"
-                        selectedKeys={value ? [String(value)] : []}
-                        onChange={(e) => onChange(Number(e.target.value))}
+                        selectedKeys={picked ? [String(picked)] : []}
+                        onChange={(e) => {
+                            const next = e.target.value === "" ? null : Number(e.target.value);
+
+                            setPicked(next);
+                            onChange(next);
+                        }}
                         classNames={selectClassNames}
                         isDisabled={!parent}
                         renderValue={() => (

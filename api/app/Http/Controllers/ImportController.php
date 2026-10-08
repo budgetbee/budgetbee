@@ -9,6 +9,7 @@ use App\Models\Import;
 use App\Models\ImportColumnMapping;
 use App\Models\Record;
 use App\Services\Categorization\CategoryClassifier;
+use App\Services\Categorization\CategoryCorpus;
 use App\Services\Categorization\CategoryLearner;
 use App\Services\Import\ImportFileInspector;
 use Illuminate\Http\JsonResponse;
@@ -234,7 +235,7 @@ class ImportController extends Controller
         $unknown = 0;
         // One query, not one per row.
         $fallbackId = $this->fallbackCategoryId((int) auth()->user()->id);
-        $classifier = app(CategoryClassifier::class);
+        $classifier = $this->classifierForBatch($records);
 
         foreach ($records as $record) {
             try {
@@ -273,6 +274,10 @@ class ImportController extends Controller
                 $record->save();
                 $imported++;
 
+                // The wording is registered as seen: it is what the categoriser
+                // suggests, and what the user says yes or no to. Whether it is
+                // worth a rule of its own is decided in CategoryLearner, which
+                // will not turn the fallback category into one.
                 if ($record->merchant_key) {
                     app(CategoryLearner::class)->confirm(
                         (int) $record->user_id,
@@ -288,6 +293,34 @@ class ImportController extends Controller
         }
 
         return [$imported, $skipped, $duplicates, $autoCategorised, $unknown];
+    }
+
+    /**
+     * Classifier primed with the texts of the file being imported plus the
+     * movements already on the account.
+     *
+     * The words a bank repeats in every line ("card payment", the account
+     * holder, the city) are not part of anybody's name: reading them makes the
+     * key the bank's wording instead of the merchant's, and every shop ends up
+     * sharing one key. Nothing is listed per bank: the normaliser works it out
+     * from the texts in front of it.
+     *
+     * @param array<int,\App\Models\Record> $records
+     */
+    private function classifierForBatch(array $records): CategoryClassifier
+    {
+        $texts = [];
+        foreach ($records as $record) {
+            $text = trim((string) ($record->name ?: $record->description));
+            if ($text !== '') {
+                $texts[] = $text;
+            }
+        }
+
+        $normaliser = app(CategoryCorpus::class)
+            ->normalizerFor((int) auth()->user()->id, null, $texts);
+
+        return new CategoryClassifier($normaliser);
     }
 
     /**
@@ -815,10 +848,6 @@ class ImportController extends Controller
      */
     private function fallbackCategoryId(int $userId): ?int
     {
-        $names = ['Desconocido', 'Unknown', 'Uncategorised', 'Uncategorized'];
-
-        return \App\Models\Category::where('user_id', $userId)->whereIn('name', $names)->value('id')
-            ?? \App\Models\Category::whereIn('name', $names)->value('id')
-            ?? \App\Models\Category::where('user_id', $userId)->min('id');
+        return app(\App\Services\Categorization\FallbackCategory::class)->idFor($userId);
     }
 }
