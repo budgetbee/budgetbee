@@ -1,73 +1,110 @@
 import React, { useEffect, useState } from "react";
+import numeral from "numeral";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import Api from "../../../../Api/Endpoints";
-import AccountCardMini from "../../../../Components/Account/CardMini";
+import DashboardCard from "./DashboardCard";
 
 export default function Accounts({ activeAccount, setSearchData }) {
     const [isLoading, setIsLoading] = useState(true);
     const [adjustBalanceOpen, setAdjustBalanceOpen] = useState(false);
-    const [data, setData] = useState(null);
+    const [data, setData] = useState([]);
 
     useEffect(() => {
+        let cancelled = false;
         async function getAccounts() {
-            const data = await Api.getAccounts();
-            setData(data);
-            setIsLoading(false);
+            const accounts = await Api.getAccounts();
+            if (!cancelled) {
+                setData(Array.isArray(accounts) ? accounts : []);
+                setIsLoading(false);
+            }
         }
         getAccounts();
+        return () => {
+            cancelled = true;
+        };
     }, [activeAccount]);
 
-    const handleClick = (id) => {
-        const check = id === activeAccount ? null : id;
-        const account = { account_id: check };
-        setSearchData((prevData) => ({ ...prevData, ...account }));
-    };    
+    // The filter may hold one account or several; both are treated the same way.
+    const activeIds = Array.isArray(activeAccount)
+        ? activeAccount
+        : activeAccount
+        ? [activeAccount]
+        : [];
 
-    const handleSaveForm = async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
+    const handleClick = (id) => {
+        const next = activeIds.includes(id)
+            ? activeIds.filter((value) => value !== id)
+            : [...activeIds, id];
+
+        setSearchData((prevData) => {
+            const nextData = { ...prevData, _refresh: Date.now() };
+            if (next.length === 0) {
+                delete nextData.account_id;
+            } else {
+                nextData.account_id = next;
+            }
+            return nextData;
+        });
+    };
+
+    const handleSaveForm = async (event) => {
+        event.preventDefault();
+        const formData = new FormData(event.target);
         const formObject = Object.fromEntries(formData.entries());
-        await Api.accountAdjustBalance(formObject, activeAccount);
+        await Api.accountAdjustBalance(formObject, activeIds[0]);
         const accounts = await Api.getAccounts();
-        setData(accounts);
+        setData(Array.isArray(accounts) ? accounts : []);
         setSearchData((prevData) => ({ ...prevData, _refresh: Date.now() }));
         setAdjustBalanceOpen(false);
     };
 
     if (isLoading) {
-        return <></>;
+        return null;
     }
 
     const adjustBalance = (
-        <div
-            className="w-fit m-auto px-4 my-2 py-2 border border-indigo-300 rounded text-indigo-300"
+        <button
+            type="button"
             onClick={() => setAdjustBalanceOpen(true)}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-gray-800 bg-[#0a0a0f] px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors"
         >
-            ADJUST
-        </div>
+            <FontAwesomeIcon icon="fa-solid fa-sliders" />
+            Adjust balance
+        </button>
     );
 
     const adjustBalanceForm = (
-        <div className="fixed top-0 left-0 w-screen h-screen flex items-center justify-center z-40">
+        <div className="fixed inset-0 z-40 flex items-center justify-center">
             <div
-                className="fixed top-0 left-0 w-full h-full bg-black opacity-50 z-10"
+                className="fixed inset-0 bg-black/60"
                 onClick={() => setAdjustBalanceOpen(false)}
             ></div>
-            <form onSubmit={handleSaveForm}>
-                <div className="flex flex-col gap-y-4 relative z-20 bg-gray-200 p-5 rounded">
-                    <input
-                        type="number"
-                        name="balance"
-                        id="balance"
-                        className="block w-full p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500"
-                        step="any"
-                    ></input>
-
+            <form
+                onSubmit={handleSaveForm}
+                className="relative z-20 w-80 rounded-2xl border border-gray-800 bg-[#12121f] p-5"
+            >
+                <div className="text-lg font-semibold text-white">Adjust balance</div>
+                <input
+                    type="number"
+                    name="balance"
+                    id="balance"
+                    step="any"
+                    className="mt-4 block w-full rounded-2xl border border-gray-800 bg-[#0a0a0f] px-3 py-2 text-white focus:border-emerald-500/40 focus:outline-none transition-colors"
+                ></input>
+                <div className="mt-4 flex justify-end gap-2">
+                    <button
+                        type="button"
+                        onClick={() => setAdjustBalanceOpen(false)}
+                        className="rounded-2xl px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors"
+                    >
+                        Cancel
+                    </button>
                     <button
                         type="submit"
-                        className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+                        className="rounded-2xl bg-green-500 px-4 py-2 text-sm font-medium text-white hover:bg-green-600 transition-colors"
                     >
-                        SAVE
+                        Save
                     </button>
                 </div>
             </form>
@@ -75,26 +112,53 @@ export default function Accounts({ activeAccount, setSearchData }) {
     );
 
     return (
-        <div className="rounded-2xl p-5 max-w-full block bg-gray-700">
+        <DashboardCard title="Accounts" icon="fa-solid fa-money-check" tone="blue">
             {adjustBalanceOpen && adjustBalanceForm}
-            <div className="flex flex-col gap-y-2 max-h-96 overflow-y-scroll">
-                {data.map((account, index) => {
-                    let isGray =
-                        activeAccount != null && activeAccount !== account.id;
+            <div className="mt-4 flex flex-col gap-2 max-h-96 overflow-y-auto pr-1">
+                {data.map((account) => {
+                    const isActive = activeIds.includes(account.id);
+                    const isDimmed = activeIds.length > 0 && !isActive;
                     return (
-                        <div
-                            key={index}
+                        <button
+                            key={account.id}
+                            type="button"
                             onClick={() => handleClick(account.id)}
+                            className={`flex items-center justify-between gap-3 rounded-2xl border px-3 py-2 text-left transition-colors ${
+                                isActive
+                                    ? "border-emerald-500/25 bg-emerald-500/15"
+                                    : "border-gray-800 bg-[#0a0a0f] hover:border-gray-700"
+                            } ${isDimmed ? "opacity-50" : ""}`}
                         >
-                            <AccountCardMini
-                                account={account}
-                                isGray={isGray}
-                            />
-                        </div>
+                            <span className="flex items-center gap-3 min-w-0">
+                                <span
+                                    className="flex items-center justify-center w-9 h-9 rounded-2xl text-white shrink-0"
+                                    style={{ backgroundColor: account.color }}
+                                >
+                                    <FontAwesomeIcon
+                                        icon="fa-solid fa-building-columns"
+                                        className="text-sm"
+                                    />
+                                </span>
+                                <span className="text-sm text-white truncate">
+                                    {account.name}
+                                </span>
+                            </span>
+                            <span
+                                className={`text-sm font-semibold shrink-0 ${
+                                    isActive ? "text-emerald-300" : "text-gray-300"
+                                }`}
+                            >
+                                {account.currency_symbol}{" "}
+                                {numeral(account.balance).format("0,0.00")}
+                            </span>
+                        </button>
                     );
                 })}
+                {data.length === 0 && (
+                    <p className="text-sm text-gray-500">No accounts.</p>
+                )}
             </div>
-            {activeAccount && adjustBalance}
-        </div>
+            {activeIds.length > 0 && adjustBalance}
+        </DashboardCard>
     );
 }

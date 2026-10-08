@@ -1,51 +1,109 @@
-import { React, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import numeral from "numeral";
+import moment from "moment";
+import { Link } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import Api from "../../../../Api/Endpoints";
-import RecordCard from "../../../Components/Record/Card";
-import { Link } from "react-router-dom";
+import DashboardCard from "./DashboardCard";
 
-export default function LastRecords({ searchData, onRecordChange, refreshKey }) {
+export default function LastRecords({ searchData, refreshKey }) {
     const [isLoading, setIsLoading] = useState(true);
-    const [data, setData] = useState(null);
+    const [data, setData] = useState([]);
 
     useEffect(() => {
         let cancelled = false;
         async function getLastRecords() {
             const requestData = { ...searchData, limit: 5 };
+            // The last-records endpoint reads one account at a time; the
+            // dashboard filter may hold several, so only a single one is sent.
+            if (Array.isArray(requestData.account_id)) {
+                if (requestData.account_id.length === 1) {
+                    requestData.account_id = requestData.account_id[0];
+                } else {
+                    delete requestData.account_id;
+                }
+            }
             const result = await Api.getLastRecords(requestData);
             if (!cancelled) {
-                setData(result);
+                setData(Array.isArray(result) ? result : []);
                 setIsLoading(false);
             }
         }
         getLastRecords();
-        return () => { cancelled = true; };
+        return () => {
+            cancelled = true;
+        };
     }, [searchData, refreshKey]);
 
     if (isLoading) {
-        return <></>;
+        return null;
     }
 
-    const account_id = searchData.account_id ?? "";
+    const accountId = Array.isArray(searchData.account_id)
+        ? searchData.account_id[0] ?? ""
+        : searchData.account_id ?? "";
 
     return (
-        <div>
-            <div className="flex flex-col divide-y divide-gray-600/50 bg-background rounded p-px">
+        <DashboardCard title="Latest movements" icon="fa-solid fa-list" tone="blue">
+            <div className="mt-4 flex flex-col">
                 {data.map((record) => {
+                    const isIncome = record.amount >= 0;
+                    const name =
+                        record.name && record.name !== ""
+                            ? record.name
+                            : record.category_name;
+                    const shortName =
+                        name && name.length > 22 ? name.slice(0, 22) + "..." : name;
                     return (
-                        <div key={record.id}>
-                            <RecordCard record={record} onRecordChange={onRecordChange} />
-                        </div>
+                        <Link
+                            key={record.id}
+                            to={`/record/${record.id}`}
+                            className="flex items-center justify-between gap-3 py-3 border-t border-gray-800/60 first:border-t-0"
+                        >
+                            <span className="flex items-center gap-3 min-w-0">
+                                <span
+                                    className="flex items-center justify-center w-9 h-9 rounded-2xl text-white shrink-0"
+                                    style={{ backgroundColor: record.category_color }}
+                                >
+                                    <FontAwesomeIcon
+                                        icon={record.icon}
+                                        className="text-sm"
+                                    />
+                                </span>
+                                <span className="flex flex-col min-w-0">
+                                    <span className="text-sm text-white truncate">
+                                        {shortName}
+                                    </span>
+                                    <span className="text-xs text-gray-500">
+                                        {moment(record.date).format("D MMM")}
+                                    </span>
+                                </span>
+                            </span>
+                            <span
+                                className={`text-sm font-semibold shrink-0 ${
+                                    isIncome ? "text-emerald-400" : "text-red-400"
+                                }`}
+                            >
+                                {record.currency_symbol}{" "}
+                                {numeral(record.amount).format("0,0.00")}
+                            </span>
+                        </Link>
                     );
                 })}
-                <div className="px-5 py-3">
-                    <Link to={`/record/list/${account_id}`}>
-                        <div className="w-fit m-0 text-indigo-300 font-bold">
-                            SHOW MORE
-                        </div>
-                    </Link>
-                </div>
+                {data.length === 0 && (
+                    <p className="py-3 text-sm text-gray-500">
+                        No movements in this period.
+                    </p>
+                )}
             </div>
-        </div>
+            <Link
+                to={`/record/list/${accountId}`}
+                className="mt-3 inline-flex items-center gap-2 text-sm text-emerald-300 hover:text-emerald-200"
+            >
+                View all
+                <FontAwesomeIcon icon="fa-solid fa-arrow-right" />
+            </Link>
+        </DashboardCard>
     );
 }

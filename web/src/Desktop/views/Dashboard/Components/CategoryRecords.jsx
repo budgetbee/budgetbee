@@ -2,44 +2,52 @@ import React, { useEffect, useState } from "react";
 import numeral from "numeral";
 import { useDisclosure } from "@nextui-org/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 import Api from "../../../../Api/Endpoints";
 import RecordsModal from "../../../Components/Record/RecordsModal";
+import DashboardCard from "./DashboardCard";
 
 export default function CategoryRecords({ searchData, onRecordChange }) {
     const [isLoading, setIsLoading] = useState(true);
-    const [data, setData] = useState(null);
+    const [data, setData] = useState([]);
     const [records, setRecords] = useState([]);
     const [loadingRecords, setLoadingRecords] = useState(false);
     const [expandedItems, setExpandedItems] = useState([]);
     const { isOpen, onOpenChange } = useDisclosure();
 
     useEffect(() => {
+        let cancelled = false;
         async function getBalanceByCategory() {
-            const data = await Api.getBalanceByCategory(searchData);
-            setData(Object.entries(data));
-            setIsLoading(false);
+            const response = await Api.getBalanceByCategory(searchData);
+            if (!cancelled) {
+                setData(Object.entries(response || {}));
+                setIsLoading(false);
+            }
         }
         getBalanceByCategory();
+        return () => {
+            cancelled = true;
+        };
     }, [searchData]);
 
     const handleExpand = (parentId) => {
-        if (expandedItems.includes(parentId)) {
-            setExpandedItems(expandedItems.filter((id) => id !== parentId));
-        } else {
-            setExpandedItems([...expandedItems, parentId]);
-        }
+        setExpandedItems((prev) =>
+            prev.includes(parentId)
+                ? prev.filter((id) => id !== parentId)
+                : [...prev, parentId]
+        );
     };
 
     const getRecordsByCategory = async (categoryId) => {
         setLoadingRecords(true);
-        const data = await Api.getRecordsByCategory(
+        const result = await Api.getRecordsByCategory(
             categoryId,
             searchData?.from_date,
             searchData?.to_date
         );
         setLoadingRecords(false);
-        if (Array.isArray(data)) {
-            setRecords(data);
+        if (Array.isArray(result)) {
+            setRecords(result);
         }
     };
 
@@ -50,7 +58,7 @@ export default function CategoryRecords({ searchData, onRecordChange }) {
     };
 
     if (isLoading) {
-        return <></>;
+        return null;
     }
 
     // The modal is the shared one: the same one the auto-categorisation screen
@@ -67,115 +75,95 @@ export default function CategoryRecords({ searchData, onRecordChange }) {
     );
 
     return (
-        <div>
+        <DashboardCard
+            title="Spending by category"
+            icon="fa-solid fa-layer-group"
+            tone="amber"
+            subtitle="Open a category to see its subcategories"
+            className="h-full"
+        >
             {isOpen && recordsModal}
-            <div className="flex flex-col gap-y-3 p-4 bg-gray-700 rounded-3xl py-4 text-white text-lg">
-                <div className="flex flex-row justify-between items-center text-white text-2xl pb-4">
-                    <div className="font-bold">Expenses</div>
-                </div>
-                <div className="flex flex-col divide-y divide-gray-500">
-                    {data.map(([key, type]) => {
-                        return (
-                            <div
-                                key={key}
-                                className="flex flex-col gap-y-3 py-5 cursor-pointer"
-                            >
-                                {Object.entries(type).map(
-                                    ([keyParent, parent]) => {
-                                        const isExpanded =
-                                            expandedItems.includes(parent.id);
-                                        const inline_style = {
-                                            backgroundColor: parent.color,
-                                        };
-                                        return (
-                                            <div key={keyParent}>
-                                                <div
-                                                    className="flex flex-row justify-between font-bold"
-                                                    onClick={() =>
-                                                        handleExpand(parent.id)
-                                                    }
-                                                >
-                                                    <div className="flex flex-row items-center gap-x-3">
-                                                        <div
-                                                            className="m-auto flex items-center justify-center w-9 h-9 rounded-full bg-gray-500"
-                                                            style={inline_style}
-                                                        >
-                                                            <FontAwesomeIcon
-                                                                icon={
-                                                                    parent.icon
-                                                                }
-                                                            />
-                                                        </div>
-                                                        <div>{parent.name}</div>
-                                                    </div>
-                                                    <div>
-                                                        {parent.currency_symbol}{" "}
-                                                        {numeral(
-                                                            parent.total
-                                                        ).format("0,0.00 a")}
-                                                    </div>
-                                                </div>
-                                                <div
-                                                    id={
-                                                        parent.id + "_childrens"
-                                                    }
-                                                    className={
-                                                        "pl-10 flex flex-col divide-y divide-gray-200/20 " +
-                                                        (isExpanded
-                                                            ? ""
-                                                            : "hidden")
-                                                    }
-                                                >
-                                                    {Object.entries(
-                                                        parent.childrens
-                                                    ).map(
-                                                        ([
-                                                            keyChildren,
-                                                            children,
-                                                        ]) => {
-                                                            return (
-                                                                <div
-                                                                    key={
-                                                                        key +
-                                                                        keyParent +
-                                                                        keyChildren
-                                                                    }
-                                                                    className="flex flex-row justify-between py-2"
-                                                                    onClick={() =>
-                                                                        handleShowRecords(
-                                                                            children.id
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    <div className="text-gray-200/50">
-                                                                        {
-                                                                            children.name
-                                                                        }
-                                                                    </div>
-                                                                    <div>
-                                                                        {
-                                                                            children.currency_symbol
-                                                                        }{" "}
-                                                                        {numeral(
-                                                                            children.total
-                                                                        ).format(
-                                                                            "0,0.00 a"
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                            );
+            <div className="mt-3 flex flex-col">
+                {data.map(([typeKey, type]) => (
+                    <div key={typeKey} className="flex flex-col">
+                        {Object.entries(type).map(([parentKey, parent]) => {
+                            const isExpanded = expandedItems.includes(parent.id);
+                            return (
+                                <div
+                                    key={parentKey}
+                                    className="border-t border-gray-800/60 first:border-t-0"
+                                >
+                                    <button
+                                        type="button"
+                                        onClick={() => handleExpand(parent.id)}
+                                        className="flex w-full items-center justify-between gap-3 py-3 text-left"
+                                    >
+                                        <span className="flex items-center gap-3 min-w-0">
+                                            <span
+                                                className="flex items-center justify-center w-9 h-9 rounded-2xl text-white shrink-0"
+                                                style={{ backgroundColor: parent.color }}
+                                            >
+                                                <FontAwesomeIcon
+                                                    icon={parent.icon}
+                                                    className="text-sm"
+                                                />
+                                            </span>
+                                            <span className="text-sm font-medium text-white truncate">
+                                                {parent.name}
+                                            </span>
+                                        </span>
+                                        <span className="flex items-center gap-3 shrink-0">
+                                            <span className="text-sm font-semibold text-white">
+                                                {parent.currency_symbol}{" "}
+                                                {numeral(Math.abs(parent.total)).format("0,0.00 a")}
+                                            </span>
+                                            <FontAwesomeIcon
+                                                icon={
+                                                    isExpanded
+                                                        ? "fa-solid fa-chevron-up"
+                                                        : "fa-solid fa-chevron-down"
+                                                }
+                                                className="text-xs text-gray-500"
+                                            />
+                                        </span>
+                                    </button>
+                                    {isExpanded && (
+                                        <div className="flex flex-col pb-2 pl-12">
+                                            {Object.entries(parent.childrens).map(
+                                                ([childKey, child]) => (
+                                                    <button
+                                                        key={childKey}
+                                                        type="button"
+                                                        onClick={() =>
+                                                            handleShowRecords(child.id)
                                                         }
-                                                    )}
-                                                </div>
-                                            </div>
-                                        );
-                                    }
-                                )}
-                            </div>
-                        );
-                    })}
-                </div>
+                                                        className="flex flex-row items-center justify-between gap-3 border-t border-gray-800/60 py-2 text-left"
+                                                    >
+                                                        <span className="text-sm text-gray-400 truncate">
+                                                            {child.name}
+                                                        </span>
+                                                        <span className="text-sm text-gray-300 shrink-0">
+                                                            {child.currency_symbol}{" "}
+                                                            {numeral(Math.abs(child.total)).format(
+                                                                "0,0.00 a"
+                                                            )}
+                                                        </span>
+                                                    </button>
+                                                )
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                ))}
+                {data.length === 0 && (
+                    <p className="py-3 text-sm text-gray-500">
+                        No movements in this period.
+                    </p>
+                )}
             </div>
-        </div>
+        </DashboardCard>
     );
 }

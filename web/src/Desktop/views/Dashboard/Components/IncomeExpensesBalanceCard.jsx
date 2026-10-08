@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import numeral from "numeral";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 import Api from "../../../../Api/Endpoints";
+import DashboardCard from "./DashboardCard";
 
 export default function IncomeExpensesBalanceCard({ searchData }) {
     const [totalIncome, setTotalIncome] = useState(0);
@@ -9,45 +11,55 @@ export default function IncomeExpensesBalanceCard({ searchData }) {
     const [currency, setCurrency] = useState("");
 
     useEffect(() => {
+        let cancelled = false;
         async function getAllBalance() {
             const balance = await Api.getAllBalance(searchData);
+            if (cancelled) {
+                return;
+            }
             setTotalIncome(balance.incomes);
             setTotalExpenses(balance.expenses);
             setCurrency(balance.currency_symbol);
         }
         getAllBalance();
+        return () => {
+            cancelled = true;
+        };
     }, [searchData]);
 
     return (
-        <div className="grid grid-cols-2 divide-x divide-solid divide-gray-400 items-center py-4 bg-gray-700 rounded-3xl py-4 h-full">
-            <div className="flex flex-col items-center text-center">
-                <div className="flex flex-row justify-between items-center text-white text-lg pb-4">
-                    <div className="flex flex-row gap-x-3 items-center">
+        <DashboardCard
+            title="Income & expenses"
+            icon="fa-solid fa-scale-balanced"
+            tone="blue"
+            className="h-full"
+        >
+            <div className="mt-4 grid grid-cols-2">
+                <div className="flex flex-col gap-1 pr-4">
+                    <span className="flex items-center gap-2 text-sm text-gray-400">
                         <FontAwesomeIcon
-                            icon="fa-solid fa-caret-up"
-                            className="text-green-400"
+                            icon="fa-solid fa-arrow-trend-up"
+                            className="text-emerald-400"
                         />
-                        <span>Income</span>
-                    </div>
+                        Income
+                    </span>
+                    <span className="text-2xl font-bold text-white">
+                        {currency} {numeral(totalIncome).format("0,0.00")}
+                    </span>
                 </div>
-                <div className="font-bold text-2xl">
-                    {currency} {numeral(totalIncome).format("0,0.00")}
-                </div>
-            </div>
-            <div className="flex flex-col items-center text-center">
-                <div className="flex flex-row justify-between items-center text-white text-lg pb-4">
-                    <div className="flex flex-row gap-x-3 items-center">
+                <div className="flex flex-col gap-1 border-l border-gray-800/60 pl-4">
+                    <span className="flex items-center gap-2 text-sm text-gray-400">
                         <FontAwesomeIcon
-                            icon="fa-solid fa-caret-down"
+                            icon="fa-solid fa-arrow-trend-down"
                             className="text-red-400"
                         />
-                        <span>Expenses</span>
-                    </div>
-                </div>
-                <div className="font-bold text-2xl">
-                    {currency} {numeral(totalExpenses).format("0,0.00")}
+                        Expenses
+                    </span>
+                    <span className="text-2xl font-bold text-white">
+                        {currency} {numeral(totalExpenses).format("0,0.00")}
+                    </span>
                 </div>
             </div>
-        </div>
+        </DashboardCard>
     );
 }

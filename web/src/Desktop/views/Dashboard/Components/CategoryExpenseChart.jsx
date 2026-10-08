@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import Api from "../../../../Api/Endpoints";
 import DoughnutChart from "../../../../Components/Chart/DoughnutChart";
 import Loader from "../../../../Components/Miscellaneous/Loader";
+import DashboardCard from "./DashboardCard";
 
 export default function CategoryExpenseChart({ searchData }) {
     const [isLoading, setIsLoading] = useState(true);
@@ -11,20 +12,24 @@ export default function CategoryExpenseChart({ searchData }) {
     const [parentCategory, setParentCategory] = useState(null);
 
     useEffect(() => {
+        let cancelled = false;
         async function getExpenseCategoriesBalance() {
             const fetchedParentCategories =
                 await Api.getExpenseCategoriesBalance(searchData);
-            const data = {};
+            if (cancelled) {
+                return;
+            }
+            const chartData = {};
 
-            Object.keys(fetchedParentCategories).forEach((key) => {
-                data[key] = {
+            Object.keys(fetchedParentCategories || {}).forEach((key) => {
+                chartData[key] = {
                     id: fetchedParentCategories[key].id,
                     amount: fetchedParentCategories[key].amount,
                     color: fetchedParentCategories[key].color,
                 };
             });
 
-            setData(data);
+            setData(chartData);
             setParentCategories(fetchedParentCategories);
             setIsLoading(false);
         }
@@ -33,49 +38,51 @@ export default function CategoryExpenseChart({ searchData }) {
             setIsLoading(true);
             getExpenseCategoriesBalance();
         }
+        return () => {
+            cancelled = true;
+        };
     }, [searchData, parentCategory]);
 
     useEffect(() => {
-        if (parentCategory && parentCategories[parentCategory]) {
+        if (parentCategory && parentCategories && parentCategories[parentCategory]) {
             const childrens = parentCategories[parentCategory].childrens;
-            const data = {};
+            const chartData = {};
 
             Object.keys(childrens).forEach((key) => {
-                data[key] = {
+                chartData[key] = {
                     amount: childrens[key],
-                    // color: childrens[key].color,
                 };
             });
 
-            setData(data);
+            setData(chartData);
         } else if (!parentCategory && parentCategories) {
-            const data = {};
+            const chartData = {};
 
             Object.keys(parentCategories).forEach((key) => {
-                data[key] = {
+                chartData[key] = {
                     id: parentCategories[key].id,
                     amount: parentCategories[key].amount,
                     color: parentCategories[key].color,
                 };
             });
 
-            setData(data);
+            setData(chartData);
         }
     }, [parentCategory, parentCategories]);
 
-    let chart = <Loader classes="w-32 mt-10" />;
+    let chart = <Loader classes="w-24 mt-6" />;
     if (!isLoading) {
-        chart = <DoughnutChart data={data} setParentKey={setParentCategory} />;
+        chart = <DoughnutChart data={data || {}} setParentKey={setParentCategory} />;
     }
 
     return (
-        <div>
-            <div className="flex flex-col gap-x-2 p-4 bg-gray-700 rounded-3xl py-4">
-                <div className="flex flex-row justify-between items-center text-white text-2xl pb-4">
-                    <div className="font-bold">Expense</div>
-                </div>
-                <div className="h-64 w-64">{chart}</div>
-            </div>
-        </div>
+        <DashboardCard
+            title="Expenses by category"
+            icon="fa-solid fa-chart-pie"
+            tone="amber"
+            subtitle={parentCategory ? "Tap 'Back' to see every category" : "Tap a slice to zoom in"}
+        >
+            <div className="mt-4 h-56 w-full">{chart}</div>
+        </DashboardCard>
     );
 }
