@@ -115,7 +115,7 @@ export default function CategoryRecords({ searchData, onRecordChange }) {
                                         <span className="flex items-center gap-3 shrink-0">
                                             <span className="text-base font-bold text-white">
                                                 {parent.currency_symbol}{" "}
-                                                {numeral(Math.abs(parent.total)).format("0,0.00 a")}
+                                                {numeral(parent.total).format("0,0.00 a")}
                                             </span>
                                             <FontAwesomeIcon
                                                 icon={
@@ -144,7 +144,7 @@ export default function CategoryRecords({ searchData, onRecordChange }) {
                                                         </span>
                                                         <span className="text-[15px] font-medium text-gray-200 shrink-0">
                                                             {child.currency_symbol}{" "}
-                                                            {numeral(Math.abs(child.total)).format(
+                                                            {numeral(child.total).format(
                                                                 "0,0.00 a"
                                                             )}
                                                         </span>

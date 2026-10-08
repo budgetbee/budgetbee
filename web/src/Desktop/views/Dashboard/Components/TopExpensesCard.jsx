@@ -60,7 +60,7 @@ export default function TopExpensesCard({ searchData }) {
                                 </div>
                                 <span className="text-sm font-semibold text-white shrink-0">
                                     {category.currency_symbol}{" "}
-                                    {numeral(Math.abs(category.amount)).format("0,0.00")}
+                                    {numeral(category.amount).format("0,0.00")}
                                 </span>
                             </div>
                         );

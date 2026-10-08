@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from "react";
 import numeral from "numeral";
+import { useDisclosure } from "@nextui-org/react";
 import moment from "moment";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import Api from "../../../../Api/Endpoints";
+import RecordsModal from "../../../Components/Record/RecordsModal";
 import DashboardCard from "./DashboardCard";
 
-export default function LastRecords({ searchData, refreshKey }) {
+export default function LastRecords({ searchData, refreshKey, onRecordChange }) {
     const [isLoading, setIsLoading] = useState(true);
+    const [records, setRecords] = useState([]);
+    const { isOpen, onOpenChange } = useDisclosure();
     const [data, setData] = useState([]);
 
     useEffect(() => {
@@ -46,6 +50,18 @@ export default function LastRecords({ searchData, refreshKey }) {
 
     return (
         <DashboardCard title="Latest movements" icon="fa-solid fa-list" tone="blue">
+            {/* El detalle se abre en la misma ventana emergente que usa la lista
+                de categorias, en vez de llevar al formulario, que esta oculto. */}
+            {isOpen && (
+                <RecordsModal
+                    isOpen={isOpen}
+                    onOpenChange={onOpenChange}
+                    records={records}
+                    isLoading={false}
+                    emptyText="No movements in this period."
+                    onRecordChange={onRecordChange}
+                />
+            )}
             <div className="mt-4 flex flex-col">
                 {data.map((record) => {
                     const isIncome = record.amount >= 0;
@@ -55,13 +71,15 @@ export default function LastRecords({ searchData, refreshKey }) {
                             : record.category_name;
                     const shortName =
                         name && name.length > 22 ? name.slice(0, 22) + "..." : name;
-                    // Sin enlace: apuntaba al formulario de movimiento
-                    // (/record/id), que en esta app esta oculto, asi que la
-                    // pulsacion llevaba a una pantalla que no debe abrirse.
                     return (
-                        <div
+                        <button
                             key={record.id}
-                            className="flex items-center justify-between gap-3 py-3 border-t border-white/5 first:border-t-0"
+                            type="button"
+                            onClick={() => {
+                                setRecords([record]);
+                                onOpenChange(true);
+                            }}
+                            className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-3 text-left border-t border-white/5 first:border-t-0 transition-colors hover:bg-white/5"
                         >
                             <span className="flex items-center gap-3 min-w-0">
                                 <span
@@ -90,7 +108,7 @@ export default function LastRecords({ searchData, refreshKey }) {
                                 {record.currency_symbol}{" "}
                                 {numeral(record.amount).format("0,0.00")}
                             </span>
-                        </div>
+                        </button>
                     );
                 })}
                 {data.length === 0 && (
