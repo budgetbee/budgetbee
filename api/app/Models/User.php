@@ -49,6 +49,9 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'auto_categorize_enabled' => 'boolean',
+        'categorization_intro_seen_at' => 'datetime',
+        'categorization_card_seen_at' => 'datetime',
     ];
 
     public static function boot()

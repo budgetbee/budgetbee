@@ -250,10 +250,19 @@ class ImportController extends Controller
                 $record->import_id = $importId;
 
                 if (! $record->category_id) {
-                    $prediction = (array) $classifier->classify(
-                        (int) $record->user_id,
-                        $record->name ?: $record->description
-                    );
+                    // Two things have to agree before the app files a movement on
+                    // its own: the box on the import screen, and the user's own
+                    // switch in the settings (which arrives off). With either of
+                    // them off, the movement keeps the fallback category and
+                    // nothing is decided for him.
+                    $useLearnedRules = $autoCategorise && (bool) auth()->user()->auto_categorize_enabled;
+
+                    $prediction = $useLearnedRules
+                        ? (array) $classifier->classify(
+                            (int) $record->user_id,
+                            $record->name ?: $record->description
+                        )
+                        : [];
                     $predictedId = $prediction['category_id'] ?? null;
 
                     $record->category_id = $predictedId ?: $fallbackId;

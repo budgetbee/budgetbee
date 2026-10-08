@@ -33,7 +33,7 @@ class ImportCsvTest extends TestCase
     {
         parent::setUp();
 
-        $this->user = User::factory()->create(['password' => 'UserTest123']);
+        $this->user = User::factory()->create(['password' => 'UserTest123', 'auto_categorize_enabled' => true]);
         $this->actingAs($this->user);
 
         $this->userCurrency = UserCurrency::factory()->create(['user_id' => $this->user->id]);
