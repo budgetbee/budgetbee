@@ -5,6 +5,28 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Api from "../../../../Api/Endpoints";
 import DashboardCard from "./DashboardCard";
 
+/**
+ * Decide si el texto va en blanco o en gris oscuro segun el brillo del color de
+ * la cuenta. Sobre un fondo claro el blanco no se lee, y al reves.
+ */
+function textoLegible(color) {
+    const hex = (color || "").replace("#", "");
+    if (hex.length !== 6) {
+        return { principal: "text-white", secundario: "text-white/80" };
+    }
+    const canales = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16));
+    // Luminancia relativa de la WCAG: 0 es negro y 1 es blanco.
+    const luminancia = canales
+        .map((v) => {
+            const c = v / 255;
+            return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+        })
+        .reduce((total, v, i) => total + v * [0.2126, 0.7152, 0.0722][i], 0);
+    return luminancia > 0.5
+        ? { principal: "text-gray-900", secundario: "text-gray-700" }
+        : { principal: "text-white", secundario: "text-white/80" };
+}
+
 export default function Accounts({ activeAccount, setSearchData }) {
     const [isLoading, setIsLoading] = useState(true);
     const [adjustBalanceOpen, setAdjustBalanceOpen] = useState(false);
@@ -118,35 +140,27 @@ export default function Accounts({ activeAccount, setSearchData }) {
                 {data.map((account) => {
                     const isActive = activeIds.includes(account.id);
                     const isDimmed = activeIds.length > 0 && !isActive;
+                    // El fondo vuelve a ser el color de la cuenta y el texto se
+                    // elige claro u oscuro segun ese color. El icono se va: era
+                    // el mismo para todas y no distinguia nada.
+                    const texto = textoLegible(account.color);
                     return (
                         <button
                             key={account.id}
                             type="button"
                             onClick={() => handleClick(account.id)}
-                            className={`flex items-center justify-between gap-3 rounded-2xl border px-3 py-2 text-left transition-colors ${
-                                isActive
-                                    ? "border-emerald-500/25 bg-emerald-500/15"
-                                    : "border-gray-700 bg-[#0a0a0f] hover:border-gray-700"
-                            } ${isDimmed ? "opacity-50" : ""}`}
+                            style={{ backgroundColor: account.color }}
+                            className={`flex items-center justify-between gap-3 rounded-2xl px-3.5 py-2 text-left transition-all hover:brightness-110 ${
+                                isActive ? "ring-2 ring-white/80" : ""
+                            } ${isDimmed ? "opacity-45" : ""}`}
                         >
-                            <span className="flex items-center gap-3 min-w-0">
-                                <span
-                                    className="flex items-center justify-center w-9 h-9 rounded-2xl text-white shrink-0"
-                                    style={{ backgroundColor: account.color }}
-                                >
-                                    <FontAwesomeIcon
-                                        icon="fa-solid fa-building-columns"
-                                        className="text-sm"
-                                    />
-                                </span>
-                                <span className="text-sm text-white truncate">
-                                    {account.name}
-                                </span>
+                            <span
+                                className={`truncate text-sm font-medium ${texto.principal}`}
+                            >
+                                {account.name}
                             </span>
                             <span
-                                className={`text-sm font-semibold shrink-0 ${
-                                    isActive ? "text-emerald-300" : "text-gray-300"
-                                }`}
+                                className={`shrink-0 text-sm font-semibold ${texto.secundario}`}
                             >
                                 {account.currency_symbol}{" "}
                                 {numeral(account.balance).format("0,0.00")}
