@@ -55,10 +55,12 @@ export default function LastRecords({ searchData, refreshKey }) {
                             : record.category_name;
                     const shortName =
                         name && name.length > 22 ? name.slice(0, 22) + "..." : name;
+                    // Sin enlace: apuntaba al formulario de movimiento
+                    // (/record/id), que en esta app esta oculto, asi que la
+                    // pulsacion llevaba a una pantalla que no debe abrirse.
                     return (
-                        <Link
+                        <div
                             key={record.id}
-                            to={`/record/${record.id}`}
                             className="flex items-center justify-between gap-3 py-3 border-t border-white/5 first:border-t-0"
                         >
                             <span className="flex items-center gap-3 min-w-0">
@@ -88,7 +90,7 @@ export default function LastRecords({ searchData, refreshKey }) {
                                 {record.currency_symbol}{" "}
                                 {numeral(record.amount).format("0,0.00")}
                             </span>
-                        </Link>
+                        </div>
                     );
                 })}
                 {data.length === 0 && (

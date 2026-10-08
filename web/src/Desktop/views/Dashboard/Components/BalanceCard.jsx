@@ -76,7 +76,7 @@ export default function BalanceCard({ searchData }) {
                         Expenses
                     </span>
                     <span className="text-xl font-semibold text-white">
-                        {totals.currency}{" "}
+                        -{totals.currency}{" "}
                         {numeral(Math.abs(totals.expenses)).format("0,0.00")}
                     </span>
                 </div>
