@@ -15,7 +15,7 @@ import Api from "../../../../Api/Endpoints";
  *      (the backfill). While it runs the button is disabled and says so; when
  *      it ends it reports what it did, before and after.
  */
-export default function CategorizerSettings() {
+export default function CategorizerSettings({ onEnabledChange, onBackfillDone }) {
     const [loading, setLoading] = useState(true);
     const [enabled, setEnabled] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -35,7 +35,8 @@ export default function CategorizerSettings() {
             return;
         }
         setEnabled(Boolean(response.enabled));
-    }, []);
+        onEnabledChange?.(Boolean(response.enabled));
+    }, [onEnabledChange]);
 
     useEffect(() => {
         load();
@@ -56,6 +57,7 @@ export default function CategorizerSettings() {
         // The server is the one that knows: paint what it sends back.
         if (typeof response.enabled === "boolean") {
             setEnabled(response.enabled);
+            onEnabledChange?.(response.enabled);
         }
     };
 
@@ -73,6 +75,9 @@ export default function CategorizerSettings() {
             return;
         }
         setReport(response);
+        // The suggestions are already stored: the screen shows them now, without
+        // a reload.
+        onBackfillDone?.();
     };
 
     const number = (value) => (typeof value === "number" ? value : 0);

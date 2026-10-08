@@ -68,6 +68,8 @@ export default function CategoryRules() {
     const [categoryGroups, setCategoryGroups] = useState([]);
     const [categories, setCategories] = useState([]);
     const [error, setError] = useState(null);
+    // null = still unknown (nothing is dimmed until the server answers).
+    const [categoriserOn, setCategoriserOn] = useState(null);
 
     // Search + categorise by text
     const [text, setText] = useState("");
@@ -634,8 +636,36 @@ export default function CategoryRules() {
                 {/* The settings notice (once per user) and the two controls:
                     the on/off switch and the search in the existing movements. */}
                 <CategorizerNoticeCard />
-                <CategorizerSettings />
+                <CategorizerSettings
+                    onEnabledChange={setCategoriserOn}
+                    onBackfillDone={load}
+                />
 
+                {/* With the categoriser off, everything below is dead weight: it is
+                    shown greyed out and behind a layer, with the way back written
+                    on it. It is not hidden, so nothing disappears from the screen
+                    when the switch is turned off. */}
+                <div className="relative">
+                    {categoriserOn === false && (
+                        <div className="absolute inset-0 z-30 rounded-2xl bg-black/45 backdrop-blur-[1px] flex items-start justify-center">
+                            <div className="mt-16 mx-4 max-w-lg text-center rounded-2xl border border-gray-700 bg-[#12121f]/95 px-5 py-4 shadow-2xl">
+                                <div className="text-sm font-medium text-white flex items-center justify-center gap-2">
+                                    <FontAwesomeIcon icon="fa-solid fa-circle-pause" className="text-gray-400" />
+                                    The auto-categoriser is off
+                                </div>
+                                <p className="text-xs text-gray-400 mt-1">
+                                    These rules and suggestions are not being used right now. Turn it on
+                                    with the switch above and they start working again.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    <div
+                        className={
+                            categoriserOn === false ? "opacity-40 pointer-events-none select-none" : ""
+                        }
+                    >
                 {/* 2. How it decides */}
                 <div className="mt-5 bg-[#12121f] rounded-2xl p-4 border border-gray-800">
                     <div className="text-sm font-medium text-white mb-2">How it decides</div>
@@ -915,6 +945,8 @@ export default function CategoryRules() {
                         </div>
                     </>
                 )}
+                    </div>
+                </div>
             </div>
 
             {/* The movements behind a count, in the modal the dashboard uses. */}
