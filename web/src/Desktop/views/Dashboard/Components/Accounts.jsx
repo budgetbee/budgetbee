@@ -22,7 +22,11 @@ function textoLegible(color) {
             return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
         })
         .reduce((total, v, i) => total + v * [0.2126, 0.7152, 0.0722][i], 0);
-    return luminancia > 0.5
+    // A partir de este brillo el fondo se considera claro y el texto va en gris
+    // oscuro. El corte esta alto a proposito: en un color saturado (rojo, azul,
+    // magenta) el blanco es lo que se espera y se lee bien, asi que el gris se
+    // reserva para fondos de verdad claros, como un amarillo o un verde vivo.
+    return luminancia > 0.3
         ? { principal: "text-gray-900", secundario: "text-gray-700" }
         : { principal: "text-white", secundario: "text-white/80" };
 }
@@ -136,7 +140,7 @@ export default function Accounts({ activeAccount, setSearchData }) {
     return (
         <DashboardCard title="Accounts" icon="fa-solid fa-money-check" tone="blue">
             {adjustBalanceOpen && adjustBalanceForm}
-            <div className="mt-4 flex flex-col gap-2 max-h-96 overflow-y-auto pr-1">
+            <div className="mt-4 flex flex-col gap-y-2 max-h-96 overflow-y-auto pr-1">
                 {data.map((account) => {
                     const isActive = activeIds.includes(account.id);
                     const isDimmed = activeIds.length > 0 && !isActive;
@@ -150,17 +154,17 @@ export default function Accounts({ activeAccount, setSearchData }) {
                             type="button"
                             onClick={() => handleClick(account.id)}
                             style={{ backgroundColor: account.color }}
-                            className={`flex items-center justify-between gap-3 rounded-2xl px-3.5 py-2 text-left transition-all hover:brightness-110 ${
+                            className={`flex w-full flex-col items-start justify-center gap-0.5 rounded-lg px-3 py-2 text-left transition-all hover:brightness-110 ${
                                 isActive ? "ring-2 ring-white/80" : ""
                             } ${isDimmed ? "opacity-45" : ""}`}
                         >
                             <span
-                                className={`truncate text-sm font-medium ${texto.principal}`}
+                                className={`w-full truncate text-sm leading-5 ${texto.secundario}`}
                             >
                                 {account.name}
                             </span>
                             <span
-                                className={`shrink-0 text-sm font-semibold ${texto.secundario}`}
+                                className={`w-full truncate text-sm font-bold leading-5 ${texto.principal}`}
                             >
                                 {account.currency_symbol}{" "}
                                 {numeral(account.balance).format("0,0.00")}
