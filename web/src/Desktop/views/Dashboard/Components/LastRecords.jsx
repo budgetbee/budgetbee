@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from "react";
 import numeral from "numeral";
+import { useDisclosure } from "@nextui-org/react";
 import moment from "moment";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import Api from "../../../../Api/Endpoints";
+import FormModal from "../../../Components/Record/FormModal";
 import DashboardCard from "./DashboardCard";
 
-export default function LastRecords({ searchData, refreshKey }) {
+export default function LastRecords({ searchData, refreshKey, onRecordChange }) {
     const [isLoading, setIsLoading] = useState(true);
+    const [recordData, setRecordData] = useState(null);
+    const { isOpen, onOpenChange } = useDisclosure();
     const [data, setData] = useState([]);
 
     useEffect(() => {
@@ -46,6 +50,21 @@ export default function LastRecords({ searchData, refreshKey }) {
 
     return (
         <DashboardCard title="Latest movements" icon="fa-solid fa-list" tone="blue">
+            {/* El detalle se abre en el modal del movimiento, el mismo que usa
+                el resto de la app en escritorio: sin salir del dashboard. */}
+            {isOpen && recordData && (
+                <FormModal
+                    isOpen={true}
+                    onOpenChange={onOpenChange}
+                    record_id={recordData.id}
+                    recordData={recordData}
+                    fetchAgain={async (id) => {
+                        setRecordData(await Api.getRecordById(id));
+                    }}
+                    setIsRemoved={() => onRecordChange && onRecordChange()}
+                    onRecordChange={onRecordChange}
+                />
+            )}
             <div className="mt-4 flex flex-col">
                 {data.map((record) => {
                     const isIncome = record.amount >= 0;
@@ -56,9 +75,13 @@ export default function LastRecords({ searchData, refreshKey }) {
                     const shortName =
                         name && name.length > 22 ? name.slice(0, 22) + "..." : name;
                     return (
-                        <Link
+                        <button
                             key={record.id}
-                            to={`/record/${record.id}`}
+                            type="button"
+                            onClick={() => {
+                                setRecordData(record);
+                                onOpenChange(true);
+                            }}
                             className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-3 text-left border-t border-white/5 first:border-t-0 transition-colors hover:bg-white/5"
                         >
                             <span className="flex items-center gap-3 min-w-0">
@@ -88,7 +111,7 @@ export default function LastRecords({ searchData, refreshKey }) {
                                 {record.currency_symbol}{" "}
                                 {numeral(record.amount).format("0,0.00")}
                             </span>
-                        </Link>
+                        </button>
                     );
                 })}
                 {data.length === 0 && (
