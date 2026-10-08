@@ -7,6 +7,8 @@ import LastRecords from "./Components/LastRecords";
 import BalanceCard from "./Components/BalanceCard";
 import TopExpensesCard from "./Components/TopExpensesCard";
 import BalanceChart from "./Components/BalanceChart";
+import CashFlowChart from "./Components/CashFlowChart";
+import BudgetRingCard from "./Components/BudgetRingCard";
 import CategoryRecords from "./Components/CategoryRecords";
 import CategoryIncomeChart from "./Components/CategoryIncomeChart";
 import CategoryExpenseChart from "./Components/CategoryExpenseChart";
@@ -44,6 +46,15 @@ export default function Dashboard() {
                     </div>
 
                     <BalanceChart searchData={searchData} />
+
+                    <div className="flex flex-row gap-x-6">
+                        <div className="basis-7/12">
+                            <CashFlowChart searchData={searchData} />
+                        </div>
+                        <div className="basis-5/12">
+                            <BudgetRingCard />
+                        </div>
+                    </div>
 
                     <div className="flex flex-row gap-x-6">
                         <div className="basis-9/12">
