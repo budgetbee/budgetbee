@@ -399,6 +399,34 @@ const Endpoints = {
         return get(`category-rules/candidates`);
     },
 
+    // Auto-categoriser preferences. They are stored per user, so what one user
+    // turns off (or dismisses) stays that way for them alone.
+    //   GET  categorization/preferences -> { enabled, intro_seen, card_seen, stats }
+    //   POST categorization/preferences -> same shape, with the new enabled
+    //   POST .../intro-seen             -> the welcome modal was seen, for good
+    //   POST .../card-seen              -> the settings notice was seen, for good
+    //   POST .../backfill               -> re-reads the existing movements and
+    //                                      returns before/after plus what it did
+    getCategorizationPreferences: async () => {
+        return get(`categorization/preferences`);
+    },
+
+    updateCategorizationPreferences: async (data) => {
+        return post(`categorization/preferences`, data);
+    },
+
+    markCategorizationIntroSeen: async () => {
+        return post(`categorization/preferences/intro-seen`);
+    },
+
+    markCategorizationCardSeen: async () => {
+        return post(`categorization/preferences/card-seen`);
+    },
+
+    runCategorizationBackfill: async () => {
+        return post(`categorization/preferences/backfill`);
+    },
+
     getBalance: async (data) => {
         const queryString = queryBuilder(data);
         return get(`balance?${queryString}`);

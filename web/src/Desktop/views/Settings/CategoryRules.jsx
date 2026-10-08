@@ -9,6 +9,8 @@ import SettingsLayout from "../../layout/SettingsLayout";
 import CategorySelect from "../../Components/CategorySelect";
 import RecordsModal from "../../Components/Record/RecordsModal";
 import groupRulesByCategory from "./groupRulesByCategory";
+import CategorizerNoticeCard from "./Components/CategorizerNoticeCard";
+import CategorizerSettings from "./Components/CategorizerSettings";
 
 /**
  * Auto-categorisation.
@@ -628,6 +630,11 @@ export default function CategoryRules() {
                     Here you can see what it has learned, and also help it: search a word, categorise the
                     movements that contain it in one go, and it will keep doing that by itself from then on.
                 </p>
+
+                {/* The settings notice (once per user) and the two controls:
+                    the on/off switch and the search in the existing movements. */}
+                <CategorizerNoticeCard />
+                <CategorizerSettings />
 
                 {/* 2. How it decides */}
                 <div className="mt-5 bg-[#12121f] rounded-2xl p-4 border border-gray-800">
