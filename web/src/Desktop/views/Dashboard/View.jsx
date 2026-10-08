@@ -76,7 +76,6 @@ export default function Dashboard() {
                     <LastRecords
                         searchData={searchData}
                         refreshKey={lastRecordsRefreshKey}
-                        onRecordChange={handleRecordChange}
                     />
                 </div>
             </div>
