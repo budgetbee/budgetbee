@@ -1,4 +1,4 @@
-FROM php:8.2-fpm-alpine3.17
+FROM php:8.3-fpm-alpine
 
 # El importador acepta ficheros de hasta 10MB (validacion del controlador) y el
 # nginx deja pasar 20m: sin esto, PHP corta en 2M y el usuario ve un error raro.
