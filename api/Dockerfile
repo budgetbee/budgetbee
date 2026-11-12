@@ -1,4 +1,4 @@
-FROM php:8.2-fpm-alpine3.17
+FROM php:8.3-fpm-alpine
 
 # Install cron
 RUN apk add --no-cache dcron
