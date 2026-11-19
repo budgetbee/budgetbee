@@ -70,3 +70,24 @@ code {
 .react-datepicker-popper {
   z-index: 9999 !important;
 }
+
+/* Fondo del panel de escritorio.
+   Degradado marcado de arriba abajo con dos halos suaves en la parte alta (el
+   amarillo de la marca a la izquierda y el verde del rediseno a la derecha),
+   para que los paneles se lean como capas y no sobre un color plano. */
+.desktop-canvas {
+    background-color: #0f141c;
+    background-image:
+        radial-gradient(
+            1100px 560px at 22% -12%,
+            rgba(255, 200, 87, 0.10),
+            transparent 62%
+        ),
+        radial-gradient(
+            900px 480px at 90% -8%,
+            rgba(16, 185, 129, 0.08),
+            transparent 60%
+        ),
+        linear-gradient(180deg, #212c3d 0%, #151c27 42%, #0a0e14 100%);
+    background-attachment: fixed;
+}
