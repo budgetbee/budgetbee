@@ -113,7 +113,11 @@ class CreateRecordTest extends TestCase
     {
         $recordData = Record::factory()->make()->toArray();
         $recordData['type'] = 'transfer';
-        $recordData['to_account_id'] = Account::whereNot('id', $recordData['from_account_id'])->inRandomOrder()->first()->id;
+        // La cuenta de destino tiene que ser del mismo usuario: un traspaso entre
+        // cuentas de personas distintas no es un caso valido (aviso GHSA-95c8-2683-7xfc).
+        $recordData['to_account_id'] = ($recordData['from_account_id'] == $this->account1->id)
+            ? $this->account2->id
+            : $this->account1->id;
         $recordData['rate'] = 1.2;
 
         $response = $this->post('/api/record', $recordData);
@@ -143,7 +147,11 @@ class CreateRecordTest extends TestCase
     {
         $recordData = Record::factory()->make()->toArray();
         $recordData['type'] = 'transfer';
-        $recordData['to_account_id'] = Account::whereNot('id', $recordData['from_account_id'])->inRandomOrder()->first()->id;
+        // La cuenta de destino tiene que ser del mismo usuario: un traspaso entre
+        // cuentas de personas distintas no es un caso valido (aviso GHSA-95c8-2683-7xfc).
+        $recordData['to_account_id'] = ($recordData['from_account_id'] == $this->account1->id)
+            ? $this->account2->id
+            : $this->account1->id;
         unset($recordData['rate']);
 
         $response = $this->post('/api/record', $recordData);

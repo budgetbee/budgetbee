@@ -183,6 +183,8 @@ class CategoryController extends Controller
 
     public function update(Request $request, $id)
     {
+        $userId = (int) $request->user()->id;
+
         $this->validate($request, [
             'parent_category_id' => 'sometimes|integer|exists:App\Models\ParentCategory,id',
             'name' => 'sometimes|string',
@@ -191,14 +193,27 @@ class CategoryController extends Controller
             'position' => 'sometimes|integer',
         ]);
 
-        $category = Category::find($id);
+        // Only the owner's own categories (or a shared one, with no owner) may be
+        // edited. Looking the row up by id alone and then writing the caller's id
+        // into it let any logged-in user take over somebody else's category.
+        $category = Category::where(function ($query) use ($userId) {
+            $query->where('user_id', $userId)->orWhereNull('user_id');
+        })->find($id);
 
         if (!$category) {
             return response()->json(['message' => 'Category not found'], 404);
         }
 
+        if ($request->filled('parent_category_id')) {
+            $parent = ParentCategory::where('user_id', $userId)
+                ->find($request->input('parent_category_id'));
+
+            if (!$parent) {
+                return response()->json(['message' => 'Parent category not found'], 422);
+            }
+        }
+
         $data = $request->only('icon', 'name', 'parent_category_id', 'enabled', 'position');
-        $data['user_id'] = $request->user()->id;
 
         $category->fill(array_filter($data, fn ($value) => $value !== null));
         $category->save();

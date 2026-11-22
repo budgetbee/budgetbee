@@ -7,6 +7,7 @@ use App\Services\Categorization\CategoryCorpus;
 use App\Services\Categorization\CategoryLearner;
 
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Models\Record;
 use App\Models\Category;
 use DateTime;
@@ -92,6 +93,8 @@ class RecordController extends Controller
 
     public function create(Request $request)
     {
+        $userId = (int) $request->user()->id;
+
         // The record form sends an empty category_id when nothing was picked.
         // Treat it as absent so it falls back to the user's unknown category,
         // instead of failing the "integer" rule and reporting a missing category.
@@ -99,11 +102,28 @@ class RecordController extends Controller
             $request->merge(['category_id' => null]);
         }
 
+        // Every account and category in the payload has to be the caller's own:
+        // checking only that the row exists let any user write movements into
+        // somebody else's account (their balance changed, the row never showed
+        // up in their list) and point them at somebody else's category.
         $this->validate($request, [
             'date' => 'required|date',
-            'from_account_id' => 'required|integer|exists:App\Models\Account,id',
-            'to_account_id' => 'integer|exists:App\Models\Account,id',
-            'category_id' => 'nullable|integer|exists:App\Models\Category,id',
+            'from_account_id' => [
+                'required',
+                'integer',
+                Rule::exists('accounts', 'id')->where('user_id', $userId),
+            ],
+            'to_account_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('accounts', 'id')->where('user_id', $userId),
+            ],
+            'category_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('categories', 'id')
+                    ->where(fn ($q) => $q->where('user_id', $userId)->orWhereNull('user_id')),
+            ],
             'name' => 'nullable|string',
             'type' => 'required|string|in:income,expense,transfer',
             'amount' => 'required|numeric',
@@ -249,10 +269,29 @@ class RecordController extends Controller
 
         $this->authorize('update', $record);
 
+        $userId = (int) $request->user()->id;
+
+        // Same rule as on create: the movement is the caller's, but the accounts
+        // and the category it is moved to also have to be his own. Without this
+        // an edit could move a movement into another user's account.
         $this->validate($request, [
             'date' => 'required|date',
-            'from_account_id' => 'required|integer|exists:App\Models\Account,id',
-            'to_account_id' => 'integer|exists:App\Models\Account,id',
+            'from_account_id' => [
+                'required',
+                'integer',
+                Rule::exists('accounts', 'id')->where('user_id', $userId),
+            ],
+            'to_account_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('accounts', 'id')->where('user_id', $userId),
+            ],
+            'category_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('categories', 'id')
+                    ->where(fn ($q) => $q->where('user_id', $userId)->orWhereNull('user_id')),
+            ],
             'type' => 'required|string|in:income,expense,transfer',
             'amount' => 'required|numeric',
             'rate' => 'nullable|numeric',

@@ -103,15 +103,28 @@ class GetCategoryTest extends TestCase
     public function testUpdateCategory(): void
     {
         $parentCategory = ParentCategory::where('user_id', $this->user->id)->first();
-        $response = $this->post('/api/category/' . $parentCategory->id, [
+
+        // Se crea una categoria propia y se edita ESA. Antes se mandaba el id de la
+        // categoria padre, que no es el id de ninguna categoria del usuario: el
+        // endpoint lo aceptaba porque no comprobaba de quien era la fila.
+        $created = $this->post('/api/category/', [
+            'parent_category_id' => $parentCategory->id,
+            'name' => 'CategoryTest',
+            'icon' => 'fa-fa'
+        ]);
+        $created->assertStatus(200);
+
+        $categoryId = $created->getData()->id;
+
+        $response = $this->post('/api/category/' . $categoryId, [
             'parent_category_id' => $parentCategory->id,
             'name' => 'CategoryTestModified',
             'icon' => 'fa-fa'
         ]);
-        
+
         $response->assertStatus(200);
 
-        $response = $this->get('/api/category/' . $response->getData()->id);
+        $response = $this->get('/api/category/' . $categoryId);
         $response->assertStatus(200);
 
     }
