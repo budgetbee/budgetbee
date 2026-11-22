@@ -84,6 +84,13 @@ class ExternalApiController extends Controller
 
         $data = $request->only('date', 'from_account_id', 'to_account_id', 'type', 'category_id', 'name', 'amount', 'description', 'rate', 'code');
 
+        // The category has to be one the caller can use: his own or a shared one.
+        $categoryId = $this->ownedCategoryId($request, $data['category_id'] ?? null);
+        if ($categoryId === false) {
+            return response()->json(['message' => 'Category not found or does not belong to user'], 422);
+        }
+        $data['category_id'] = $categoryId;
+
         if ($data['type'] === 'transfer') {
             $this->validate($request, [
                 'to_account_id' => 'required',
@@ -97,6 +104,16 @@ class ExternalApiController extends Controller
             if (!$toAccount) {
                 return response()->json(['message' => 'Target account not found or does not belong to user'], 422);
             }
+        } elseif (!empty($data['to_account_id'])) {
+            // A plain income or expense may still carry a destination account:
+            // it also has to be the caller's.
+            $toAccount = Account::where('user_id', $request->user()->id)
+                ->where('id', $data['to_account_id'])
+                ->first();
+
+            if (!$toAccount) {
+                return response()->json(['message' => 'Target account not found or does not belong to user'], 422);
+            }
         }
 
         $data['amount'] = abs($data['amount']);
@@ -104,7 +121,6 @@ class ExternalApiController extends Controller
             $data['amount'] = -$data['amount'];
         }
 
-        $data['category_id'] = $data['category_id'] ?? 1;
         $data['user_id'] = $request->user()->id;
 
         $record = new Record();
@@ -146,6 +162,12 @@ class ExternalApiController extends Controller
 
         $data = $request->only('date', 'from_account_id', 'to_account_id', 'type', 'category_id', 'name', 'amount', 'description', 'rate');
 
+        $categoryId = $this->ownedCategoryId($request, $data['category_id'] ?? null);
+        if ($categoryId === false) {
+            return response()->json(['message' => 'Category not found or does not belong to user'], 422);
+        }
+        $data['category_id'] = $categoryId;
+
         if ($data['type'] === 'transfer') {
             $this->validate($request, [
                 'to_account_id' => 'required',
@@ -154,6 +176,14 @@ class ExternalApiController extends Controller
 
             $toAccount = Account::where('user_id', $request->user()->id)
                 ->where('id', $request->input('to_account_id'))
+                ->first();
+
+            if (!$toAccount) {
+                return response()->json(['message' => 'Target account not found or does not belong to user'], 422);
+            }
+        } elseif (!empty($data['to_account_id'])) {
+            $toAccount = Account::where('user_id', $request->user()->id)
+                ->where('id', $data['to_account_id'])
                 ->first();
 
             if (!$toAccount) {
@@ -185,6 +215,31 @@ class ExternalApiController extends Controller
         $record->delete();
 
         return response()->json(['message' => 'Record deleted']);
+    }
+
+    /**
+     * Category the caller is allowed to use, or false when the one he sent is
+     * not his (nor shared). With no category it falls back to the first usable
+     * one of his own: a hardcoded id would point at another user's row on a
+     * shared installation.
+     */
+    private function ownedCategoryId(Request $request, $categoryId)
+    {
+        $userId = (int) $request->user()->id;
+
+        $usable = function ($query) use ($userId) {
+            $query->where('user_id', $userId)->orWhereNull('user_id');
+        };
+
+        if ($categoryId === null || $categoryId === '') {
+            $fallback = Category::where($usable)->orderBy('id')->value('id');
+
+            return $fallback === null ? false : (int) $fallback;
+        }
+
+        $category = Category::where($usable)->find($categoryId);
+
+        return $category ? (int) $category->id : false;
     }
 
     // ---- Accounts (read-only) ----

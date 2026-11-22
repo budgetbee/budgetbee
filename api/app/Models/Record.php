@@ -46,7 +46,10 @@ class Record extends Model
 
             if ($record->type === 'transfer') {
                 static::withoutEvents(function () use ($record) {
-                    $transfercategory = 1;
+                    // The transfer category has to be this user's own: with a hardcoded
+                    // id every transfer of every user pointed at the first user's row
+                    // (and a fresh install broke, because that row did not exist).
+                    $transfercategory = self::transferCategoryId($record);
                     $recordAssoc = ($record->link_record_id) ? Record::find($record->link_record_id) : new Record();
                     $recordAssoc->fill([
                         'user_id' => $record->user_id,
@@ -92,7 +95,7 @@ class Record extends Model
                         if (!empty($record->original['type']) && $record->original['type'] === 'transfer' && $record->type !== 'transfer') {
                             $recordAssoc->delete();
                         } else {
-                            $transfercategory = 1;
+                            $transfercategory = self::transferCategoryId($record);
                             if ($recordAssoc->id) {
                                 $recordAssoc->restore();
                             }
@@ -118,6 +121,18 @@ class Record extends Model
                 });
             }
         });
+    }
+
+    /**
+     * Category used to mark both legs of a transfer: the one under the user's own
+     * "transfer" parent, falling back to the category the movement already carries
+     * so the foreign key never points at another user's row.
+     */
+    private static function transferCategoryId(Record $record): ?int
+    {
+        $category = Category::firstByParentType((int) $record->user_id, 'transfer');
+
+        return $category?->id ?? ($record->category_id ? (int) $record->category_id : null);
     }
 
     public static function newFactory(): Factory
